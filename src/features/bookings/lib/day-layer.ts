@@ -8,7 +8,6 @@ import type { CalendarDayInfo, CalendarDaysProperty, CalendarDaysResponse } from
  * no time zone moves them) and on cents.
  */
 
-/** One property of the layer: where its nights are told, in which currency, whether what the host changes is sent to the channel manager, and its days by date. */
 export interface DayLayerProperty {
   currency: string;
   timezone: string;
@@ -16,7 +15,6 @@ export interface DayLayerProperty {
   days: ReadonlyMap<string, CalendarDayInfo>;
 }
 
-/** `propertyId -> date -> CalendarDayInfo`, with what each property says about itself. */
 export type DayLayer = ReadonlyMap<string, DayLayerProperty>;
 
 function layerProperty(property: CalendarDaysProperty): DayLayerProperty {
@@ -25,7 +23,6 @@ function layerProperty(property: CalendarDaysProperty): DayLayerProperty {
   return { currency: property.currency, timezone: property.timezone, mirrored: property.mirrored, days };
 }
 
-/** The layer of a read; `undefined` while nothing was read (or the read is not to be drawn). */
 export function toDayLayer(response: CalendarDaysResponse | undefined): DayLayer | undefined {
   if (!response) return undefined;
   return new Map(response.properties.map((property) => [property.propertyId, layerProperty(property)] as const));
@@ -55,23 +52,18 @@ function numberFormat(language: string, currency: string, whole: boolean, words:
   return format;
 }
 
-/** The price of a night in the currency of the property: whole units without decimals when the cents are zero ("120 €", "120,50 €"). */
 export function formatDayPrice(cents: number, currency: string, language: string): string {
   return numberFormat(language, currency, cents % 100 === 0, false).format(cents / 100);
 }
 
-/** The same price in words for a screen reader ("120 euro"). */
 export function dayPriceWords(cents: number, currency: string, language: string): string {
   return numberFormat(language, currency, cents % 100 === 0, true).format(cents / 100);
 }
 
-/** At the zoom of a month the cell is too narrow for more than the price. */
 export const FULL_CELL_MAX_ZOOM = 14;
 
-/** What a free night of the future shows in its cell: the price and, from two nights, the minimum stay. */
 export interface DayCellText {
   price: string;
-  /** The minimum stay when it is two nights or more, else `null`; never at the zoom of a month. */
   minNights: number | null;
 }
 
@@ -82,10 +74,8 @@ export function dayCellText(day: CalendarDayInfo, currency: string, language: st
   };
 }
 
-/** The night is over: a day before today of the calendar. */
 export const isPastDay = (day: string, today: string): boolean => day < today;
 
-/** Whether the night shows a price: it is not past and not taken (a taken night shows its booking only). */
 export function showsPrice(day: CalendarDayInfo | undefined, date: string, today: string): day is CalendarDayInfo {
   return day !== undefined && !isPastDay(date, today) && !day.taken;
 }
@@ -99,10 +89,6 @@ interface DayLabelInput {
   info?: CalendarDayInfo;
 }
 
-/**
- * The name of a day in words: "12 settembre, Appartamento X, 120 euro, minimo 2 notti, arrivi chiusi" (a screen reader gets what the eyes get). A past day and a
- * taken night say that and no price.
- */
 export function dayLabel({ date, propertyName, today, language, currency, info }: DayLabelInput, t: TFunction): string {
   const parts = [formatStayDate(date, language, { day: 'numeric', month: 'long' }), propertyName];
   if (isPastDay(date, today)) {

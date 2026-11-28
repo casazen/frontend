@@ -27,7 +27,6 @@ vi.mock('@/api/owner-accounting.api', () => ({ ownerAccountingApi: { getTaxRecon
 vi.mock('@/lib/file-download', () => ({ saveBlobAs: saved, withJsonErrorBody: async (error: unknown) => error }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: workspace.contexts }) }));
 vi.mock('@/hooks/use-agency-plan', () => ({ useAgencyPlan: planHook }));
-// The month the page opens on: November 2026, whatever the day the tests run.
 vi.mock('@/lib/stay-dates', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/stay-dates')>()), todayInRome: () => '2026-11-12' }));
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title, action }: { title: string; action?: ReactNode }) => createElement('div', null, createElement('h1', null, title), action),
@@ -114,7 +113,6 @@ describe('the withholding page asks the role before it reads anything (agency.wi
     expect(api.getSummary).not.toHaveBeenCalled();
     expect(api.getTaxReconciliation).not.toHaveBeenCalled();
     expect(api.getF24).not.toHaveBeenCalled();
-    // The plan is read from an endpoint of the billing administrator: for anyone else it is not even asked.
     expect(planHook).not.toHaveBeenCalled();
   });
 });
@@ -131,7 +129,6 @@ describe('what the page shows is what the server has, in euro, and opening it ma
     expect(within(f24).getByTestId('f24-amount')).toHaveTextContent(/100,25\s*€/);
     expect(within(f24).getByTestId('f24-tax-code')).toHaveTextContent('1919');
     expect(within(f24).getByTestId('f24-due-date')).toHaveTextContent('16');
-    // Not paid until the person registers it: the page says so, it does not guess.
     expect(within(f24).getByTestId('f24-unpaid')).toHaveTextContent('Pagamento non ancora registrato');
     expect(within(f24).queryByTestId('f24-paid')).not.toBeInTheDocument();
     expect(api.getSummary).toHaveBeenCalledWith(11, 2026);
@@ -226,7 +223,6 @@ describe('registering the payment of the F24 cannot be undone, and it is the adm
   it('F24Card_Record_NeedsADayAndAConfirmationNamingTheF24_TheAmountAndTheDay_BeforeAnythingIsSent', async () => {
     renderPage();
     const f24 = await screen.findByTestId('f24-card');
-    // No day, no button.
     expect(within(f24).getByTestId('f24-record-payment')).toBeDisabled();
 
     const dialog = await openThePaymentConfirmation();
@@ -255,7 +251,6 @@ describe('registering the payment of the F24 cannot be undone, and it is the adm
     const paid = await screen.findByTestId('f24-paid');
     expect(paid).toHaveTextContent('Pagamento registrato dall\'amministratore');
     expect(paid).toHaveTextContent('CasaZen non verifica il versamento');
-    // Registered: the form is gone, it cannot be registered twice from here.
     expect(screen.queryByTestId('f24-payment')).not.toBeInTheDocument();
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });

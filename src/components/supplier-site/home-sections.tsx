@@ -10,10 +10,8 @@ import { Reveal } from './reveal';
 import { SectionHead } from './section-head';
 import { ServiceCard } from './service-card';
 
-/** How many cards the home shows; the list of all the services is a page of its own. */
 const HOME_SERVICES = 6;
 
-/** The published services with the price they start from (the bookings flag is on). */
 export function ServicesSection({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
   const shown = (model.services ?? []).slice(0, HOME_SERVICES);
@@ -44,7 +42,6 @@ export function ServicesSection({ model }: { model: SiteModel }) {
   );
 }
 
-/** What the supplier does, by category: the block that stands in for the list of services while the list is not public. */
 export function CategoriesSection({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
   return (
@@ -66,7 +63,6 @@ export function CategoriesSection({ model }: { model: SiteModel }) {
   );
 }
 
-/** Who the supplier is, in its own words (the "chi siamo" it wrote, else the text of its profile) and its strengths. */
 export function AboutSection({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
   return (
@@ -103,7 +99,6 @@ export function AboutSection({ model }: { model: SiteModel }) {
   );
 }
 
-/** The days of the next two weeks the supplier saved an availability for: all that is known of its calendar without the list of services. */
 export function DaysSection({ model }: { model: SiteModel }) {
   const { t, i18n } = useTranslation();
   const free = model.availability.filter((day) => day.available).length;

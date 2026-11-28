@@ -8,7 +8,6 @@ import type { GuideTool } from './advice-catalogue';
 import { ConcordatoRangeCheck } from './concordato-range-check';
 
 interface GuideToolDialogProps {
-  /** The tool to show; `null` keeps the window closed. */
   tool: GuideTool | null;
   lease: LeaseDetail;
   /** What the landlord answered in «Affina la stima»: held by the guide, so that its summary line and the window say the same. */

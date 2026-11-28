@@ -3,20 +3,13 @@ import { useTranslation } from 'react-i18next';
 
 interface MapClusterProps {
   count: number;
-  /** Position in percent of the frame and shift in px, like a pin. */
   x: number;
   y: number;
   dx?: number;
   dy?: number;
-  /** Brings the map closer to the houses of the group. */
   onZoom: () => void;
 }
 
-/**
- * Several houses that would sit on top of each other at this zoom: one bubble with their number, a button that brings the map
- * closer to them. The houses are all in the list of the page and appear as pins as soon as the map is closer, or when one of
- * them is selected from the list.
- */
 export function MapCluster({ count, x, y, dx = 0, dy = 0, onZoom }: MapClusterProps) {
   const { t } = useTranslation();
   return (

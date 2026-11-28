@@ -21,19 +21,15 @@ import {
 } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
 
-/** The anomalies shown before «Mostra tutte»: a month with many is not a wall of them. */
 const VISIBLE_ANOMALIES = 5;
 
 interface CloseReadinessPanelProps {
   readiness: OwnerCloseReadiness;
   summary: CloseSummary;
   period: Period;
-  /** The names of the owners by id (the registry). */
   names: ReadonlyMap<string, string>;
-  /** «Controlla il mese»: posts the ledger lines of the month from their sources, then reads the readiness again. */
   onPost: () => void;
   posting: boolean;
-  /** Opens the dialog that resolves an issue (an exchange rate, a manual correction): the page owns the dialogs. */
   onFix: (issue: OwnerReadinessIssue, action: Extract<IssueAction, { kind: 'fx' | 'correction' }>) => void;
 }
 
@@ -148,14 +144,12 @@ function AnomalyRow({ group, names, period, onPost, posting, onFix }: AnomalyRow
 
 interface ActionEnv {
   t: ReturnType<typeof useTranslation>['t'];
-  /** The month being closed: the page of an owner's data opens knowing it. */
   period: Period;
   onPost: () => void;
   posting: boolean;
   onFix: CloseReadinessPanelProps['onFix'];
 }
 
-/** The button or the link that resolves an anomaly: it opens the dialog or the page where the fact is fixed. Never a button that fixes it behind the person's back. */
 function renderAction(action: IssueAction, group: AnomalyGroup, { t, period, onPost, posting, onFix }: ActionEnv) {
   switch (action.kind) {
     case 'post':
@@ -198,7 +192,6 @@ function renderAction(action: IssueAction, group: AnomalyGroup, { t, period, onP
     case 'regenerate':
     case 'prepare':
     case 'approve':
-      // The step is the button of the owner's row below: this line only points at it.
       return group.ownerId ? (
         <Button asChild size="sm" variant="outline">
           <a href={`#owner-${group.ownerId}`}>{t('ownerAccounting.anomalies.actions.row')}</a>

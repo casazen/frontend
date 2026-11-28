@@ -4,7 +4,6 @@
  */
 export interface QuesturaCredentialsStatus {
   configured: boolean;
-  /** When the credentials were last set (UTC ISO string); null when not configured. */
   configuredAt: string | null;
 }
 
@@ -16,7 +15,6 @@ export interface SetQuesturaCredentialsRequest {
   apartmentId?: number;
 }
 
-/** Maximum lengths accepted by the API (PropertyQuesturaCredentials.Max*Length). */
 export const QUESTURA_CREDENTIALS_MAX_LENGTH = {
   username: 100,
   password: 200,

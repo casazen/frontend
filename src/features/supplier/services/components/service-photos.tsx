@@ -17,12 +17,6 @@ interface ServicePhotosProps {
   onConflict?: () => void;
 }
 
-/**
- * The photos of a saved service, on the real endpoints: a photo goes up with `POST …/photos` (all or none), the order and the
- * removal are a save of the photos to keep (`PUT` with `photoUrls`), on the service as the server has it (what is typed in the
- * form and not saved is not saved by a photo). The first photo is the cover. Removing asks first: a removed photo cannot be
- * put back, the API only keeps the ones the service already has.
- */
 export function ServicePhotos({ service, onConflict }: ServicePhotosProps) {
   const { t } = useTranslation();
   const upload = useUploadSupplierServicePhotos();
@@ -30,7 +24,6 @@ export function ServicePhotos({ service, onConflict }: ServicePhotosProps) {
   const [problem, setProblem] = useState<string | null>(null);
   const [toRemove, setToRemove] = useState<string | null>(null);
   const list = useRef<PhotoListHandle>(null);
-  /** Where in the list the photo that is being removed was: once the dialog has closed the focus goes to its neighbor. */
   const removedAt = useRef<number | null>(null);
   const busy = upload.isPending || update.isPending;
 
@@ -97,7 +90,6 @@ export function ServicePhotos({ service, onConflict }: ServicePhotosProps) {
           removedAt.current = toRemove === null ? null : service.photoUrls.indexOf(toRemove);
           return keep(service.photoUrls.filter((url) => url !== toRemove));
         }}
-        // The button that opened the dialog is gone with its photo: the focus goes to the photo that took its place.
         onCloseAutoFocus={(event) => {
           const index = removedAt.current;
           removedAt.current = null;

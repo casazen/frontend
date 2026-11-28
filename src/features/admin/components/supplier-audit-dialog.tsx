@@ -17,7 +17,6 @@ const AUDIT_DATE_TIME: Intl.DateTimeFormatOptions = {
   minute: '2-digit',
 };
 
-/** The audit trail of a supplier: who suspended or reactivated it, when and why (SU-12). */
 export function SupplierAuditDialog({ supplier, onClose }: { supplier: AdminSupplier; onClose: () => void }) {
   const { t, i18n } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useSupplierAudit(supplier.orgId);

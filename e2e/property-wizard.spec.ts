@@ -194,7 +194,6 @@ test.describe('Add property wizard', () => {
     await expect(page.getByTestId('property-wizard-show-on-site')).toBeDisabled();
     await expect(page.getByTestId('property-wizard-finish')).toHaveText(/Finisci dopo/);
 
-    // Saved on its own, what is missing is read again: nothing blocks, the terms appear and the button changes.
     await page.locator('#property-wizard-cin').fill('IT-058091-C2-7G5FFZDZ');
     await page.getByTestId('property-wizard-cin-save').click();
     await expect(page.getByTestId('property-wizard-missing-none')).toBeVisible();
@@ -209,7 +208,6 @@ test.describe('Add property wizard', () => {
     expect(state.completeCalls).toBe(1);
     await expect(page.getByTestId('wizard-done-primary')).toContainText('Apri il calendario');
 
-    // «Aggiungi un altro immobile» is a new wizard: its first step is empty and its first «Continua» creates, it does not save over this one.
     await page.getByTestId('wizard-done-secondary').click();
     await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'base');
     await expect(page.getByLabel("Nome dell'immobile", { exact: true })).toHaveValue('');
@@ -230,7 +228,6 @@ test.describe('Add property wizard', () => {
     await expect(page.getByRole('heading', { name: /Casa Procedura.*è salvato/ })).toBeVisible();
     expect(state.completeCalls).toBe(0);
     expect(state.senderSaved).toBe(false);
-    // What is missing is listed with the button that goes where it is fixed.
     await page.getByTestId('property-wizard-done-fix-cin').click();
     await expect(page).toHaveURL(/step=finish/);
     await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'finish');

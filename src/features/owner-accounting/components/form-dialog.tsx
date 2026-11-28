@@ -10,20 +10,14 @@ interface FormDialogProps {
   title: string;
   description?: string;
   submitLabel: string;
-  /** The write is on its way: the button is busy and the form is not sent twice. */
   pending?: boolean;
   submitDisabled?: boolean;
-  /** Why the server refused, in words: the dialog stays open with it. */
   error?: string | null;
   onSubmit: () => void | Promise<void>;
   testId: string;
   children: ReactNode;
 }
 
-/**
- * A dialog that is one form: the fields, the reason a write was refused, «Annulla» and the button. The form is not sent from the page around it
- * (the event stops here: a dialog drawn in a portal still bubbles to the parents of its component), and it is a form so Enter sends it.
- */
 export function FormDialog({ open, onOpenChange, title, description, submitLabel, pending = false, submitDisabled = false, error, onSubmit, testId, children }: FormDialogProps) {
   const { t } = useTranslation();
 

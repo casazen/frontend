@@ -37,10 +37,8 @@ import { Mark, OwnerReadinessTable, PropertyShareList, ReadyMark, ReasonLine } f
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** How many properties and owners the outcome card names before it says «and N more»: the phases below hold the whole list. */
 const OUTCOME_LIST_LIMIT = 4;
 
-/** The summary path of the plan, where the traffic light of the flows of the properties is. */
 const PLAN_SUMMARY_PATH = `${ONBOARDING_PLAN_PATH}/summary`;
 
 interface OutcomesProps {
@@ -135,7 +133,6 @@ interface PhaseProps {
   children: ReactNode;
 }
 
-/** One of the four phases: its number and title, where it stands in words, what it is for and its content. The first one to complete is the highlighted block. */
 function Phase({ phase, index, state, highlighted, children }: PhaseProps) {
   const { t } = useTranslation();
   const headingId = useId();
@@ -186,7 +183,6 @@ export function OwnerOnboardingPage() {
   const readiness = useOwnerReadiness(allowed);
   const plan = useOnboardingPlan({ enabled: allowed });
 
-  // The agency plan is off (the flag, or the plan of this org): this step does not exist, and the plan is where the person was.
   if (!flags.agencyTier || (!orgLoading && !isAgency)) return <Navigate to={ONBOARDING_PLAN_PATH} replace />;
 
   // An error of a read comes before the data it leaves in memory when it is a 404: «not found», whatever an older answer was (the module is off). Any other failure of the
@@ -286,8 +282,6 @@ export function OwnerOnboardingPage() {
                     owners={report.owners}
                     dimensions={['ownership', 'mandate']}
                     properties={report.properties}
-                    // The mandate is completed in «Dati finanziari», which the table of the third phase leads to only for the fiscal and payment facts: an owner with nothing but the
-                    // mandate missing would have no way there. The shares are not completed there (the file puts them right), so they have no link.
                     canComplete={['mandate']}
                     allReadyLabel={t('ownerOnboarding.table.mandateAllReady')}
                     testId="owner-mandate-table"

@@ -27,7 +27,6 @@ import { swissSetup } from './billing-fixtures';
 const TODAY = '2026-11-15';
 const NOBODY = { vatNumber: false, fiscalCode: false };
 
-/** An organization that sends every month, on the 5th, two folders, to an address. */
 const SAVED: AccountantPackageSettings = {
   enabled: true,
   email: 'studio@esempio.it',
@@ -37,7 +36,6 @@ const SAVED: AccountantPackageSettings = {
   updatedAt: '2026-11-14T10:00:00Z',
 };
 
-/** What the server answers for an organization that saved nothing: no address, the send off, the day 3 and every folder. */
 const NONE: AccountantPackageSettings = { enabled: false, email: null, sendDay: 3, contents: [...ACCOUNTANT_PACKAGE_FOLDERS], lastSend: null, updatedAt: null };
 
 function values(overrides: Partial<BillingWizardValues> = {}): BillingWizardValues {
@@ -83,7 +81,6 @@ describe('what a save of the step sends (accountantChange)', () => {
   it('AccountantChange_NothingTouchedOrNothingReadable_SavesNothing', () => {
     expect(accountantChange(SAVED, values(), 'whole')).toEqual({ request: null, leftOut: [] });
     expect(accountantChange(SAVED, values(), 'draft')).toEqual({ request: null, leftOut: [] });
-    // The settings could not be read (403, an error, still on their way): nothing can be saved, whatever the form holds.
     expect(accountantChange(null, values({ accountantEmail: 'altro@esempio.it' }), 'whole')).toEqual({ request: null, leftOut: [] });
     expect(accountantChange(undefined, values({ accountantEmail: 'altro@esempio.it' }), 'draft')).toEqual({ request: null, leftOut: [] });
   });
@@ -91,9 +88,7 @@ describe('what a save of the step sends (accountantChange)', () => {
   it('AccountantChange_AnAddressAndTheMonthlySend_SendTheWholeSettingsWithTheAddressCutAtItsEnds', () => {
     const change = accountantChange(NONE, values({ accountantEmail: '  studio@esempio.it ', accountantMonthly: true }), 'whole');
     expect(change.leftOut).toEqual([]);
-    // All the settings go together (the server refuses a body with a field missing): the day and the folders are the server's own.
     expect(change.request).toEqual({ enabled: true, email: 'studio@esempio.it', sendDay: 3, contents: [...ACCOUNTANT_PACKAGE_FOLDERS] });
-    // A copy: nothing the request holds is the list of the settings the server answered.
     expect(change.request?.contents).not.toBe(NONE.contents);
   });
 
@@ -118,9 +113,7 @@ describe('what a save of the step sends (accountantChange)', () => {
   });
 
   it('AccountantChange_AWholeSaveThatDoesNotHoldTogether_IsRefusedAndSaysWhichSettingsAreWrong', () => {
-    // The send on with no address to send it to.
     expect(accountantChange(NONE, values({ accountantMonthly: true }), 'whole')).toEqual({ request: null, leftOut: ['accountantEmail'] });
-    // An address that is not a plain one, a day that not every month has, no folder at all.
     expect(accountantChange(SAVED, values({ accountantEmail: 'Mario <mario@esempio.it>', accountantDay: 29, accountantContents: [] }), 'whole')).toEqual({
       request: null,
       leftOut: ['accountantEmail', 'accountantDay', 'accountantContents'],
@@ -128,26 +121,21 @@ describe('what a save of the step sends (accountantChange)', () => {
   });
 
   it('AccountantChange_ADraft_KeepsWhatHoldsTogetherAndLeavesTheRestOut', () => {
-    // The address is not a plain one: it is left out, the day is kept.
     expect(accountantChange(SAVED, values({ accountantEmail: 'non-un-indirizzo', accountantDay: 10 }), 'draft')).toEqual({
       request: { enabled: true, email: 'studio@esempio.it', sendDay: 10, contents: ['guestDocuments', 'collections'] },
       leftOut: ['accountantEmail'],
     });
-    // The same draft, whole, is refused as a whole.
     expect(accountantChange(SAVED, values({ accountantEmail: 'non-un-indirizzo', accountantDay: 10 }), 'whole').request).toBeNull();
   });
 
   it('AccountantChange_ADraftOfTheSendOnWithNoAddress_NeverTurnsItOn', () => {
     expect(accountantChange(NONE, values({ accountantMonthly: true }), 'draft')).toEqual({ request: null, leftOut: ['accountantMonthly'] });
-    // Not even next to an address that is not a plain one.
     expect(accountantChange(NONE, values({ accountantMonthly: true, accountantEmail: 'studio' }), 'draft')).toEqual({ request: null, leftOut: ['accountantEmail', 'accountantMonthly'] });
-    // With an address that is valid the two go together.
     expect(accountantChange(NONE, values({ accountantMonthly: true, accountantEmail: 'studio@esempio.it' }), 'draft').request).toMatchObject({ enabled: true, email: 'studio@esempio.it' });
   });
 
   it('AccountantChange_ADraftThatEmptiesTheAddressWhileTheSendStaysOn_LeavesTheEmptyingOut', () => {
     expect(accountantChange(SAVED, values({ accountantEmail: '' }), 'draft')).toEqual({ request: null, leftOut: ['accountantEmail'] });
-    // With the send turned off in the same draft the address may go.
     expect(accountantChange(SAVED, values({ accountantEmail: '', accountantMonthly: false }), 'draft')).toEqual({
       request: { enabled: false, email: null, sendDay: 5, contents: ['guestDocuments', 'collections'] },
       leftOut: [],
@@ -195,7 +183,6 @@ describe('what the step holds together (accountantProblems, the schema)', () => 
     const good = { email: 'studio@esempio.it', enabled: true, sendDay: 28, contents: ['vat'] };
     expect(accountantProblems(good)).toEqual([]);
     expect(accountantProblems({ ...good, email: 'studio' })).toEqual([{ field: 'accountantEmail', messageKey: 'billingWizard.errors.accountantEmail' }]);
-    // A blank address is no address: the monthly send has nowhere to go (and an address that is blank is not «not a plain address»).
     expect(accountantProblems({ ...good, email: '   ' })).toEqual([{ field: 'accountantEmail', messageKey: 'billingWizard.errors.accountantEmailMissing' }]);
     expect(accountantProblems({ ...good, email: '', enabled: false })).toEqual([]);
     expect(accountantProblems({ ...good, sendDay: 0 })).toEqual([{ field: 'accountantDay', messageKey: 'billingWizard.errors.accountantDay' }]);
@@ -212,7 +199,6 @@ describe('what the step holds together (accountantProblems, the schema)', () => 
       sendDay: 9,
       contents: ['vat'],
     });
-    // The settings of an organization that has none: no address.
     expect(accountantAnswersOf(NONE, values()).email).toBe('');
   });
 
@@ -228,12 +214,10 @@ describe('what the step holds together (accountantProblems, the schema)', () => 
     expect(turnedOn.success).toBe(false);
     if (!turnedOn.success) expect(turnedOn.error.issues.map((issue) => [issue.path.join('.'), issue.message])).toEqual([['accountantEmail', 'billingWizard.errors.accountantEmailMissing']]);
     expect(accountantStepSchema(NONE).safeParse(values({ accountantMonthly: true, accountantEmail: 'studio@esempio.it' })).success).toBe(true);
-    // The server already has an address: turning the send on is enough.
     expect(accountantStepSchema({ ...SAVED, enabled: false }).safeParse(values({ accountantMonthly: true })).success).toBe(true);
   });
 });
 
-// Permission rule: the five folders that carry the owner accounting are chosen only by the administrator of an agency (the backend refuses them from anyone else on an agency's organization).
 describe('the folders this person may choose (accountantFoldersFor, accountantSettingsFor)', () => {
   const NOT_THE_OWNER_ACCOUNTING = ['guestDocuments', 'touristTax', 'collections'];
 
@@ -248,17 +232,14 @@ describe('the folders this person may choose (accountantFoldersFor, accountantSe
     expect(NONE.contents).toHaveLength(ACCOUNTANT_PACKAGE_FOLDERS.length);
     expect(accountantSettingsFor(null, false)).toBeNull();
     expect(accountantSettingsFor(undefined, true)).toBeNull();
-    // A folder the app does not know (the server is newer) is kept: the app cannot tell it from one it may send.
     expect(accountantSettingsFor({ ...NONE, contents: ['statements', 'a_folder_of_the_future'] }, false)?.contents).toEqual(['a_folder_of_the_future']);
   });
 
   it('AccountantChange_OnTheViewOfAPersonWhoMayNotChooseThem_NeverSendsAnOwnerFolder_WholeOrDraft', () => {
     const view = accountantSettingsFor(NONE, false);
     const typed = values({ accountantEmail: 'studio@esempio.it' });
-    // The server holds every folder (its default): what is sent holds the three this person sees.
     expect(accountantChange(view, typed, 'whole').request).toEqual({ enabled: false, email: 'studio@esempio.it', sendDay: 3, contents: NOT_THE_OWNER_ACCOUNTING });
     expect(accountantChange(view, typed, 'draft').request).toEqual({ enabled: false, email: 'studio@esempio.it', sendDay: 3, contents: NOT_THE_OWNER_ACCOUNTING });
-    // Nothing they see changed (the owner folders they cannot see are no change): nothing is sent.
     expect(accountantChange(view, values({ accountantMonthly: false }), 'whole').request).toBeNull();
   });
 
@@ -267,10 +248,8 @@ describe('the folders this person may choose (accountantFoldersFor, accountantSe
     expect(view?.contents).toEqual([]);
     expect(accountantChange(view, values({ accountantDay: 9 }), 'whole')).toEqual({ request: null, leftOut: ['accountantContents'] });
     expect(accountantStepSchema(view).safeParse(values({ accountantDay: 9 })).success).toBe(false);
-    // A draft sends no list with no folder either (the server refuses it): it leaves everything out and says so, whether or not the person emptied the folders themselves.
     expect(accountantChange(view, values({ accountantDay: 9 }), 'draft')).toEqual({ request: null, leftOut: ['accountantContents'] });
     expect(accountantChange(view, values({ accountantDay: 9, accountantContents: [] }), 'draft')).toEqual({ request: null, leftOut: ['accountantContents'] });
-    // With a folder chosen the draft goes.
     expect(accountantChange(view, values({ accountantDay: 9, accountantContents: ['collections'] }), 'draft').request).toEqual({
       enabled: true,
       email: 'studio@esempio.it',
@@ -292,7 +271,6 @@ describe('what the server refuses in the settings of the send', () => {
   });
 
   it('AccountantProblemsOf_AnythingElse_NamesNoField', () => {
-    // A code that names no field (the whole save is refused), a status that is not 422, a body that has no code, a code that is a property of every object, and what is no error of axios.
     expect(accountantProblemsOf(problem(422, { code: 'accountant_package_settings_invalid' }))).toEqual([]);
     expect(accountantProblemsOf(problem(400, { code: 'accountant_package_recipient_invalid' }))).toEqual([]);
     expect(accountantProblemsOf(problem(422, {}))).toEqual([]);

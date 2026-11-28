@@ -16,11 +16,6 @@ export function getNavTabLabel(entry: RouteManifestEntry, t: TFunction): string 
   return entry.navTabKey ? t(entry.navTabKey) : getNavLabel(entry, t);
 }
 
-/**
- * The name an entry has in the bottom bar of the phone: the shorter one (`navBarKey`) when the name of the menu does not fit a
- * column, or `null` when the bar shows the name of the menu. An entry with a counter keeps its name: the name and the counter
- * are read together.
- */
 export function getNavBarLabel(entry: RouteManifestEntry, t: TFunction): string | null {
   return entry.navBarKey && !entry.navCount ? t(entry.navBarKey) : null;
 }
@@ -53,7 +48,6 @@ const NAV_COUNT_LABELS: Record<NavCountKey, { labelKey: string }> = {
   messages: { labelKey: 'nav.count.messages' },
 };
 
-/** What a screen reader says for the counter of an entry, e.g. "2 richieste da approvare". */
 export function getNavCountLabel(key: NavCountKey, count: number, t: TFunction): string {
   return t(NAV_COUNT_LABELS[key].labelKey, { count });
 }

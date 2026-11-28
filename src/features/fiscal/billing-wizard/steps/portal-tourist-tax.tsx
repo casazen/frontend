@@ -7,18 +7,10 @@ import type { BillingSetupSection, PortalTouristTaxComune } from '@/types';
 import { comuneNamesOf, portalComuniFailureOf, type ItalianTouristTaxView, type PortalComuniChange, type PortalComuniFailure } from '../billing-wizard-model';
 import { PORTAL_SOURCES } from '../billing-wizard-schema';
 
-/** What the block needs of the page. */
 export interface PortalTouristTaxProps {
-  /** What the setup says of the portals that collect the tourist tax in the Italian comuni (`italianTouristTaxOf`). */
   view: ItalianTouristTaxView;
-  /**
-   * The confirmation of the portals (`PUT api/billing-setup/touristTax/portal-comuni`), which the page owns: it knows when a request of the wizard is on its way. It takes what the person did
-   * and makes the whole list itself, from the setup read again just before the call: what this block shows may be old, and a list made from it could take confirmations away.
-   */
   confirm: UseMutationResult<BillingSetupSection, unknown, PortalComuniChange>;
-  /** A request of the wizard is on its way (this one included): every button of the block waits for it. */
   busy: boolean;
-  /** The server said the reach of the person is only some of the properties: the wizard turns read-only, as it does for every other save. */
   onRefused: () => void;
 }
 
@@ -27,10 +19,8 @@ interface PortalTouristTaxBlockProps extends PortalTouristTaxProps {
   properties: ReadonlyArray<{ city?: string | null; comuneIstatCode?: string | null }>;
 }
 
-/** What a pair is called in this block's state: the portal and the comune. */
 const keyOf = (pair: PortalTouristTaxComune) => `${pair.channel}|${pair.comuneIstat}`;
 
-/** The id a pair has in the test ids: the portal and the six digits of the comune. */
 const idOf = (pair: PortalTouristTaxComune) => `${pair.channel}-${pair.comuneIstat}`;
 
 /**
@@ -43,9 +33,7 @@ const idOf = (pair: PortalTouristTaxComune) => `${pair.channel}-${pair.comuneIst
  */
 export function PortalTouristTax({ view, properties, confirm, busy, onRefused }: PortalTouristTaxBlockProps) {
   const { t } = useTranslation();
-  // «Non ora» is a thing of this visit to the step: nothing is sent and nothing is kept, so the question comes back the next time the step opens.
   const [deferred, setDeferred] = useState<ReadonlySet<string>>(() => new Set());
-  // The names of the comuni of the proposals the person confirmed: the server stops proposing a confirmed pair, and its comune must still be named.
   const [remembered, setRemembered] = useState<ReadonlyMap<string, string>>(() => new Map());
   const [sending, setSending] = useState<string | null>(null);
   const [attempt, setAttempt] = useState<{ change: PortalComuniChange; comune: string } | null>(null);
@@ -56,7 +44,6 @@ export function PortalTouristTax({ view, properties, confirm, busy, onRefused }:
   const names = comuneNamesOf(properties, view.proposals, remembered);
   const comuneOf = (code: string) => names.get(code) ?? code;
   const portalOf = (channel: string) => ((PORTAL_SOURCES as readonly string[]).includes(channel) ? t(`booking.source.${channel}`) : channel);
-  // Every button waits for the request in flight, and the one that sent it says so: nothing is sent twice and nothing is sent over another answer.
   const locked = busy || sending !== null;
 
   const send = async (change: PortalComuniChange, comune: string) => {
@@ -68,11 +55,9 @@ export function PortalTouristTax({ view, properties, confirm, busy, onRefused }:
     setSending(keyOf(target));
     if ('add' in change) setRemembered((previous) => new Map(previous).set(target.comuneIstat, comune));
     try {
-      // The mutation reads the setup again and makes the whole list from that reading: it can say «not sent», and «Riprova» reads again.
       await confirm.mutateAsync(change);
       setDone({ kind: 'add' in change ? 'confirmed' : 'removed', comune });
     } catch (error) {
-      // The failure is told below, in its own words: nothing is claimed as saved.
       const kind = portalComuniFailureOf(error);
       setFailure(kind);
       if (kind === 'wholeOrg') onRefused();
@@ -106,7 +91,6 @@ export function PortalTouristTax({ view, properties, confirm, busy, onRefused }:
     }
   };
 
-  // Nothing to ask, nothing confirmed, no hint, nothing that just happened: the step is what it was.
   if (!view.conflict && view.proposals.length === 0 && confirmed.length === 0 && failure === null && done === null) return null;
 
   return (
@@ -115,7 +99,6 @@ export function PortalTouristTax({ view, properties, confirm, busy, onRefused }:
         {t('billingWizard.touristTax.italy.portals.title')}
       </h3>
 
-      {/* A calm hint, once: no alert and no «Da fare». What it points at is the confirmed portals and the questions below it. */}
       {view.conflict ? (
         <p className="text-sm text-foreground/80" data-testid="billing-portal-tax-conflict">
           {t('billingWizard.touristTax.italy.portals.hint')}
@@ -200,7 +183,6 @@ export function PortalTouristTax({ view, properties, confirm, busy, onRefused }:
         </div>
       ) : null}
 
-      {/* What happened, only once the server has said so: the answer that was saved, never a success that nobody confirmed. */}
       {done ? (
         <p role="status" className="text-sm font-medium" data-testid="billing-portal-done">
           {done.kind === 'confirmed'

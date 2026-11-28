@@ -5,10 +5,6 @@ import { SkeletonCard } from '@/components/ui/skeleton';
 import { useSupplierChecklist } from '@/queries/supplier/use-inbox';
 import { checklistSteps } from './home-model';
 
-/**
- * "Prossimo passo": the one guide of the home, the activation checklist in a line with how far it is and the step to take next. It
- * is read from what the supplier really did (`GET checklist`), and it goes away when every step is done.
- */
 export function NextStepSection() {
   const { t } = useTranslation();
   const query = useSupplierChecklist();

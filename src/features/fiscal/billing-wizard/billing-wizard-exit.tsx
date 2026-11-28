@@ -32,7 +32,6 @@ interface BillingWizardExitProps {
    * nothing typed is lost.
    */
   onSaveAndExit: (values: BillingWizardValues, stepId: string) => Promise<boolean>;
-  /** A request of the person is on its way (the save of a step, the application of the mandate): the way out waits for it. */
   disabled?: boolean;
 }
 

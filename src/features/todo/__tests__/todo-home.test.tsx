@@ -17,7 +17,6 @@ function todo(overrides: Partial<TodoActivity> & { id: string }): TodoActivity {
   };
 }
 
-/** The array of the server: the first is the most urgent, and the later ones are not sorted again by the Home. */
 const LIST: TodoActivity[] = [
   todo({ id: 'one', activityType: 'AlloggiatiDeadline', action: 'UploadAlloggiatiProof', urgency: 'High', dueAt: '2000-01-01T10:00:00Z' }),
   todo({ id: 'two', activityType: 'ReceiptToRetrieve', action: 'UploadAlloggiatiProof', urgency: 'Low', dueAt: '2099-01-10T10:00:00Z', propertyId: 'p-2' }),

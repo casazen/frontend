@@ -6,16 +6,12 @@ import { cn } from '@/lib/utils';
 export interface ServicePreviewCardProps {
   name: string;
   summary: string;
-  /** The category as the customers read it ("Pulizie"). */
   categoryLabel?: string;
-  /** "da 45 € a intervento" or "Su preventivo": what `formatPrice` says. */
   priceLabel: string;
-  /** "2 h". */
   durationLabel: string;
   /** The supplier declared that the prices include VAT. Only then the card says so: nothing is promised otherwise. */
   includesVat: boolean;
   supplementCount: number;
-  /** The cover photo, if the service has one. */
   photoUrl?: string | null;
   className?: string;
 }

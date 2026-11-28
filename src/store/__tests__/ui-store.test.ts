@@ -51,7 +51,6 @@ describe('ui store (UI-04a)', () => {
   });
 
   it('UiStore_SetSidebarOpen_OpensAndClosesThePhoneSheet', () => {
-    // The menu button of the header, which used to toggle it, is gone (UI-05): the bar of the phone opens the sheet.
     useUiStore.getState().setSidebarOpen(true);
     expect(useUiStore.getState().sidebarOpen).toBe(true);
     useUiStore.getState().setSidebarOpen(false);
@@ -70,7 +69,6 @@ describe('ui store (UI-04a)', () => {
   });
 
   it('UiStore_OpenWizards_CountsTheWizardsOnScreenSoThatOneLeavingDoesNotHideAnother', () => {
-    // The popup alerts wait while the count is above zero (ADR-025-R7).
     const before = useUiStore.getState().openWizards;
 
     useUiStore.getState().wizardOpened();

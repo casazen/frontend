@@ -24,7 +24,6 @@ vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: (context: string, permission: string) => workspace.permissions.includes(`${context}:${permission}`) }),
 }));
 
-// The rows of the list of the properties as the API sends them: no currency (`PropertyResponse` has none). The currency of each property is in its cleaning setup.
 const PROPERTIES = [
   { id: 'p1', name: 'Casa Mare', city: 'Lugano', comuneIstatCode: null },
   { id: 'p2', name: 'Casa Monti', city: 'Locarno', comuneIstatCode: null },
@@ -35,7 +34,6 @@ const PROPERTIES = [
 
 const CURRENCIES: Record<string, string> = { p1: 'CHF', p2: 'CHF', p3: 'EUR', p4: 'EUR', p5: 'EUR' };
 
-/** What `GET cleaning-setup` answers for a property that has none: the defaults, with the currency of the property. */
 function setupOf(propertyId: string, overrides: Partial<PropertyCleaningSetup> = {}): PropertyCleaningSetup {
   return {
     propertyId,
@@ -96,14 +94,12 @@ function renderDialog(props: { routineLink?: boolean } = {}) {
   return { onOpenChange, client };
 }
 
-/** Chooses a property once the server has said its currency: its box is on only from then. */
 async function choose(propertyId: string) {
   const box = await screen.findByTestId(`bulk-cleaning-property-${propertyId}`);
   await waitFor(() => expect(box).toBeEnabled());
   fireEvent.click(box);
 }
 
-/** Chooses two properties in francs and a member of the staff, with a price: the form of the dialog filled in. */
 async function fillTheForm() {
   await choose('p1');
   await choose('p2');
@@ -142,7 +138,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
     await fillTheForm();
     fireEvent.click(screen.getByTestId('bulk-cleaning-save'));
 
-    // The price goes with the currency of the properties chosen (the one their setups say), and every property is named.
     await waitFor(() => expect(propertyCleaningApi.saveBulk).toHaveBeenCalledTimes(1));
     expect(propertyCleaningApi.saveBulk).toHaveBeenCalledWith({
       cleanerKind: 'Staff',
@@ -200,7 +195,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
     expect(await screen.findByTestId('bulk-cleaning-all-saved')).toHaveTextContent('tutti e 2 gli immobili');
     expect(screen.queryByTestId('bulk-cleaning-some-failed')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bulk-cleaning-retry-failed')).not.toBeInTheDocument();
-    // The routine that makes the cleanings is the next step, told once the cleaners are saved.
     expect(screen.getByTestId('bulk-cleaning-routine-link')).toHaveAttribute('href', '/app/short-rent/automations');
   });
 
@@ -223,7 +217,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
 
       await choose('p1');
 
-      // The form is there, with the price in the currency the setup of the property says.
       expect(await screen.findByLabelText(/Prezzo concordato \(CHF\)/)).toBeInTheDocument();
       expect(screen.queryByTestId('bulk-cleaning-choose-first')).not.toBeInTheDocument();
       expect(screen.queryByTestId('bulk-cleaning-currency-state')).not.toBeInTheDocument();
@@ -235,7 +228,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
 
       await choose('p1');
 
-      // The price is in the currency of the property: one currency at a time, the other properties are set apart.
       await waitFor(() => expect(screen.getByTestId('bulk-cleaning-properties')).toHaveTextContent('in EUR: da impostare a parte'));
       expect(screen.getByTestId('bulk-cleaning-property-p3')).toBeDisabled();
       expect(screen.getByLabelText(/Prezzo concordato \(CHF\)/)).toBeInTheDocument();
@@ -263,11 +255,9 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       expect(alert).toHaveTextContent('Non riusciamo a leggere la valuta di 1 immobile');
       expect(screen.getByTestId('bulk-cleaning-properties')).toHaveTextContent('valuta non letta');
       expect(screen.getByTestId('bulk-cleaning-property-p2')).toBeDisabled();
-      // The others are not held back by it.
       await choose('p1');
       expect(await screen.findByLabelText(/Prezzo concordato \(CHF\)/)).toBeInTheDocument();
 
-      // Read again, it can be chosen.
       vi.mocked(propertyCleaningApi.get).mockImplementation(async (propertyId) => setupOf(propertyId));
       fireEvent.click(within(alert).getByRole('button', { name: 'Riprova' }));
       await waitFor(() => expect(screen.getByTestId('bulk-cleaning-property-p2')).toBeEnabled());
@@ -279,7 +269,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       await choose('p1');
       expect(await screen.findByLabelText(/Prezzo concordato \(CHF\)/)).toBeInTheDocument();
 
-      // The query keeps the old data on the error: the dialog must not use it.
       vi.mocked(propertyCleaningApi.get).mockRejectedValue(httpError(500));
       await client.refetchQueries({ queryKey: ['property-cleaning', 'p1'] });
 
@@ -287,7 +276,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       expect(screen.queryByLabelText(/Prezzo concordato/)).not.toBeInTheDocument();
       expect(screen.getByTestId('bulk-cleaning-save')).toBeDisabled();
       expect(screen.getByTestId('bulk-cleaning-properties')).toHaveTextContent('valuta non letta');
-      // What was chosen can still be taken out, so the person is never stuck.
       expect(screen.getByTestId('bulk-cleaning-property-p1')).toBeEnabled();
       fireEvent.click(screen.getByTestId('bulk-cleaning-property-p1'));
       expect(await screen.findByTestId('bulk-cleaning-choose-first')).toBeInTheDocument();
@@ -342,7 +330,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       );
       renderDialog();
 
-      // Two properties in euro, in the same comune: the private supplier is assigned to only the second property.
       await choose('p3');
       await choose('p4');
 
@@ -360,7 +347,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       await choose('p3');
       await screen.findByRole('option', { name: 'Pulizie Lago (copre 1 immobile)' });
 
-      // The query keeps the old list on the error: the dialog must not offer it.
       vi.mocked(fetchSuppliersByProperty).mockRejectedValue(httpError(500));
       await client.refetchQueries({ queryKey: ['suppliers', 'property', 'p3', 'cleaning'] });
 
@@ -369,7 +355,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
     });
 
     it('BulkCleaningDialog_ThreePropertiesInTwoComuni_ReadsEveryPropertyAndASupplierOfOneComuneCoversOneOfThree', async () => {
-      // Roma (two of the properties) is served by one supplier, Milano (the third) by another: neither covers all three.
       vi.mocked(fetchSuppliersByProperty).mockImplementation(
         async (propertyId) =>
           ({
@@ -387,7 +372,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
 
       await screen.findByRole('option', { name: 'Pulizie Milano (copre 1 immobile)' });
       expect(screen.getByRole('option', { name: 'Impresa Roma (copre 2 immobili)' })).toBeInTheDocument();
-      // Assignments may differ even when two properties share a comune.
       await waitFor(() => expect(fetchSuppliersByProperty).toHaveBeenCalledTimes(3));
       expect(fetchSuppliersByProperty).toHaveBeenCalledWith('p3', 'cleaning');
       expect(fetchSuppliersByProperty).toHaveBeenCalledWith('p5', 'cleaning');
@@ -396,7 +380,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
 
   describe('what the save replaces', () => {
     it('BulkCleaningDialog_PropertyThatHasACleanerAlready_IsNamedAndNothingIsSavedUntilThePersonSaysYes', async () => {
-      // «Casa Monti» has a cleaner and a price agreed already: the save would replace the whole of it.
       vi.mocked(propertyCleaningApi.get).mockImplementation(async (propertyId) =>
         propertyId === 'p2'
           ? setupOf(propertyId, { configured: true, cleanerKind: 'Staff', staffUserId: 'user-1', priceCents: 3000, active: true })
@@ -415,20 +398,17 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       await fillTheForm();
       fireEvent.click(screen.getByTestId('bulk-cleaning-save'));
 
-      // The question comes first, with the name of the property that would lose its setup, and nothing is saved.
       const confirm = await screen.findByTestId('bulk-cleaning-confirm');
       expect(confirm).toHaveTextContent("Per 1 immobile c'è già chi pulisce");
       expect(screen.getByTestId('bulk-cleaning-confirm-list')).toHaveTextContent('Casa Monti');
       expect(screen.getByTestId('bulk-cleaning-confirm-list')).not.toHaveTextContent('Casa Mare');
       expect(propertyCleaningApi.saveBulk).not.toHaveBeenCalled();
 
-      // Back: the form is as it was left, and still nothing is saved (the buttons of the question never submit the form).
       fireEvent.click(screen.getByTestId('bulk-cleaning-replace-back'));
       expect(await screen.findByTestId('bulk-cleaning-form')).toBeInTheDocument();
       expect(screen.getByTestId('bulk-cleaning-price')).toHaveValue('45');
       expect(propertyCleaningApi.saveBulk).not.toHaveBeenCalled();
 
-      // Yes: now it is saved.
       fireEvent.click(screen.getByTestId('bulk-cleaning-save'));
       fireEvent.click(await screen.findByTestId('bulk-cleaning-replace-confirm'));
       await waitFor(() => expect(propertyCleaningApi.saveBulk).toHaveBeenCalledTimes(1));
@@ -446,7 +426,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       });
       renderDialog();
 
-      // What the layer tells before anything is chosen: it replaces what is already set.
       expect(await screen.findByTestId('bulk-cleaning-dialog')).toHaveTextContent('sostituisce quello che è già impostato');
       await fillTheForm();
       fireEvent.click(screen.getByTestId('bulk-cleaning-save'));
@@ -466,7 +445,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       fireEvent.click(screen.getByTestId('bulk-cleaning-save'));
       await waitFor(() => expect(screen.getByTestId('bulk-cleaning-cancel')).toBeDisabled());
 
-      // Esc and the X ask to close: nothing closes while the save is on its way.
       fireEvent.keyDown(screen.getByTestId('bulk-cleaning-dialog'), { key: 'Escape' });
       fireEvent.click(screen.getByRole('button', { name: 'Chiudi' }));
       expect(onOpenChange).not.toHaveBeenCalled();
@@ -480,7 +458,6 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
         failed: 1,
       });
 
-      // What was done for each property is there to be read, and from now on the layer closes as it always did.
       expect(await screen.findByTestId('bulk-cleaning-some-failed')).toBeInTheDocument();
       fireEvent.keyDown(screen.getByTestId('bulk-cleaning-dialog'), { key: 'Escape' });
       await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));

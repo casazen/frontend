@@ -13,17 +13,11 @@ const RESTRICTED_REASON = 'restricted';
 
 interface ReasonListProps {
   counts: readonly TouristTaxReasonCount[];
-  /** The words of a reason: the page has words for the codes the server gives and writes any other as it came. */
   label: (reason: string) => string;
-  /** What is counted beside a reason: the stays alone (the stays with no amount), or the guests, the stays and the nights of the guests (the exempt guests). */
   counted: 'stays' | 'guests';
   testId: string;
 }
 
-/**
- * The reasons of a comune with their counts, as the server gives them: a list of what it sent and nothing else (a reason that is not in the answer is not guessed, and no code is written in an attribute of the page). The row
- * that stands for the reasons a caller may not read says «dettaglio dei motivi riservato» and carries only its counts.
- */
 function ReasonList({ counts, label, counted, testId }: ReasonListProps) {
   const { t } = useTranslation();
   if (counts.length === 0) return <p className="text-foreground/70">{t('reports.touristTax.yearEnd.declaration.details.none')}</p>;
@@ -49,7 +43,6 @@ function ReasonList({ counts, label, counted, testId }: ReasonListProps) {
   );
 }
 
-/** What a comune is made of: the stays that have a tax, the stays that have none by reason (never taken for a tax of zero) and the exempt guests by reason. */
 function ComuneDetails({ comune }: { comune: TouristTaxDeclarationComune }) {
   const { t } = useTranslation();
   return (
@@ -81,10 +74,6 @@ interface FiguresProps {
   declaration: TouristTaxDeclaration;
 }
 
-/**
- * The declaration to the comuni of the year as the server gives it (the data of the file of the same name, nothing recomputed): for each comune the stays, nights and guests, the tax due, the tax remitted, the difference and
- * where the comune stands, then the stays with and without a tax and the exempt guests by reason, and the totals the server adds up. Every amount is written in the currency of the answer, never an assumed one.
- */
 function DeclarationFigures({ year, declaration }: FiguresProps) {
   const { t, i18n } = useTranslation();
   const { comuni, total, currency } = declaration;
@@ -96,7 +85,6 @@ function DeclarationFigures({ year, declaration }: FiguresProps) {
   );
 
   if (comuni.length === 0) {
-    // Said in words: a year with no stay in Italy and no payment has no row, and it is not a declaration of zeros.
     return (
       <p className="text-sm text-foreground/70" data-testid="year-end-declaration-empty">
         {t('reports.touristTax.yearEnd.declaration.empty', { year })}
@@ -165,7 +153,6 @@ function DeclarationFigures({ year, declaration }: FiguresProps) {
               </tr>
               <tr data-testid="year-end-declaration-details">
                 <td colSpan={8} className="px-3 pb-1 pt-0">
-                  {/* On a phone the details stay where the first column is, as wide as the screen, while the table scrolls under them. */}
                   <div className="sticky left-0 w-[min(100%,calc(100vw-3rem))]">
                     <ComuneDetails comune={comune} />
                   </div>
@@ -207,7 +194,6 @@ interface DeclarationSectionProps {
   query: UseQueryResult<TouristTaxDeclaration>;
 }
 
-/** The declaration to the comuni of the year, on screen: what the first file of the page holds (E18/F01/US02/T03, NF-117). Nothing is filed by CasaZen. */
 export function DeclarationSection({ year, query }: DeclarationSectionProps) {
   const { t } = useTranslation();
   return (

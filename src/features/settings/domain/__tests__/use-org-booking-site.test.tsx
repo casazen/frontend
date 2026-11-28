@@ -11,10 +11,6 @@ const hasPermission = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission }) }));
 vi.mock('@/api/domain.api', () => ({ DomainApi: { getDomain: vi.fn() } }));
 
-/**
- * Where the links of the booking site are (E27/F01/US02, NF-123). The domain settings are the account administrator's to read (a refused read would send the whole
- * app to the page of no access), so for anyone else nothing is asked; and a read that failed is never turned into a link on an address that was not confirmed.
- */
 const ORG_ID = 'c0ffee00-0000-4000-8000-000000000001';
 const config = (publicUrls: OrgDomainConfig['publicUrls']): OrgDomainConfig => ({
   orgId: ORG_ID,
@@ -47,11 +43,9 @@ describe('useOrgBookingSite', () => {
 
     const { result } = renderSite();
 
-    // While the settings are on their way the links are on the address of CasaZen, and the status says so.
     expect(result.current?.status).toBe('loading');
     await waitFor(() => expect(result.current?.status).toBe('ready'));
     expect(result.current?.site).toMatchObject({ baseUrl: 'https://www.agenzia.it', ownHost: true });
-    // The settings the links were built from are handed out with it (the page «Incorpora nel tuo sito» shows more of them than the address).
     expect(result.current?.config).toEqual(SERVED);
     expect(DomainApi.getDomain).toHaveBeenCalledWith(ORG_ID);
   });
@@ -76,10 +70,8 @@ describe('useOrgBookingSite', () => {
 
     result.current?.retry();
 
-    // The settings of the read that worked are still in the query: the links are not built on them once the next read has failed.
     await waitFor(() => expect(result.current?.status).toBe('failed'));
     expect(result.current?.site).toMatchObject({ ownHost: false });
-    // Nor are they handed out: a page that shows them would show settings the read that just failed did not confirm.
     expect(result.current?.config).toBeUndefined();
   });
 

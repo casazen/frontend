@@ -28,14 +28,12 @@ const listeners: EventListenerOrEventListenerObject[] = [];
 const observers: MutationObserver[] = [];
 const bodyListeners: EventListener[] = [];
 
-/** Listens for the `casazen:event` the loader fires on a container (it bubbles up to the body); taken away after the test. */
 function listen(handler: EventListener): void {
   document.body.addEventListener('casazen:event', handler);
   bodyListeners.push(handler);
 }
 
 beforeEach(() => {
-  // What the loader installs for the life of the page is taken away after each test, or the next page would have two loaders.
   const addEventListener = window.addEventListener.bind(window);
   vi.spyOn(window, 'addEventListener').mockImplementation((type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) => {
     if (type === 'message') listeners.push(listener);
@@ -69,7 +67,6 @@ afterEach(() => {
   window.history.replaceState(null, '', '/');
 });
 
-/** The script is the one the page printed: `document.currentScript` says where it came from, as the browser does while the script runs. */
 async function loadLoader(script: { src: string; nonce?: string } | null = { src: SCRIPT_URL }): Promise<void> {
   if (script) Object.defineProperty(document, 'currentScript', { configurable: true, get: () => script });
   vi.resetModules();
@@ -143,7 +140,6 @@ describe('mounting (AC1)', () => {
 
   it('embedLoader_Scan_MountsASubtreeAndTheElementItself', async () => {
     await loadLoader();
-    // A tree that is not in the page (the observer never sees it) with a widget in it, and a widget that is the root itself.
     const tree = document.createElement('div');
     const child = document.createElement('div');
     child.setAttribute('data-casazen-widget', 'guest-access');
@@ -254,7 +250,6 @@ describe('the frame (AC2)', () => {
     await loadLoader();
 
     expect(document.querySelectorAll('iframe')).toHaveLength(0);
-    // The link goes to the site the loader itself came from: the only origin that is known to be good.
     expect(linkOf(element)?.href.startsWith(`${BASE}/`)).toBe(true);
   });
 
@@ -343,7 +338,6 @@ describe('the frame (AC2)', () => {
       expect(query.get('checkin')).toBe('2027-01-10');
       expect(query.get('checkout')).toBe('2027-01-12');
       expect(query.get('guests')).toBe('4');
-      // `where` has no attribute: it is the page's.
       expect(query.get('where')).toBe('lugano');
     });
 
@@ -390,7 +384,6 @@ describe('the frame (AC2)', () => {
       await loadLoader();
       const query = new URL(frameOf(element).src).searchParams;
 
-      // An address of e-mail, a text with a space and a value that is too long are no token; a name that is not one of the five is not forwarded.
       expect(query.has('utm_source')).toBe(false);
       expect(query.has('utm_medium')).toBe(false);
       expect(query.has('utm_campaign')).toBe(false);
@@ -407,7 +400,6 @@ describe('the frame (AC2)', () => {
       const query = new URL(frameOf(element).src).searchParams;
 
       expect([...query.keys()].sort()).toEqual(['checkin', 'checkout', 'lang', 'parent', 'v']);
-      // The three that belong to the frame itself are the loader's, whatever the page says.
       expect(query.get('parent')).toBe(PAGE_ORIGIN);
       expect(query.get('v')).toBe('1');
       expect(query.get('lang')).toBe('it');
@@ -470,7 +462,6 @@ describe('the messages of the frame (AC3)', () => {
     post(frame, buildEmbedMessage('resize', { height: 420 }));
     expect(frame.style.height).toBe('420px');
 
-    // What the protocol brings down to its limit is what the page gets.
     post(frame, buildEmbedMessage('resize', { height: 99999 }));
     expect(frame.style.height).toBe('50000px');
   });
@@ -518,7 +509,6 @@ describe('the messages of the frame (AC3)', () => {
 
     post(frame, buildEmbedMessage('ready', { widget: 'booking' }));
 
-    // A radius that is not a short text is not one of the contract: the protocol drops it, the primary color stays.
     expect(send).toHaveBeenCalledWith({ source: 'casazen', v: 1, type: 'config', lang: 'it', theme: { primary: '#123456' } }, BASE);
   });
 
@@ -849,7 +839,6 @@ describe('the state of the frame in the address (AC6)', () => {
 
     expect(query.get('checkin')).toBe('2026-12-01');
     expect(query.get('checkout')).toBe('2026-12-04');
-    // What the restored state does not say stays what the page said.
     expect(query.get('guests')).toBe('5');
   });
 
@@ -859,7 +848,6 @@ describe('the state of the frame in the address (AC6)', () => {
     await loadLoader();
     const query = new URL(frameOf(element).src).searchParams;
 
-    // `https://evil.example` has `:` and `/`, which are no safe characters: the whole state is ignored.
     expect(new URL(frameOf(element).src).pathname).toBe('/embed/booking');
     expect(query.getAll('parent')).toEqual([PAGE_ORIGIN]);
     expect(query.getAll('lang')).toEqual(['it']);
@@ -887,7 +875,6 @@ describe('the state of the frame in the address (AC6)', () => {
     await loadLoader();
     const frame = new URL(frameOf(element).src);
 
-    // The state is restored (its page is the frame's), and only what a frame keeps in its address comes with it.
     expect(frame.pathname).toBe('/embed/property/casa-mare');
     expect(Object.fromEntries(frame.searchParams)).toEqual({
       lang: 'it',
@@ -901,7 +888,6 @@ describe('the state of the frame in the address (AC6)', () => {
       where: 'lugano',
       utm_source: 'newsletter',
     });
-    // Nothing of what a link carried that is personal or a credential: not as a name, not as an escape.
     expect(frameOf(element).src).not.toMatch(/email|code|token|phone|name|%40|ABCDE|secret|3331234567|Mario/);
   });
 
@@ -923,7 +909,6 @@ describe('the state of the frame in the address (AC6)', () => {
     await loadLoader();
     const frame = new URL(frameOf(element).src);
 
-    // The state itself is the widget's (its page is restored), but none of its parameters fit: only the parameters of the frame itself remain.
     expect(frame.pathname).toBe('/embed/property/casa-mare');
     expect([...frame.searchParams.keys()].sort()).toEqual(['lang', 'parent', 'v']);
   });
@@ -973,7 +958,6 @@ describe('the state of the frame in the address (AC6)', () => {
 describe('the link that takes the place of a frame (AC7)', () => {
   const SITE = 'https://prenota.quokka360.com';
 
-  /** A browser that tells when an element comes into view (jsdom has none): the test says when. */
   function stubIntersectionObserver() {
     const watchers: { callback: IntersectionObserverCallback; element: Element | null; disconnected: boolean }[] = [];
     vi.stubGlobal(
@@ -995,7 +979,6 @@ describe('the link that takes the place of a frame (AC7)', () => {
         }
       },
     );
-    /** The browser says the element of watcher `at` is now (or is still not) in view; a watcher that was disconnected hears nothing. */
     const comeIntoView = (at = 0, isIntersecting = true) => {
       const watcher = watchers[at];
       if (!watcher.disconnected) watcher.callback([{ isIntersecting, target: watcher.element } as unknown as IntersectionObserverEntry], {} as IntersectionObserver);
@@ -1015,7 +998,6 @@ describe('the link that takes the place of a frame (AC7)', () => {
     const link = linkOf(element) as HTMLAnchorElement;
     expect(link.textContent).toBe('Prenota su prenota.quokka360.com');
     expect(link.href).toBe(`${SITE}/?lang=it&utm_source=agency-site&utm_medium=embed`);
-    // The frame is still there, and now in sight: it may be slow, not dead.
     expect(frameOf(element).style.opacity).toBe('');
     expect(frameOf(element).hasAttribute('aria-hidden')).toBe(false);
     expect(placeholderOf(element)).toBeNull();
@@ -1120,7 +1102,6 @@ describe('the link that takes the place of a frame (AC7)', () => {
     const element = widget('booking');
     await loadLoader();
 
-    // Lazy and far away: nobody asks for it, so it cannot say ready, and nothing is wrong with it. No link, however long the visitor stays.
     vi.advanceTimersByTime(60000);
     expect(linkOf(element)).toBeNull();
     expect(placeholderOf(element)).not.toBeNull();
@@ -1145,7 +1126,6 @@ describe('the link that takes the place of a frame (AC7)', () => {
     vi.advanceTimersByTime(8000);
 
     expect(linkOf(element)).not.toBeNull();
-    // The watch is over once it has done its work.
     expect(view.watchers[0].disconnected).toBe(true);
   });
 
@@ -1155,7 +1135,6 @@ describe('the link that takes the place of a frame (AC7)', () => {
     const element = widget('booking');
     await loadLoader();
 
-    // The browser had started it already, a little before the visitor got there.
     post(frameOf(element), buildEmbedMessage('ready', { widget: 'booking' }));
     expect(view.watchers[0].disconnected).toBe(true);
     view.comeIntoView();
@@ -1260,7 +1239,6 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
     expect(tag.async).toBe(true);
     expect(tag.nonce).toBe('abc123');
 
-    // The file runs: it registers its function with the loader, then the browser says it loaded.
     const mount = vi.fn();
     api().register('search', mount);
     tag.dispatchEvent(new Event('load'));
@@ -1305,7 +1283,6 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
     expect(heard).toHaveLength(1);
     expect(heard[0].target).toBe(element);
     expect(heard[0].detail).toEqual({ name: 'search', params: { search_term: 'Lugano', start_date: '2026-12-01', end_date: '2026-12-05', number_of_passengers: 2 }, widget: 'search' });
-    // The page did not ask for the data layer: it is not even created.
     expect(embedWindow.dataLayer).toBeUndefined();
   });
 
@@ -1350,7 +1327,6 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
 
     api().mount(own, { widget: 'search', preview: true });
     api().mount(plain, { widget: 'search' });
-    // An attribute of the page cannot turn it on, and only `true` does.
     other.setAttribute('data-casazen-preview', 'true');
     api().mount(other, { widget: 'search', preview: 'true' });
 
@@ -1362,7 +1338,6 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
   });
 
   it('embedLoader_Search_APreviewAskedAfterTheLoaderMountedTheBar_TurnsThePreviewOn', async () => {
-    // The element carries the attribute, so the loader mounts it by itself; the console asks for its preview a moment later (an effect of its page).
     const element = widget('search');
     await loadLoader();
     const mount = vi.fn();
@@ -1372,7 +1347,6 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
 
     api().mount(element, { widget: 'search', preview: true });
 
-    // The bar is not drawn a second time: the one it has is a preview from now on.
     expect(mount).toHaveBeenCalledTimes(1);
     expect(options.preview).toBe(true);
   });
@@ -1433,7 +1407,6 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
 
     expect(mount).toHaveBeenCalledTimes(1);
     expect(mount.mock.calls[0][1]).toMatchObject({ base: 'https://app.casazen.example', org: 'villa-rossi' });
-    // `search.js` is the one of the script, not of the base: the loader and the bar always travel together.
     expect((searchTag() as HTMLScriptElement).src).toBe(`${BASE}/embed/v1/search.js`);
   });
 
@@ -1463,7 +1436,6 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
     const element = widget('search', { lang: 'en' });
     await loadLoader();
 
-    // The file is asked for and neither loads nor fails: the container is left as it was, for a while.
     vi.advanceTimersByTime(7999);
     expect(linkOf(element)).toBeNull();
 
@@ -1480,7 +1452,6 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
     vi.advanceTimersByTime(8000);
     expect(linkOf(element)).not.toBeNull();
 
-    // `search.js` registers at last: the bar is drawn, the link is gone, and the wait does not start again.
     const mount = vi.fn();
     api().register('search', mount);
 
@@ -1561,7 +1532,6 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
 
     expect(mount).toHaveBeenCalledTimes(1);
     expect(mount.mock.calls[0][0]).toBe(element);
-    // And only once: the next scan finds it mounted.
     api().scan();
     expect(mount).toHaveBeenCalledTimes(1);
   });

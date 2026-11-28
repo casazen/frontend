@@ -15,22 +15,14 @@ import { resetE2eStorage } from './helpers/locale';
  */
 
 const bar = (page: Page) => page.getByRole('navigation', { name: 'Navigazione mobile' });
-/** "Altro" of the bar, in any state (by role it is not there while the modal sheet hides the page). */
 const more = (page: Page) => page.locator('[data-more-trigger]');
 const sheet = (page: Page) => page.getByRole('dialog', { name: 'Altro' });
 const handle = (page: Page) => sheet(page).getByTestId('sheet-handle');
 
-/**
- * How far the page scrolls sideways. What the specs ask is that what opens (the sheet, the menu) does not add to it: the
- * page behind may be wider than a phone with the font of the machine (the dashboard is, on Linux), and that is its own
- * business, not the navigation's.
- */
 const pageWidth = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth);
 
-/** True when something inside the element is wider than it (it would scroll or stick out sideways). */
 const sticksOut = (locator: Locator) => locator.evaluate((element) => element.scrollWidth > element.clientWidth);
 
-/** The box of an element that slides (the sheet comes up in 280 ms): once it has stopped. */
 async function settled(locator: Locator) {
   let previous = '';
   await expect
@@ -45,7 +37,6 @@ async function settled(locator: Locator) {
   return (await locator.boundingBox())!;
 }
 
-/** `count` "pay at the property" requests waiting for the host (the counter of Prenotazioni reads their number). */
 async function waitingRequests(page: Page, count: number) {
   await page.route('**/api/bookings/approval-requests**', (route) =>
     route.fulfill({
@@ -82,7 +73,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(more(page)).toHaveAttribute('aria-expanded', 'false');
       await more(page).click();
 
-      // The sheet is a dialog from the bottom edge, as wide as the screen, with the focus on it.
       await expect(sheet(page)).toBeVisible();
       await expect(more(page)).toHaveAttribute('aria-expanded', 'true');
       await expect(sheet(page)).toBeFocused();
@@ -91,15 +81,12 @@ test.describe('Mobile navigation (UI-04b)', () => {
       expect(Math.round(box.width)).toBe(390);
       expect(Math.round(box.y + box.height)).toBe(844);
 
-      // What the bar does not list, in the groups of the sidebar, and the settings of its foot; the area is named, with the organization.
       await expect(sheet(page).getByRole('group', { name: 'La tua offerta' })).toBeVisible();
       await expect(sheet(page).getByRole('group', { name: 'Gestione' })).toBeVisible();
       await expect(sheet(page).getByRole('group', { name: 'Impostazioni e inviti' })).toBeVisible();
       await expect(sheet(page).getByTestId('area-header')).toContainText('Affitti brevi');
       await expect(sheet(page).getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
 
-      // A page of the sheet opens, the sheet goes, the heading of the page has the focus, "Altro" is the marked tab. (The adempimenti: the demo
-      // mocks what their page reads.)
       await sheet(page).getByRole('link', { name: 'Adempimenti' }).click();
       await expect(page).toHaveURL(/\/app\/short-rent\/compliance$/);
       await expect(sheet(page)).toBeHidden();
@@ -132,7 +119,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await page.keyboard.press('Enter');
       await expect(sheet(page)).toBeFocused();
 
-      // The first Tab reaches the scoped search, then the first link.
       await page.keyboard.press('Tab');
       await expect(sheet(page).getByRole('searchbox', { name: 'Cerca nel menu' })).toBeFocused();
       await page.keyboard.press('Tab');
@@ -183,14 +169,12 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await more(page).click();
       const resting = await settled(sheet(page));
 
-      // A short pull: it follows the pointer, and goes back when let go.
       await dragDown(page, handle(page), 20, { release: false });
       expect(Math.round((await sheet(page).boundingBox())!.y - resting.y)).toBe(20);
       await page.mouse.up();
       await expect.poll(async () => Math.round((await sheet(page).boundingBox())!.y)).toBe(Math.round(resting.y));
       await expect(sheet(page)).toBeVisible();
 
-      // A long one closes it.
       await dragDown(page, handle(page), 220);
       await expect(sheet(page)).toBeHidden();
       await expect(more(page)).toHaveAttribute('aria-expanded', 'false');
@@ -210,7 +194,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
       const last = sheet(page).getByRole('link', { name: 'Impostazioni' });
       await last.scrollIntoViewIfNeeded();
       await expect(last).toBeInViewport();
-      // It scrolls up and down, never sideways, and the page behind does not get wider.
       expect(await sticksOut(sheet(page).locator('div.overflow-y-auto'))).toBe(false);
       expect(await pageWidth(page)).toBeLessThanOrEqual(before);
     });
@@ -230,7 +213,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
         expect(await pageWidth(page)).toBeLessThanOrEqual(before);
         expect(await sticksOut(sheet(page))).toBe(false);
         expect(await sticksOut(sheet(page).locator('div.overflow-y-auto'))).toBe(false);
-        // Every tile is inside the sheet, which is inside the screen.
         for (const tile of await sheet(page).getByRole('link').all()) {
           const tileBox = (await tile.boundingBox())!;
           expect(tileBox.x).toBeGreaterThanOrEqual(0);
@@ -259,7 +241,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
           expect(tabBox!.width).toBeGreaterThanOrEqual(44);
           expect(tabBox!.height).toBeGreaterThanOrEqual(44);
         }
-        // A fifth of the screen each, inside it.
         expect(Math.round(boxes[0]!.x)).toBe(0);
         expect(Math.round(boxes[4]!.x + boxes[4]!.width)).toBe(width);
         expect(Math.abs(boxes[0]!.width - boxes[4]!.width)).toBeLessThan(1);
@@ -274,7 +255,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
       const bookings = bar(page).getByRole('link', { name: /Prenotazioni/ });
       await expect(bookings.getByTestId('nav-count')).toHaveText(/3/);
       await expect(bookings).toHaveAccessibleName(/^Prenotazioni\s*,\s*3 richieste da approvare$/);
-      // The counter sits on the corner of the icon, inside the tab.
       const tabBox = (await bookings.boundingBox())!;
       const countBox = (await bookings.getByTestId('nav-count').boundingBox())!;
       expect(countBox.x).toBeGreaterThanOrEqual(tabBox.x);
@@ -283,14 +263,12 @@ test.describe('Mobile navigation (UI-04b)', () => {
     });
 
     test('a toast shows above the bar, centered, and the bar is not covered by it', async ({ page }) => {
-      // The profile of the staff console has a button that always answers with a toast (it copies a token).
       await page.goto(demoUrl('/app/admin/profile', 'admin'), { waitUntil: 'domcontentloaded' });
       await page.getByRole('button', { name: 'Copia token' }).click();
 
       const toast = page.locator('[data-sonner-toast]').first();
       await expect(toast).toBeVisible();
       const barBox = (await bar(page).boundingBox())!;
-      // The toast comes up from below: once it has settled it is above the bar, and inside the screen.
       await expect
         .poll(async () => {
           const box = (await toast.boundingBox())!;
@@ -326,7 +304,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await more(page).click();
       await expect(sheet(page).getByRole('link', { name: 'SEO & Contenuti' })).toBeVisible();
       await expect(sheet(page).getByRole('link', { name: 'Conformità' })).toBeVisible();
-      // Profilo is in the account row at the end of the sheet, as in every area: no tile of its own.
       await expect(sheet(page).getByRole('link', { name: 'Profilo', exact: true })).toHaveCount(0);
     });
 
@@ -339,9 +316,7 @@ test.describe('Mobile navigation (UI-04b)', () => {
       expect(await sheet(page).evaluate((element) => getComputedStyle(element).animationName)).toBe('none');
       expect(await page.locator('[data-sheet-overlay]').evaluate((element) => getComputedStyle(element).animationName)).toBe('none');
 
-      // Pulled down and let go it does not ease back either: it is where it was at once.
       await dragDown(page, handle(page), 20);
-      // `0s` in the look of before, `0.01ms` (what the redesign sets for reduced motion): no time to see it move.
       const transition = await sheet(page).evaluate((element) => getComputedStyle(element).transitionDuration);
       expect(Number.parseFloat(transition)).toBeLessThan(0.001);
       await page.keyboard.press('Escape');
@@ -352,7 +327,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await page.goto(demoUrl('/app/short-rent/profile', 'short-stay'), { waitUntil: 'domcontentloaded' });
       await more(page).click();
       await expect(sheet(page)).toBeVisible();
-      // By selector: the sheet is a modal dialog, which hides the page behind it from the accessibility tree.
       const phoneBar = page.locator('nav[aria-label="Navigazione mobile"]');
       const sidebarElement = page.locator('aside');
 
@@ -365,7 +339,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(sheet(page)).toBeHidden();
       await expect(phoneBar).toBeHidden();
       await expect(sidebarElement).toBeVisible();
-      // And the page is usable again: nothing is left locking its scroll or hiding it.
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       await expect(page.locator('#root')).not.toHaveAttribute('aria-hidden', 'true');
     });
@@ -386,13 +359,11 @@ test.describe('Mobile navigation (UI-04b)', () => {
 
       await expect(sidebar(page)).toHaveAttribute('data-collapsed', 'true');
       expect((await sidebar(page).boundingBox())!.width).toBe(72);
-      // No bar on a tablet; no names on the screen, no button to widen it (the window decides), no horizontal scroll.
       await expect(bar(page)).toBeHidden();
       await expect(sidebar(page).getByText('Ogni giorno')).toHaveCount(0);
       await expect(sidebar(page).getByTestId('sidebar-collapse-toggle')).toHaveCount(0);
       expect((await page.getByRole('main').boundingBox())!.width).toBeGreaterThan(768 - 72 - 1);
 
-      // The names are still there for a screen reader, and the open page is marked.
       const dashboard = sidebar(page).getByRole('link', { name: 'Cruscotto' });
       await expect(dashboard).toBeVisible();
       await expect(dashboard).toHaveAttribute('aria-current', 'page');
@@ -403,27 +374,22 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
 
-      // By keyboard: Tab from the first icon to the next one.
       await menu.getByRole('link', { name: 'Cruscotto' }).focus();
       await page.keyboard.press('Tab');
       await expect(menu.getByRole('link', { name: 'Calendario' })).toBeFocused();
       await expect(tooltip(page)).toHaveText('Calendario');
-      // Beside the rail, level with its icon, in front of the page.
       const iconBox = (await menu.getByRole('link', { name: 'Calendario' }).boundingBox())!;
       const tipBox = (await tooltip(page).boundingBox())!;
       expect(tipBox.x).toBeGreaterThanOrEqual(72);
       expect(Math.abs(tipBox.y + tipBox.height / 2 - (iconBox.y + iconBox.height / 2))).toBeLessThan(2);
 
-      // Esc hides it, the focus stays.
       await page.keyboard.press('Escape');
       await expect(tooltip(page)).toHaveCount(0);
       await expect(menu.getByRole('link', { name: 'Calendario' })).toBeFocused();
 
-      // Moving on shows the next one's name only.
       await page.keyboard.press('Tab');
       await expect(tooltip(page)).toHaveText('Prenotazioni');
 
-      // With the mouse on another icon, that one is the one that shows, and alone.
       await menu.getByRole('link', { name: 'Immobili' }).hover();
       await expect(tooltip(page)).toHaveText('Immobili');
       await expect(tooltip(page)).toHaveCount(1);
@@ -476,7 +442,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
       const bookings = sidebar(page).getByRole('link', { name: /Prenotazioni/ });
       await expect(bookings.getByTestId('nav-count')).toHaveText(/2/);
       await expect(bookings).toHaveAccessibleName(/^Prenotazioni\s*,\s*2 richieste da approvare$/);
-      // Beside the icon it is the tooltip that shows, and it says the name only.
       await bookings.focus();
       await expect(tooltip(page)).toHaveText('Prenotazioni');
     });
@@ -503,7 +468,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await sidebar(page).getByRole('button', { name: 'Comprimi menu' }).click();
       await expect(sidebar(page)).toHaveAttribute('data-collapsed', 'true');
 
-      // The click gave the toggle the focus; the keyboard goes back through the foot and the menu: the names show as tooltips.
       await page.keyboard.press('Shift+Tab');
       await expect(sidebar(page).getByRole('link', { name: 'Impostazioni' })).toBeFocused();
       await expect(tooltip(page)).toHaveText('Impostazioni');
@@ -516,7 +480,6 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(sidebar(page).getByTestId('sidebar-collapse-toggle')).toBeFocused();
       await expect(tooltip(page)).toHaveText('Espandi menu');
 
-      // Narrowed to a tablet and back, the preference is still there.
       await page.setViewportSize({ width: 820, height: 1000 });
       await expect(sidebar(page)).toHaveAttribute('data-collapsed', 'true');
       await page.setViewportSize({ width: 1280, height: 800 });

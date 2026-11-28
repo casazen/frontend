@@ -89,7 +89,6 @@ describe('assessFrame: what the live guidance finds wrong', () => {
 
     expect(report.failing).toEqual(['blur']);
     expect(report.metrics.sharpness).toBeLessThan(40);
-    // The same frame with its detail is sharp: the check tells the two apart.
     expect(assessFrame(goodFrame()).metrics.sharpness).toBeGreaterThan(report.metrics.sharpness);
   });
 
@@ -101,7 +100,6 @@ describe('assessFrame: what the live guidance finds wrong', () => {
   });
 
   it('assessFrame_AMissingSideOfTheCard_IsAnEdgeThatFailsAlone', () => {
-    // The card stops short of the outline on the right: only the right border has no edge.
     const outline = overlayOf(480, 270);
     const report = assessFrame(makeFrame({ cardRect: { left: outline.left, top: outline.top, width: outline.width * 0.7, height: outline.height } }));
 
@@ -119,7 +117,6 @@ describe('assessFrame: what the live guidance finds wrong', () => {
   });
 
   it('assessFrame_SeveralFaults_AreListedInTheOrderOfTheHintsAndTheFirstIsTheOneSaid', () => {
-    // Upright and dark: the phone has to be turned before anything else matters.
     const report = assessFrame(makeFrame({ width: 270, height: 480, background: 8, card: 40, texture: 6 }));
 
     expect(report.first).toBe('orientation');
@@ -130,7 +127,6 @@ describe('assessFrame: what the live guidance finds wrong', () => {
   it('assessFrame_AFrameWithNothingToLookAt_DoesNotThrowAndIsNeverAPass', () => {
     expect(assessFrame({ width: 0, height: 0, data: new Uint8ClampedArray(0) }).first).not.toBeNull();
     expect(assessFrame({ width: 8, height: 8, data: new Uint8ClampedArray(8 * 8 * 4) }).first).not.toBeNull();
-    // Pixels missing from the data: not a frame either.
     expect(assessFrame({ width: 480, height: 270, data: new Uint8ClampedArray(100) }).first).not.toBeNull();
   });
 

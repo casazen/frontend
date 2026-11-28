@@ -15,7 +15,6 @@ import type {
 import type { StayGuestSubmit } from '@/types/public-checkin.types';
 
 const WIZARD_KEY = 'checkin-wizard';
-/** The tourist tax of a stay (`[TOURIST_TAX_KEY, bookingId]`): the live refresh of a tax paid online reads it again (`tourist-tax-paid`). */
 export const TOURIST_TAX_KEY = 'stay-tourist-tax';
 const MUNICIPALITY_RATE_KEY = 'municipality-tourist-tax-rate';
 
@@ -62,7 +61,6 @@ export function useSaveCheckInGuests(bookingId: string) {
 
   return useMutation({
     gcTime: 0,
-    // The guests alone, or with the plate of the stay where the regime asks it (`GuestsSave`).
     mutationFn: async (save: StayGuestSubmit[] | GuestsSave) => {
       const { guests, vehiclePlate } = Array.isArray(save) ? { guests: save, vehiclePlate: undefined } : save;
       try {
@@ -80,10 +78,6 @@ export function useSaveCheckInGuests(bookingId: string) {
   });
 }
 
-/**
- * Reads the photo of a document. The photo is held for the request only: the mutation is not kept after it (`gcTime: 0`, and the caller
- * resets it as soon as it has the answer), and nothing of it goes to a draft, a storage or a log.
- */
 export function useReadCheckInDocument(bookingId: string) {
   return useMutation({
     mutationFn: ({ photo, fileName }: { photo: Blob; fileName: string }) => checkInWizardApi.readDocument(bookingId, photo, fileName),
@@ -91,7 +85,6 @@ export function useReadCheckInDocument(bookingId: string) {
   });
 }
 
-/** Confirms the wizard. 422 `checkin_not_ready` is shown by the caller (it goes back to the checks); other failures too. */
 export function useConfirmCheckIn(bookingId: string) {
   const queryClient = useQueryClient();
   const refresh = useRefreshAfterGuestsChange(bookingId);
@@ -115,7 +108,6 @@ export function useMarkNoShow(bookingId: string) {
   });
 }
 
-/** The tourist tax of the stay, guest by guest. Read again whenever the tax step opens. */
 export function useStayTouristTax(bookingId: string, enabled = true) {
   return useQuery({
     queryKey: [TOURIST_TAX_KEY, bookingId],
@@ -127,11 +119,6 @@ export function useStayTouristTax(bookingId: string, enabled = true) {
   });
 }
 
-/**
- * Writes the answer of a change of the tax (exemptions, collector, rate) in the caches that show it. The answer of a write has no `collection` block (the server sends it only on the
- * read), so the block already on screen stays until the tax is read again: a change of an exemption or of the collector moves what is still to collect, so when there is a block the
- * tax is read again at once. With the flag of the collection off there is no block and nothing more is asked.
- */
 function useApplyTax(bookingId: string) {
   const queryClient = useQueryClient();
   return (tax: StayTouristTax) => {
@@ -143,7 +130,6 @@ function useApplyTax(bookingId: string) {
   };
 }
 
-/** The exemptions the host chooses for the guests of the stay. */
 export function useSetTouristTaxExemptions(bookingId: string) {
   const apply = useApplyTax(bookingId);
 
@@ -153,7 +139,6 @@ export function useSetTouristTaxExemptions(bookingId: string) {
   });
 }
 
-/** Who collected the tax of a channel stay with no channel rule. */
 export function useSetTouristTaxCollector(bookingId: string) {
   const apply = useApplyTax(bookingId);
 
@@ -163,10 +148,6 @@ export function useSetTouristTaxCollector(bookingId: string) {
   });
 }
 
-/**
- * «Pagata in struttura» (E25/F01/US01/T01): the host records that the guest paid the tourist tax at the property, so the guest can no longer pay it online too (the open payment of the
- * stay is cancelled by the server). The answer is the new collection block, written into the tax of the booking, which is then read again.
- */
 export function useRecordTouristTaxPaidAtProperty(bookingId: string) {
   const queryClient = useQueryClient();
 
@@ -179,7 +160,6 @@ export function useRecordTouristTaxPaidAtProperty(bookingId: string) {
   });
 }
 
-/** The comune of a property for its tourist tax and the rate the org declared for it. */
 export function useMunicipalityRate(propertyId: string, enabled = true) {
   return useQuery({
     queryKey: [MUNICIPALITY_RATE_KEY, propertyId],
@@ -190,7 +170,6 @@ export function useMunicipalityRate(propertyId: string, enabled = true) {
   });
 }
 
-/** Declares the org's rate for the comune of the property: the tax of the stay is worked out again with it. */
 export function useSaveMunicipalityRate(bookingId: string, propertyId: string) {
   const queryClient = useQueryClient();
 

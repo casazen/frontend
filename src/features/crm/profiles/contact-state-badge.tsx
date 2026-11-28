@@ -27,11 +27,6 @@ interface ContactStateBadgeProps {
   className?: string;
 }
 
-/**
- * One badge for the e-mail state of a profile or of a contact: an icon and a word, with what it means in plain words as its tooltip.
- * It is a `span` with the explanation as its `title` (the screen reader reads it as the description), so it fits a table cell and
- * a line of text; the profile page says it all again in full sentences.
- */
 export function ContactStateBadge({ state, className }: ContactStateBadgeProps) {
   const { t } = useTranslation();
   const view = STATES[state];

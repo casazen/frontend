@@ -9,7 +9,6 @@ import type {
 } from '@/types/seo.types';
 
 export const PublicSeoApi = {
-  /** Published pages for the hub `/p/affitti-brevi` (the same pages as the sitemap). */
   getPublishedPages: (): Promise<SeoPublishedPages> =>
     ApiClient.get<SeoPublishedPages>('/public/content', undefined, { public: true }),
 
@@ -29,7 +28,6 @@ export const PublicSeoApi = {
       { public: true },
     ),
 
-  /** One event of the funnel (AC3). Anonymous; the page does not wait for the answer. */
   trackEvent: (payload: SeoEventPayload): Promise<void> =>
     ApiClient.post<void>('/public/seo/events', payload, { public: true }),
 

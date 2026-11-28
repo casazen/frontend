@@ -51,7 +51,6 @@ function item(overrides: Partial<ApprovalQueueItem> = {}): ApprovalQueueItem {
   };
 }
 
-/** A refusal as axios makes it: it carries the request that was sent, with the text of the host in its body. */
 function refusal(status: number, data: Record<string, unknown>): AxiosError {
   const config = { headers: new AxiosHeaders({ Authorization: 'Bearer secret-token' }), data: JSON.stringify({ text: GUEST_TEXT }) } as InternalAxiosRequestConfig;
   return new AxiosError('failed', String(status), config, { sent: GUEST_TEXT }, { status, data, statusText: '', headers: {}, config });
@@ -71,7 +70,6 @@ describe('the mutations that carry the text of a message or a draft keep nothing
 
   afterEach(() => cleanup());
 
-  /** Runs the mutation, leaves the screen, and says what the cache of the mutations still holds. */
   async function heldAfterLeaving<TVariables>(hook: () => { mutateAsync: (variables: TVariables) => Promise<unknown> }, variables: TVariables) {
     const { client, wrapper } = setup();
     const { result, unmount } = renderHook(hook, { wrapper });
@@ -177,7 +175,6 @@ describe('the mutations that carry the text of a message or a draft keep nothing
       (error: unknown) => error,
     );
 
-    // Nothing was sent, the refusal says what it is, and the rules the server holds are the ones in the cache now.
     expect(failure).toBeInstanceOf(StaleSettingsError);
     expect(assistantSettingsApi.saveRules).not.toHaveBeenCalled();
     expect(client.getQueryData(['assistant', 'rules'])).toMatchObject({ tone: 'Formal', instructionVersion: 3 });
@@ -200,10 +197,8 @@ describe('the mutations that carry the text of a message or a draft keep nothing
     );
 
     expect(failure).toBeInstanceOf(AxiosError);
-    // What a screen turns into words stays: the status and the body of the answer.
     expect(failure?.response?.status).toBe(409);
     expect(failure?.response?.data).toMatchObject({ code: 'approval_origin_action_failed', originActionError: 'thread_closed' });
-    // What carried the text, and the access token of the call, does not.
     expect(failure?.request).toBeUndefined();
     expect(failure?.config?.data).toBeUndefined();
     expect(JSON.stringify(failure?.config?.headers ?? {})).not.toContain('secret-token');

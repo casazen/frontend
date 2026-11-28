@@ -8,14 +8,12 @@ import type { SupplierRequestConflicts } from '@/types/supplier';
 import { conflictTexts, severityOf } from '../lib/agenda-conflicts';
 import { requestPath, requestWhen } from '../requests/request-model';
 
-/** How many jobs the block lists before "Mostra tutti". */
 const FIRST_SHOWN = 3;
 
 interface ConflictItemProps {
   item: SupplierRequestConflicts;
 }
 
-/** One job with something wrong in its time: when it is, what is wrong and what to do about each thing, a time to propose instead. */
 function ConflictItem({ item }: ConflictItemProps) {
   const { t, i18n } = useTranslation();
   const when = requestWhen({ scheduledFor: item.date, scheduledStart: item.startUtc, scheduledEnd: item.endUtc }, i18n.language);
@@ -62,20 +60,11 @@ function ConflictItem({ item }: ConflictItemProps) {
 }
 
 interface AgendaConflictsProps {
-  /** The jobs to come with something wrong, nearest first. */
   items: readonly SupplierRequestConflicts[];
-  /** The range held more jobs than the check looks at. */
   truncated: boolean;
-  /** The most jobs one check looks at. */
   limit: number;
 }
 
-/**
- * The jobs of the next 30 days whose time does not fit the hours or the commitments of the supplier (SP-03b): one block in the calm look
- * of the focus block, the one thing the page asks when nothing else needs an answer. Each job says what is wrong, what to do about it and,
- * for a request not yet taken, the first free time as long as the job. The words are ours: the server sends codes. Nothing is changed
- * from here; the request opens in its own page.
- */
 export function AgendaConflicts({ items, truncated, limit }: AgendaConflictsProps) {
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);

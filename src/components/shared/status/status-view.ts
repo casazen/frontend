@@ -8,26 +8,18 @@ import {
   type StatusTone,
 } from "@/lib/status-dictionary";
 
-/** A state ready to show: its tone and icon, and its texts in the language of the page. */
 export interface StatusView {
-  /** The dictionary knows this state. If not (the server is newer than the app) the label is the raw value. */
   known: boolean;
   tone: StatusTone;
   icon: StatusIconName;
   label: string;
-  /** What it means. Empty for a state the dictionary does not know. */
   explain: string;
-  /** What it takes to move to `next`: empty when the state has no way forward. */
   need: string[];
-  /** The state this one moves to, with its name. */
   next: { status: string; label: string } | null;
 }
 
 const UNKNOWN: Pick<StatusView, "tone" | "icon"> = { tone: "neutral", icon: "circle-dashed" };
 
-// Colors: the semantic tokens of the redesign (`-soft` background, `-foreground` text, `-border` edge): every pair meets AA
-// (`status-badge.test.tsx` checks them against `tokens.css`). The edge is a ring and not a border: a global rule overrides
-// `border-*` colors today.
 export const STATUS_TONE_CLASSES: Record<StatusTone, string> = {
   neutral: "bg-muted text-foreground ring-border",
   info: "bg-info-soft text-info-foreground ring-info-border",
@@ -46,7 +38,6 @@ function translatedList(t: TFunction, i18n: Pick<I18nInstance, "exists">, key: s
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
-/** Only the name of a state, in the words of whoever looks at it. */
 export function statusLabel(kind: StatusKind, status: string, perspective: StatusPerspective, t: TFunction, i18n: Pick<I18nInstance, "exists">): string {
   const definition = getStatusDefinition(kind, status);
   if (!definition) return status;

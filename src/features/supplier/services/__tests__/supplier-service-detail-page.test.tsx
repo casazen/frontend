@@ -78,7 +78,6 @@ const save = () => fireEvent.click(screen.getByTestId('service-save'));
 const visible = () => within(screen.getByTestId('service-visible')).getByRole('switch');
 const section = (id: string) => screen.getByTestId(`service-section-${id}`) as HTMLDetailsElement;
 const titleOf = (id: string) => section(id).querySelector('summary')?.textContent ?? '';
-/** Opens a part the way the browser does: the element opens and tells it (jsdom does not toggle a `details` on a click). */
 function openSection(id: string) {
   section(id).open = true;
   fireEvent(section(id), new Event('toggle'));
@@ -118,7 +117,6 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
       expect(titleOf('photos')).toContain('2 foto su 6');
       expect(titleOf('zone')).toContain('Le stesse di tutti i tuoi servizi');
 
-      // The fields have what the service has.
       expect(screen.getByTestId('service-name')).toHaveValue('Pulizia cambio ospiti');
       expect(screen.getByTestId('service-category')).toHaveValue('cleaning');
       expect(screen.getByTestId('service-included')).toHaveValue('Pulizia completa\nCambio biancheria');
@@ -242,7 +240,6 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
         }),
       );
       await waitFor(() => expect(sonner.toast.success).toHaveBeenCalledWith('Modifiche salvate'));
-      // The page is the saved service now: the title is the new name and there is nothing to save.
       await waitFor(() => expect(screen.getByRole('heading', { level: 1, name: 'Pulizia a fondo' })).toBeInTheDocument());
       await waitFor(() => expect(screen.getByTestId('service-save')).toBeDisabled());
       expect(screen.getByTestId('service-name')).toHaveValue('Pulizia a fondo');
@@ -313,7 +310,6 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
       expect(screen.getByTestId('service-amount')).toHaveAttribute('aria-invalid', 'true');
       expect(screen.getByTestId('service-duration')).toHaveAttribute('aria-invalid', 'true');
       await waitFor(() => expect(section('booking').open).toBe(true));
-      // What was typed is still there, to be fixed and sent again.
       expect(screen.getByTestId('service-name')).toHaveValue('Pulizia a fondo');
     });
 
@@ -328,10 +324,8 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
       const conflict = await screen.findByTestId('service-conflict');
       expect(conflict).toHaveTextContent('Questo servizio è stato modificato altrove. Ricarica per vedere la versione salvata.');
       expect(catalog.items()[0]?.name).toBe('Cambiato da un collega');
-      // The typing is not thrown away behind the person's back.
       expect(screen.getByTestId('service-name')).toHaveValue('Il mio cambiamento');
       expect(sonner.toast.success).not.toHaveBeenCalled();
-      // It is announced at once and it takes the focus: on a phone it is above the screen, where the person pressed "Save".
       expect(conflict).toHaveAttribute('role', 'alert');
       await waitFor(() => expect(document.activeElement).toBe(conflict));
 
@@ -341,10 +335,8 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
       expect(screen.getByTestId('service-name')).toHaveValue('Cambiato da un collega');
       expect(screen.getByTestId('service-amount')).toHaveValue('99');
       expect(screen.getByRole('heading', { level: 1, name: 'Cambiato da un collega' })).toBeInTheDocument();
-      // The button that was pressed went away with the notice: the focus is on the first field, not lost.
       await waitFor(() => expect(document.activeElement).toBe(screen.getByTestId('service-name')));
 
-      // From the reload on, a save carries the version it brought.
       type('service-name', 'Ora sì');
       save();
       await waitFor(() => expect(catalog.items()[0]?.name).toBe('Ora sì'));
@@ -380,7 +372,6 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
       });
       await page();
 
-      // What is shown is what the cache had, with the version it had; a read in the background would bring version 4 under these values.
       expect(screen.getByTestId('service-name')).toHaveValue('Pulizia cambio ospiti');
       expect(catalog.fetchOne).not.toHaveBeenCalled();
       type('service-name', 'Il mio cambiamento');
@@ -535,10 +526,8 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
         expect.objectContaining({ name: 'Pulizia cambio ospiti', photoUrls: ['https://cdn.example/b.jpg', 'https://cdn.example/a.jpg'], version: 3 }),
       );
       await waitFor(() => expect(screen.getByTestId('service-preview-card').querySelector('img')).toHaveAttribute('src', 'https://cdn.example/b.jpg'));
-      // The typed name is still in the form, still to be saved.
       expect(screen.getByTestId('service-name')).toHaveValue('Un nome non ancora salvato');
       expect(screen.getByTestId('service-save')).toBeEnabled();
-      // And the next save carries the version the photo left.
       save();
       await waitFor(() => expect(catalog.update).toHaveBeenCalledTimes(2));
       expect(catalog.update.mock.calls[1]?.[1]).toMatchObject({ name: 'Un nome non ancora salvato', version: 4 });
@@ -555,10 +544,8 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
 
       await waitFor(() => expect(screen.getAllByTestId('photo-list-item')).toHaveLength(1));
       expect(catalog.update).toHaveBeenCalledWith('a', expect.objectContaining({ photoUrls: ['https://cdn.example/b.jpg'] }));
-      // Confirming is not "Save": the form around the dialog was not submitted, so the photos were the only thing saved.
       expect(catalog.update).toHaveBeenCalledTimes(1);
       expect(sonner.toast.success).not.toHaveBeenCalled();
-      // The button that opened the dialog went with its photo: the focus is on the one of the photo that is first now.
       await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Togli la foto 1' })));
     });
 

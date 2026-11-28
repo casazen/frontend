@@ -150,7 +150,6 @@ describe('Select', () => {
       </Select>,
     );
 
-    // Same border, background and focus ring as the Input, so a select next to an input does not look different.
     expect(screen.getByRole('combobox')).toHaveClass(
       'rounded-md',
       'border',

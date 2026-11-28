@@ -29,11 +29,9 @@ describe('AlignedCard', () => {
     );
 
     const card = screen.getByTestId('card');
-    // Below the width: `flex flex-col`; from it: the subgrid, over as many rows as the card has.
     expect(card).toHaveClass('flex', 'flex-col', grid, subgrid, `${from}:gap-y-0`, `${from}:[grid-row:span_var(--aligned-rows)]`);
     expect(card).not.toHaveClass('grid-rows-subgrid');
     expect(card.style.getPropertyValue('--aligned-rows')).toBe('3');
-    // The style of the caller is kept.
     expect(card.style.color).toBe('red');
   });
 });

@@ -13,10 +13,6 @@ export type TaxExportRequest =
 
 const two = (value: number) => String(value).padStart(2, '0');
 
-/**
- * The name a file is saved under when the page cannot read the one the server gives it (`Content-Disposition`): the kind of file and its period, never an owner, a property or a guest.
- * The extension is the format asked, and `.pdf` for the prospect.
- */
 export function taxExportFallbackName(request: TaxExportRequest): string {
   switch (request.kind) {
     case 'f24':

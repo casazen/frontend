@@ -3,13 +3,8 @@ import { guestRegistrationApi } from '@/api/guest-registration.api';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import type { GuestNotificationOverride } from '@/types/guest-registration.types';
 
-/**
- * The card lives under the key of the property (`['properties', id, ...]`): a save of the property (the structure number, the municipality) invalidates
- * every query under it, so what the card says about what is missing is read again with no call of its own.
- */
 export const guestRegistrationKey = (propertyId: string) => ['properties', propertyId, 'guest-registration'] as const;
 
-/** The setting of the host changes by what the host does here, and what is missing by what is done on the property: a card that opens reads it again. */
 const CARD_STALE_TIME = 30 * 1000;
 
 /**

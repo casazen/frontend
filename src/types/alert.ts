@@ -1,7 +1,3 @@
-/**
- * The popup alerts (ADR-025): proactive notices that ask the host to do something. The API and the real-time channel write
- * enums by name, so these are the names of the backend enums `AlertType` and `AlertUrgency`.
- */
 export const ALERT_TYPES = [
   'BookingNeedsReview',
   'CheckInPending',
@@ -29,7 +25,6 @@ export interface PendingAlert {
    * know, and the alert is then shown with a generic sentence instead of being lost.
    */
   alertType: string;
-  /** What kind of entity the alert is about (`Booking`, `Property`, …). */
   entityType: string;
   entityId: string;
   urgency: AlertUrgency;

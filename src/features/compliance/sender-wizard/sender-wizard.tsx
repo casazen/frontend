@@ -76,14 +76,11 @@ type StepSchema = ZodType<unknown, FieldValues>;
 const PROPERTIES_PATH = '/app/short-rent/properties';
 const COMPLIANCE_PATH = '/app/short-rent/compliance';
 
-/** The short-rent properties of the host, in the order the app lists them: what the page offers when the address names none. */
 const SHORT_RENT = { mode: 'short' } as const;
 
-/** The page of the property on the section that tells who sends and whether it works: where the wizard is left to, and where its result leads. */
 const stateAddress = (propertyId: string) =>
   `${PROPERTIES_PATH}/${encodeURIComponent(propertyId)}?${new URLSearchParams({ section: CONNECTION_HEALTH_SECTION }).toString()}`;
 
-/** The rules of the first step: one of the ways the server lets the host choose, and, for an automatic one, the delegation settled. The messages are i18n keys, as in every form. */
 function choiceSchema(read: PropertySender): StepSchema {
   const choosable = senderOptions(read).filter((option) => option.available).map((option) => option.sender as string);
   return z
@@ -95,7 +92,6 @@ function choiceSchema(read: PropertySender): StepSchema {
     });
 }
 
-/** The rules of the summary: the same choice, and the change confirmed when the sender really changes (the server asks it too). */
 function summarySchema(read: PropertySender): StepSchema {
   const choosable = senderOptions(read).filter((option) => option.available).map((option) => option.sender as string);
   return z
@@ -108,7 +104,6 @@ function summarySchema(read: PropertySender): StepSchema {
     .refine((values) => switchConfirmed(values as SenderWizardValues, read), { message: 'compliance.sender.errors.confirmRequired', path: ['switchConfirmed'] });
 }
 
-/** A draft that names a way the host cannot choose now is not a way to start from: it is dropped (and the wizard starts from what the server says). */
 const draftOfAChoosableSender =
   (read: PropertySender) =>
   (draft: WizardDraft): boolean => {
@@ -120,7 +115,6 @@ interface ConfirmFirstProps {
   onGo: () => void;
 }
 
-/** A step that works on the sender in effect, opened while the choice has not been confirmed (a link, a draft, the back button): it says so and leads to the summary. */
 function ConfirmFirst({ onGo }: ConfirmFirstProps) {
   const { t } = useTranslation();
 
@@ -156,7 +150,6 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { hasPermission } = useWorkspace();
-  // The automatic send of the guests is a setting of the whole organization: only its administrator changes it (the server refuses anyone else), so only they are offered the switch.
   const canChangeAutoSend = hasPermission('short-rent', ORG_BILLING_ADMIN_PERMISSION);
   const switchSender = useSwitchSender(propertyId);
   const testConnection = useTestConnection(propertyId);
@@ -167,18 +160,13 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
   const istatAvailable = flags.octorateOnboarding;
   const istatStatus = useIstatCredentialsStatus(propertyId, { enabled: istatAvailable });
   const saveIstat = useSetIstatCredentials(propertyId);
-  // What the last button of a step was stopped by, to tell it in words (the shell shows the message of an error that has none of its own).
   const [blocked, setBlocked] = useState<StepProblemKind | null>(null);
-  // The credentials of the portal as they are typed: in the state of the wizard and in no value of its form, so in no draft, no address and no cache; they leave with the save.
   const [typedCredentials, setTypedCredentials] = useState<SetQuesturaCredentialsRequest>(EMPTY_QUESTURA_CREDENTIALS);
   const [credentialErrors, setCredentialErrors] = useState<QuesturaCredentialsErrors>({});
-  // The same for the ISTAT ones.
   const [typedIstat, setTypedIstat] = useState<SetIstatCredentialsRequest>(EMPTY_ISTAT_CREDENTIALS);
   const [istatErrors, setIstatErrors] = useState<IstatCredentialsErrors>({});
-  // Any request of the wizard in flight: none of its buttons can be pressed again meanwhile.
   const busy = switchSender.isPending || testConnection.isPending || declareActivated.isPending || saveCredentials.isPending || saveIstat.isPending;
 
-  // The automatic send of the guests starts untouched (`null`): the switch shows what the server holds now, never what an older read of another visit held, and sends nothing until it is touched.
   const [defaults] = useState<SenderWizardValues>(() => ({ ...SENDER_WIZARD_DEFAULTS, sender: defaultSenderChoice(read) }));
   const leaveTo = stateAddress(propertyId);
   const tested = testConnection.data !== undefined;
@@ -189,16 +177,10 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
     void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_HEALTH_KEY, propertyId] });
   };
 
-  /**
-   * The button of the summary: the sender is changed (`PUT`). The consent goes with the version of the text the host read and the confirmation only for the change they confirmed; the automatic
-   * send of the guests goes with them when the administrator changed it, and its result is told in words from what the server answered (the wizard stays where it is). A refusal that says what
-   * to do is told in words (and the sender is read again, so the screen shows what is true now); the wizard does not go on.
-   */
   const applySwitch = async (values: SenderWizardValues) => {
     setBlocked(null);
     const request = toSwitchRequest(values, read, { canChangeAutoSend });
     try {
-      // Keeping the account choice is not a property override. Operational verification remains property-specific.
       if (read.source === 'OrganizationDefault' && request.sender === read.sender && request.autoSendGuestsToOctorate === undefined && !request.delegationConsent) return;
       const answer = await switchSender.mutateAsync(request);
       if (request.autoSendGuestsToOctorate !== undefined) {
@@ -288,7 +270,6 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
     }
   };
 
-  // «Salva ed esci» keeps the answers of the wizard as its draft and nothing else: the credentials that were typed are not part of it, and the person is told.
   const saveAndExit = () => {
     if (typedCredentialsPending) toast.warning(t('compliance.sender.exit.savedWithoutCredentials'));
     else toast.success(t('compliance.sender.exit.saved'));
@@ -296,7 +277,6 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
   };
 
   const stepsFor = (values: SenderWizardValues): WizardStep<SenderWizardValues>[] => {
-    // The steps after the summary work on the sender in effect: until the host has confirmed the choice they say so and lead back.
     const confirmed = read.sender === values.sender;
     const canFinish = tested || read.state === 'Declared' || verified;
 
@@ -327,7 +307,6 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
         title: t('compliance.sender.steps.credentials.title'),
         purpose: t('compliance.sender.steps.credentials.purpose'),
         optional: true,
-        // With credentials typed the main button saves them first: it says so.
         nextLabel: typedCredentialsPending ? t('compliance.sender.steps.credentials.saveAndNext') : undefined,
         nextDisabled: busy || !confirmed,
         beforeNext: saveCredentialsBeforeNext,
@@ -376,7 +355,6 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
         label: t('compliance.sender.steps.test.label'),
         title: t('compliance.sender.steps.test.title'),
         purpose: t('compliance.sender.steps.test.purpose'),
-        // The wizard ends on a test: until the host has run one (or the server already holds a verified or a declared state) there is nothing to conclude.
         nextDisabled: busy || !confirmed || !canFinish,
         render: ({ goTo }) =>
           confirmed ? (
@@ -407,8 +385,6 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
       steps={stepsFor(defaults)}
       stepsFor={stepsFor}
       defaultValues={defaults}
-      // The answers are the draft of the property on the server, resumed on any device; a draft that names a way that cannot be chosen now is dropped. The confirmation of a change and the consent to
-      // the delegation are not kept (they are given again, with what they are about in front of the person), and the credentials are not an answer of the wizard: they are in no draft.
       draft={{
         exclude: SENDER_DRAFT_EXCLUDE,
         version: SENDER_DRAFT_VERSION,
@@ -434,7 +410,6 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
   );
 }
 
-/** What the page offers when its address names no property: the properties of the host, each leading to the wizard for it. */
 function PropertyPicker() {
   const { t } = useTranslation();
   const properties = useProperties(SHORT_RENT);
@@ -476,12 +451,10 @@ function PropertyPicker() {
   );
 }
 
-/** The sender of one property, read: what the page shows is what the read says, and a read that failed is never shown as a sender that is fine. */
 function SenderWizardLoader({ propertyId }: { propertyId: string }) {
   const { t } = useTranslation();
   const sender = useSender(propertyId);
 
-  // A 404 is «not found» whatever the cache still holds of an older read (the query keeps the last data on an error); so is a property the caller does not reach (its read answers `null`).
   if ((sender.isError && getHttpStatus(sender.error) === 404) || sender.data === null) {
     return (
       <EmptyState
@@ -515,7 +488,6 @@ function SenderWizardLoader({ propertyId }: { propertyId: string }) {
   return (
     <>
       {sender.isError ? (
-        // A later read failed (the wizard keeps what it had): the state on screen may be older than the server's, and the person is told.
         <Alert
           variant="warning"
           data-testid="sender-wizard-stale"
@@ -545,7 +517,6 @@ export function SenderWizardPage() {
   const canWrite = hasPermission('short-rent', SENDER_WRITE_PERMISSION);
   const propertyId = propertyOfAddress(searchParams);
   const title = t('compliance.sender.title');
-  // The header says which property it is about, once its sender was read (the same read as the wizard's: one request); a property that is not reachable never has its name asked.
   const sender = useSender(propertyId, canWrite);
   const propertyName = useSenderPropertyName(propertyId, !!sender.data);
   const description = propertyName ? t('compliance.sender.descriptionFor', { property: propertyName }) : t('compliance.sender.description');

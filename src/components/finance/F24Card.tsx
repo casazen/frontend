@@ -61,7 +61,6 @@ export function F24Card({ record }: F24CardProps) {
     }
   };
 
-  /** The payment is registered once the person has confirmed it. The server's answer decides: a refusal is told here and nothing is shown as paid. */
   const onRegister = async () => {
     if (busy || sending.current || !paymentDate) return;
     sending.current = true;
@@ -78,7 +77,6 @@ export function F24Card({ record }: F24CardProps) {
   };
 
   const dismissConfirmation = (open: boolean) => {
-    // The request is on its way: the dialog stays until the server has answered.
     if (!open && !busy) setConfirming(false);
   };
 

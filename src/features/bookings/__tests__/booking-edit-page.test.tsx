@@ -36,7 +36,6 @@ vi.mock('@/components/layout/page-header', () => ({
 const WAIT = { timeout: 5000 };
 const BOOKING_ID = 'booking-1';
 
-/** `changeOptions` as the API answers it: a booking of the host, or a confirmed one of the booking site, that has not started, can be changed. */
 const optionsOf = ({ status, source }: Pick<Booking, 'status' | 'source'>): BookingChangeOptions => {
   const open = (source === 'Manual' || (source === 'Direct' && status === 'Confirmed')) && (status === 'Pending' || status === 'Confirmed');
   return { canEdit: open, canCancel: status !== 'Cancelled' && status !== 'CheckedOut', reasonCode: null, guidanceKey: null, channel: null };
@@ -167,7 +166,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
       numberOfChildren: 0,
       specialRequests: 'Culla',
     });
-    // The booking of the host moves no money and is not on the channel manager: nothing to add, back to the booking.
     expect(bookingsApi.editQuote).not.toHaveBeenCalled();
     expect(await screen.findByText('booking-detail', undefined, WAIT)).toBeInTheDocument();
   });
@@ -189,7 +187,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
   });
 
   it('BookingEditPage_RequestOfTheBookingSite_LocksDatesAndGuestsButKeepsTheNotes', async () => {
-    // A "pay at the property" request waiting for the host is not a booking yet: the API says the stay is locked.
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Direct', status: 'Pending' }));
     renderPage();
 
@@ -243,7 +240,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
       const review = await screen.findByTestId('booking-edit-review', undefined, WAIT);
       expect(within(review).getByTestId('booking-edit-settlement-price')).toHaveTextContent(/Il prezzo passa da 450,00\s€ a 520,00\s€/);
       expect(within(review).getByTestId('booking-edit-settlement-action')).toHaveTextContent(/L'ospite riceve un link per pagare 70,00\s€/);
-      // The quote went with the same body as the save will, and nothing was saved.
       expect(bookingsApi.editQuote).toHaveBeenCalledWith(BOOKING_ID, {
         checkInDate: '2027-10-01',
         checkOutDate: '2027-10-06',
@@ -327,7 +323,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
 
       expect(await screen.findByTestId('booking-edit-review-error', undefined, WAIT)).toHaveTextContent(i18n.t('apiErrors.codes.bookingSettlementFailed'));
       expect(screen.queryByTestId('booking-edit-saved')).not.toBeInTheDocument();
-      // The host can go back, or ask again: the buttons are free again.
       expect(screen.getByTestId('booking-edit-review-confirm')).toBeEnabled();
     });
 
@@ -342,7 +337,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
       await changeCheckOut('2027-10-06');
       submit();
 
-      // A quote the person may not read is never asked for (the API would refuse it); the save is the server's to refuse, and it says why next to the form.
       expect(await screen.findByTestId('booking-submit-error', undefined, WAIT)).toHaveTextContent(
         i18n.t('apiErrors.codes.bookingEditPaymentPermissionRequired'),
       );
@@ -350,7 +344,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
     });
 
     describe('what the answer of the save says of the money (the part of an overpayment paid outside CasaZen)', () => {
-      // The plan of an overpayment paid in cash moves no money, so anyone who may write the booking can save it, and the answer carries what is left to give back by hand.
       const withAnOverpaymentPaidByHand = () =>
         saved({ settlement: { action: 'none', state: 'none', amount: 0, offlineRefundDue: 30, currency: 'EUR' } });
 
@@ -379,7 +372,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
         await changeCheckOut('2027-10-06');
         submit();
 
-        // The part to give back is money, and there is no push to follow: nothing to say here, the host is back on the booking.
         expect(await screen.findByText('booking-detail', undefined, WAIT)).toBeInTheDocument();
         expect(screen.queryByTestId('booking-edit-saved')).not.toBeInTheDocument();
       });
@@ -474,7 +466,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
       renderPage();
 
       await changeCheckOut('2027-10-06');
-      // What the server holds right after the save: the push has started.
       vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ octorateSync: sync({ state: 'Pending' }) }));
       submit();
 
@@ -493,7 +484,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
 
       const result = await screen.findByTestId('booking-edit-saved', undefined, WAIT);
       expect(result).toHaveTextContent('Prenotazione aggiornata.');
-      // Synced says nothing: a success the server did not confirm is never claimed.
       expect(within(result).queryByText(/channel manager/)).not.toBeInTheDocument();
     });
 
@@ -540,7 +530,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
     });
 
     it('BookingEditPage_PushUnderWay_AsksTheBookingAgainByItselfUntilTheChannelManagerAnswers', async () => {
-      // The outcome of a sync has no push notification: the open page asks again, and stops when the row is final.
       vi.useFakeTimers({ shouldAdvanceTime: true });
       try {
         vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ octorateSync: sync({ state: 'Pending' }) }));
@@ -548,7 +537,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
         expect(await screen.findByTestId('booking-sync-pending', undefined, WAIT)).toBeInTheDocument();
         const reads = vi.mocked(bookingsApi.getById).mock.calls.length;
 
-        // The channel manager answers; the page finds out without a reload.
         vi.mocked(bookingsApi.getById).mockResolvedValue(
           booking({ octorateSync: sync({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true }) }),
         );
@@ -556,7 +544,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
         expect(await screen.findByTestId('booking-sync-failed', undefined, WAIT)).toBeInTheDocument();
         expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBeGreaterThan(reads);
 
-        // A final state is final for this visit: it stops asking.
         await vi.advanceTimersByTimeAsync(500);
         const settled = vi.mocked(bookingsApi.getById).mock.calls.length;
         await vi.advanceTimersByTimeAsync(20_000);
@@ -567,7 +554,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
     });
 
     it('BookingEditPage_PushStillPendingTenMinutesAfterTheOpening_StopsAskingAndSaysItHasNoAnswerYet', async () => {
-      // A push that stopped halfway leaves the row Pending for good, and the host cannot ask again from there.
       vi.useFakeTimers({ shouldAdvanceTime: true });
       try {
         vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ octorateSync: sync({ state: 'Pending' }) }));
@@ -583,7 +569,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
         await vi.advanceTimersByTimeAsync(2 * SYNC_WATCH_MS);
         expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBe(settled);
 
-        // «Controlla di nuovo» reads the booking once more, and the answer that has come is shown.
         vi.mocked(bookingsApi.getById).mockResolvedValue(
           booking({ octorateSync: sync({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true }) }),
         );
@@ -605,13 +590,11 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
         await vi.advanceTimersByTimeAsync(SYNC_PENDING_LIMIT_MS + 1_000);
         fireEvent.click(within(await screen.findByTestId('booking-sync-waiting', undefined, WAIT)).getByRole('button', { name: 'Controlla di nuovo' }));
 
-        // The minute after the asking: it asks again every few seconds, and says "being sent" meanwhile.
         const asked = vi.mocked(bookingsApi.getById).mock.calls.length;
         await vi.advanceTimersByTimeAsync(SYNC_WATCH_MS / 2);
         expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBeGreaterThan(asked + 3);
         expect(await screen.findByTestId('booking-sync-pending', undefined, WAIT)).toBeInTheDocument();
 
-        // And when the minute is over without an answer it stops again and says so.
         await vi.advanceTimersByTimeAsync(SYNC_WATCH_MS);
         expect(await screen.findByTestId('booking-sync-waiting', undefined, WAIT)).toBeInTheDocument();
         const settled = vi.mocked(bookingsApi.getById).mock.calls.length;
@@ -658,7 +641,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
       });
 
       it('BookingEditPage_CreationRefusedForTheDates_SaysTheyAreTakenAndAsksAgainWithoutWritingOverAnything', async () => {
-        // The creation of the booking in the channel manager found the dates taken: no reservation exists there, so there are no two versions to choose between.
         vi.mocked(bookingsApi.getById).mockResolvedValue(
           booking({ source: 'Direct', octorateSync: sync({ state: 'Conflict', lastOperation: 'Create', errorCode: 'octorate_dates_unavailable', canRetry: true }) }),
         );
@@ -676,7 +658,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
       });
 
       it('BookingEditPage_VersionThatDoesNotSayTheGuests_OffersOnlyKeepingTheCasazenVersion', async () => {
-        // The server takes the version of the channel manager as the booking's only when it says the dates and the guests: this one would conflict again.
         vi.mocked(bookingsApi.getById).mockResolvedValue(
           booking({
             source: 'Direct',
@@ -704,7 +685,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
         expect(await screen.findByLabelText(i18n.t('booking.form.checkInDate'), undefined, WAIT)).toHaveValue('2027-10-03');
         expect(screen.getByLabelText(i18n.t('booking.form.checkOutDate'))).toHaveValue('2027-10-08');
         expect(screen.getByLabelText(i18n.t('booking.form.numberOfGuests'))).toHaveValue(3);
-        // Nothing was written: the CasaZen version is still the saved one until the host saves the form.
         expect(bookingsApi.update).not.toHaveBeenCalled();
         expect(bookingsApi.retryOctorateSync).not.toHaveBeenCalled();
       });
@@ -727,7 +707,6 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
 
     it('BookingEditPage_NotFoundWhileTheCacheStillHoldsTheBooking_SaysNotFoundAndShowsNoForm', async () => {
       const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-      // From an earlier visit (see the test above): older than the opening of the page.
       client.setQueryData(['bookings', BOOKING_ID], booking(), { updatedAt: Date.now() - 60_000 });
       vi.mocked(bookingsApi.getById).mockRejectedValue(problem(404, { status: 404, code: 'not_found' }));
       renderPage(client);

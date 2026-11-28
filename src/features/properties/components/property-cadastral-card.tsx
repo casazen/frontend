@@ -12,11 +12,6 @@ interface Props {
   property: Property;
 }
 
-/**
- * Cadastral identification of the unit (LT-10): foglio, particella, subalterno, categoria, rendita. The lease contract
- * states them; the sheet also finds the canone concordato zone. Only lengths are checked by the API. A part of the page of the
- * property without a box around it (LR-07d): a title, its edit and the values.
- */
 export function PropertyCadastralCard({ property }: Props) {
   const { t } = useTranslation();
   const titleId = useId();

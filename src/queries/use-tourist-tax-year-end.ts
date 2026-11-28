@@ -5,7 +5,6 @@ import { yearEndFallbackName, type YearEndFileRequest } from '@/features/reports
 import { TOURIST_TAX_SUMMARY_KEY } from './use-tourist-tax-summary';
 import { saveDownload } from './save-download';
 
-/** The root of the keys of the year-end reads that a screen shows: under the key of the summaries, so what records or deletes a payment reads them again too. */
 const YEAR_END_KEY = [TOURIST_TAX_SUMMARY_KEY, 'year-end'] as const;
 
 /**
@@ -37,7 +36,6 @@ export function useTouristTaxYearDeclaration(year: number) {
   });
 }
 
-/** The account of the agent of the year as the data of the file, cut by month or by quarter: read again at every visit, and the answer of a cut or a year is never shown under another. */
 export function useTouristTaxYearAgentAccount(year: number, by: YearEndAccountCut) {
   return useQuery({
     queryKey: [...YEAR_END_KEY, 'agent-account', year, by],
@@ -47,7 +45,6 @@ export function useTouristTaxYearAgentAccount(year: number, by: YearEndAccountCu
   });
 }
 
-/** The yearly count of the nights in Ticino as the data of the file: read again at every visit, and the answer of a year is never shown under another. */
 export function useTouristTaxYearTicinoCount(year: number) {
   return useQuery({
     queryKey: [...YEAR_END_KEY, 'ticino', year],

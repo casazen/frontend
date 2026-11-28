@@ -18,7 +18,6 @@ import { ClientPager } from './client-pager';
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** A property of the host as the picker needs it. */
 interface Candidate {
   id: string;
   name: string;
@@ -33,12 +32,10 @@ function fold(text: string): string {
     .toLowerCase();
 }
 
-/** True when both lists hold the same ids (the order does not matter). */
 function sameSet(a: readonly string[], b: readonly string[]): boolean {
   return a.length === b.length && a.every((id) => b.includes(id));
 }
 
-/** The flows named in words, for the confirmation («Annunci sui canali, Messaggi»). */
 function flowNames(flows: readonly OnboardingFlowKey[], t: TFunction): string {
   return flows.map((flow) => t(flowNameKey(flow))).join(', ');
 }
@@ -133,9 +130,7 @@ function ActivationReport({ result, nameOf }: ActivationReportProps) {
 }
 
 interface PilotGroupPanelProps {
-  /** How many properties the agency has (the progress of the page): to say how many «the others» are. `null` while it is not known. */
   totalProperties: number | null;
-  /** Whether the person may read the properties (`property.read`): without it the list to pick from is not asked for (the server would answer 403). */
   canReadProperties: boolean;
 }
 
@@ -170,7 +165,6 @@ export function PilotGroupPanel({ totalProperties, canReadProperties }: PilotGro
   const chosen = edited ?? savedIds;
   const dirty = edited !== null && !sameSet(edited, savedIds);
 
-  // Every property of the host has a name for the report (the server may name one the picker does not offer); only the active ones are offered.
   const everyProperty = useMemo<Candidate[]>(() => {
     const list = Array.isArray(properties.data) ? properties.data : [];
     return list.map((property) => ({ id: property.id, name: property.name, city: property.city }));
@@ -216,14 +210,12 @@ export function PilotGroupPanel({ totalProperties, canReadProperties }: PilotGro
   }
 
   async function activateNow() {
-    // A press sends once: a second press while the call is on its way (or before the page has drawn that it is) does nothing.
     if (inFlight.current || confirm === null || flows.length === 0) return;
     inFlight.current = true;
     setUncertain(false);
     try {
       setReport(await activate.mutateAsync({ cohort: confirm, flows }));
     } catch (error) {
-      // A refusal of the server (the pilot is not active, the group is not set) is said as it is; any other failure may have done a part: say so.
       const status = getHttpStatus(error);
       setReport(null);
       setUncertain(status === undefined || status >= 500);
@@ -410,8 +402,6 @@ export function PilotGroupPanel({ totalProperties, canReadProperties }: PilotGro
       <ConfirmationDialog
         open={confirm !== null}
         onOpenChange={(open) => {
-          // A press on «Annulla», on the outside or a focus that leaves the dialog while the call is on its way does not drop it (the ref, not the state: the
-          // handler may be the one of the render before the call started): the dialog closes when the answer is in.
           if (!open && !inFlight.current) setConfirm(null);
         }}
         title={t(confirm === 'rest' ? 'onboardingPlan.bulk.pilot.confirmRestTitle' : 'onboardingPlan.bulk.pilot.confirmPilotTitle')}

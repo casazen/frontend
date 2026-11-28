@@ -7,16 +7,10 @@
 export const MAIN_SALES_CHANNEL_CODES: readonly string[] = ['142', '274', '4', '235', '271', '369', '333'];
 
 export interface MainChannelsSplit<T> {
-  /** What is shown at once: the main channels in their order, then the ones held in view, in the catalog's order. */
   main: T[];
-  /** What waits behind «Visualizza altri», in the catalog's order. */
   others: T[];
 }
 
-/**
- * Splits a list of sales channels into the main ones and the others. A channel that `keep` holds in view (one already chosen or already
- * active) is never hidden. When none of the main codes is in the list nothing is hidden: the list is shown whole, as before.
- */
 export function splitMainChannels<T extends { code: string }>(
   entries: readonly T[],
   keep: (entry: T) => boolean = () => false,

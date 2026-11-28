@@ -66,7 +66,6 @@ describe('Segmented (UI-07)', () => {
   it('Segmented_PressedButton_LooksDifferentNotOnlyByColor', () => {
     render(<Harness />);
 
-    // The raised white tile and the shadow, as well as the darker text.
     expect(screen.getByTestId('filter-all')).toHaveClass('bg-background', 'shadow-sm', 'text-foreground');
     expect(screen.getByTestId('filter-active')).toHaveClass('text-foreground/65');
     expect(screen.getByTestId('filter-active')).not.toHaveClass('shadow-sm');
@@ -84,7 +83,6 @@ describe('Segmented (UI-07)', () => {
     expect(screen.getByTestId('filter-all')).toHaveClass('pointer-coarse:min-h-11');
   });
 
-  // A choice that is only an icon (the list / columns switch of the unified list, UI-14) is a square the finger can hit.
   it('Segmented_Buttons_AreAtLeast44PxWideForAFinger', () => {
     render(<Harness />);
 

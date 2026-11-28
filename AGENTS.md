@@ -50,6 +50,10 @@ La build esegue TypeScript, bundle browser, bundle SSR del sito, prerender e wid
 
 I flussi L3 su stack effimero (`e2e/gj-l3/`, `e2e/stack/up.sh`) hanno il runbook condiviso `docs/03-documenti-ai/runbook/backend/golden-journey-l3.md` (workspace). Uno smoke saltato non prova lo staging reale. Prima di unire: controlli richiesti verdi e nessun conflitto (workflow in `.github/workflows/`).
 
+## Commenti nel codice
+
+**Il codice funge da commento**: nomi chiari, funzioni piccole, tipi che dicono ciò che serve. Non si scrivono commenti che ripetono il nome, i parametri o ciò che il codice già dice, né JSDoc descrittivi, né «Arrange/Act/Assert», né intestazioni di sezione, né sigle di ticket o di requisiti (`US-…`, `SP-…`, `E05/F07`), né codice commentato. Un commento resta solo se spiega il **perché** di una logica applicativa non ovvia (regola di business, legale, fiscale o di conformità, invariante, vincolo di concorrenza o di ordine, stranezza di un sistema esterno, ragione di sicurezza): breve e nel punto in cui serve. Restano i commenti funzionali (`eslint-disable`, `@ts-expect-error`, `@vitest-environment`, riferimenti triple-slash, `@vite-ignore`), il commento dentro un blocco vuoto (`catch {}`: lo chiede la regola `no-empty`) e i `TODO`/`FIXME`.
+
 ## Guida utente
 
 Ci sono due guide e **la stessa PR che cambia un flusso aggiorna entrambe**:

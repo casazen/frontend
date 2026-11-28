@@ -8,8 +8,6 @@ import { ConfirmPage } from '../confirm-page';
 
 vi.mock('@/api/client');
 
-// CRM-03 (NF-90): the link of the double opt-in e-mail opens this page. It carries the contact, the expiry and the signature in the fragment,
-// never the address.
 const CONTACT_ID = '5e9c1a2b-3d4f-4a6b-8c7d-9e0f1a2b3c4d';
 const SIGNATURE = '4b7d9f1a2c3e5a6b8d0f1a2c3e4b5d6f7a8c9e0b1d2f3a4c5e6b7d8f9a0c1e2b';
 const EXPIRES_AT = '2026-11-09T18:30:00Z';
@@ -53,7 +51,6 @@ describe('ConfirmPage (CRM-03)', () => {
 
       fireEvent.click(confirmButton());
 
-      // The same words whether it was the first time or not.
       expect(await screen.findByRole('heading', { level: 1, name: 'Iscrizione confermata' })).toBeInTheDocument();
       expect(post).toHaveBeenCalledTimes(1);
       const [url, body, options] = post.mock.calls[0];
@@ -86,7 +83,6 @@ describe('ConfirmPage (CRM-03)', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: expectedTitle })).toBeInTheDocument();
     expect(document.body).not.toHaveTextContent(code);
-    // No way on and no «try again»: that link cannot work, and it was sent once.
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(post).toHaveBeenCalledTimes(1);

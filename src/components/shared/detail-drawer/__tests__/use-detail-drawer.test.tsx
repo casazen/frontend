@@ -30,7 +30,6 @@ function Shell({ withHost }: { withHost: boolean }) {
   );
 }
 
-/** The history is [`/app/prev`, `/app/page`…]: a call that goes Back once too often ends on `/app/prev`. */
 function renderRouter({ withHost = true, page = '/app/page' }: { withHost?: boolean; page?: string } = {}) {
   const router = createMemoryRouter(
     [
@@ -83,7 +82,6 @@ describe('useDetailDrawer (UI-15)', () => {
         drawer().open('probe-h', 'a1');
       });
       await screen.findByRole('dialog');
-      // What a content keeps: `await save(); close();`
       const kept = drawer().close;
       fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
       await waitFor(() => expect(where()).toBe('/app/page'));
@@ -92,7 +90,6 @@ describe('useDetailDrawer (UI-15)', () => {
       act(() => kept());
       await tick();
 
-      // Another Back would have left the page for `/app/prev`.
       expect(router.state.location.pathname).toBe('/app/page');
       expect(where()).toBe('/app/page');
     });
@@ -121,7 +118,6 @@ describe('useDetailDrawer (UI-15)', () => {
       });
       await screen.findByRole('dialog');
 
-      // Esc held down, a double tap: two presses reach the same `close` before the router has changed the address.
       act(() => {
         drawer().close();
         drawer().close();
@@ -144,7 +140,6 @@ describe('useDetailDrawer (UI-15)', () => {
         await router.navigate(-1);
       });
 
-      // One Back closes it: a second entry for the same drawer would have left it open.
       await waitFor(() => expect(where()).toBe('/app/page'));
     });
 
@@ -174,7 +169,6 @@ describe('useDetailDrawer (UI-15)', () => {
         await router.navigate(-1);
       });
 
-      // Nothing was shown, so there was nothing to swap: Back closes the new drawer and lands on the address it was opened from.
       await waitFor(() => expect(where()).toBe('/app/page?detail=ghost:1'));
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });

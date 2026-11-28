@@ -58,14 +58,10 @@ function InterventionsListPage() {
     categories: categories.data ?? NO_CODES,
   });
   const { state } = useListState(list);
-  // The property and the category of an address are choices of a filter, which drops what it does not know: the first request waits
-  // until the filters know them. A catalog or a list of properties that does not come must not hold the page back (`isLoading` ends).
   const ready = !properties.isLoading && !categories.isLoading;
   const rows = useInterventions(interventionListParams(state, { bookingId }), { enabled: ready });
   const counts = useInterventionCounts(interventionFilterParams(state, { bookingId }), { enabled: ready });
 
-  // The list cannot tell "no intervention at all" from "none in this chip", and its toolbar goes away with it: the page says it from
-  // the counters, which count every chip.
   const narrowed = state.q.trim() !== '' || Object.keys(state.filters).length > 0 || bookingId !== undefined;
   const nothingAtAll = !narrowed && counts.data?.all === 0 && !counts.isPlaceholderData;
   const { icon: emptyIcon, ...empty } = list.empty;
@@ -130,10 +126,6 @@ function InterventionsListPage() {
   );
 }
 
-/**
- * `/app/short-rent/interventions`. An address of the page as the old links wrote it (`?status=Completato`, `?propertyId=…`) becomes the
- * address of this list (`?chip=topay`, `?f_property=…`) and the list opens on it.
- */
 export function InterventionsPage() {
   const [address] = useSearchParams();
   const current = currentInterventionsSearch(address);

@@ -1,7 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { publicSupplierApi, type PublicQuoteRequestBody } from '@/api/public-supplier.api';
 
-/** The slots are cached for 30 seconds on the server: asking again sooner would tell nothing new. */
 const SLOTS_STALE_MS = 30_000;
 
 /** One published service of a supplier, with its description and supplements (404 for an unknown one: no retry). */
@@ -15,7 +14,6 @@ export function useSupplierService(slug: string, serviceSlug: string, enabled = 
   });
 }
 
-/** The free slots of a service for the next two weeks. */
 export function useSupplierSlots(slug: string, serviceSlug: string, enabled = true) {
   return useQuery({
     queryKey: ['supplier-slots', slug, serviceSlug],

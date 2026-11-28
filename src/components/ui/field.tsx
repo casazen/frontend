@@ -5,10 +5,8 @@ import { Label } from "@/components/ui/label";
 import { translateValidationMessage } from "@/i18n/validation-message";
 import { cn } from "@/lib/utils";
 
-/** What a form library hands over as an error: a message, or an object that has one (react-hook-form's `FieldError`). */
 export type FieldErrorInput = string | { message?: string } | null | undefined;
 
-/** What a control needs to be wired to its `Field`: spread it on the control when the child is a function. */
 export interface FieldControlProps {
   id: string;
   "aria-describedby"?: string;
@@ -16,48 +14,24 @@ export interface FieldControlProps {
 }
 
 export interface FieldProps {
-  /** Text of the label. It is tied to the control with `htmlFor`, so a click on it focuses the control. */
   label: React.ReactNode;
-  /** A hint under the control. */
   hint?: React.ReactNode;
-  /** A sample value, written after the hint ("Example: ..."). */
   example?: React.ReactNode;
-  /**
-   * The error of the field, with an icon: a message, an i18n key (the schemas of the forms use keys, translated here as
-   * `FormFieldError` does) or the `FieldError` of react-hook-form. While there is one the control is `aria-invalid`.
-   */
   error?: FieldErrorInput;
-  /** A confirmation under the control ("This address is free"), with an icon. */
   success?: React.ReactNode;
-  /** Adds "(optional)" to the label: the product marks what may be left out, not what is required. */
   optional?: boolean;
-  /** A small text on the right of the label (characters left). */
   counter?: React.ReactNode;
-  /** Id of the control (and prefix of the ids of the messages). The `id` of the child wins, then this one, then a generated one. */
   id?: string;
   className?: string;
-  /**
-   * The control: one element (an `Input`, a `Select`, anything that takes `id` and `aria-*`; `register(...)` and
-   * `Controller` render props go on the element as always), or a function that receives the props to spread.
-   */
   children: React.ReactElement | ((control: FieldControlProps) => React.ReactNode);
 }
 
-// Text of the messages: foreground tones of the semantic tokens, with a fallback that meets AA (6.5:1 and 7.1:1 on white).
 const ERROR_TEXT = "text-[color:var(--color-danger-foreground,#b4232a)]";
 const SUCCESS_TEXT = "text-[color:var(--color-success-foreground,#166534)]";
 
-// A field in error gets a red 1 px outline over its border. The border color of the controls is overridden by a global
-// rule today (the `border-*` utilities do nothing), so the border alone would not show the state.
 const INVALID_CONTROL =
   "[&_[aria-invalid=true]]:outline [&_[aria-invalid=true]]:outline-1 [&_[aria-invalid=true]]:-outline-offset-1 [&_[aria-invalid=true]]:outline-destructive";
 
-/**
- * A form field: label, control, hint/example, error or confirmation. It gives the control the `id`, the
- * `aria-describedby` that points at the messages and the `aria-invalid` of the error, so none of them is written by hand.
- *
- *     <Field label={t('...')} error={errors.name}><Input {...register('name')} /></Field>
- */
 export function Field({ label, hint, example, error, success, optional, counter, id, className, children }: FieldProps) {
   const { t, i18n } = useTranslation();
   const generatedId = React.useId();

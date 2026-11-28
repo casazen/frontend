@@ -3,11 +3,6 @@ import { expect, test } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { pinE2eLocale } from './helpers/locale';
 
-/**
- * UI-02: the form of "new payment" is the pilot page of the UI primitives (Field, Select, Alert, Button loading and
- * the loading / error / empty states of the list of bookings). L2 (demo mode, mocked API).
- */
-
 const BOOKING_ID = 'b1000000-1111-2222-3333-444444444444';
 const OTA_BOOKING_ID = 'b2000000-1111-2222-3333-444444444444';
 const CREATE_URL = demoUrl('/app/short-rent/payments/create', 'short-stay');
@@ -64,7 +59,6 @@ test.describe('Pilot of the UI primitives: new payment (UI-02)', () => {
     await expect(page.getByLabel('Importo *')).toHaveAttribute('id', 'amount');
     await expect(page.getByLabel('Metodo di pagamento *')).toHaveAttribute('id', 'method');
     await expect(page.getByLabel("Data dell'incasso *")).toHaveAttribute('id', 'receivedOn');
-    // A booking from a portal is not offered: the portal collects the money itself (SR-06b).
     await expect(booking.locator('option')).toHaveText(['Seleziona una prenotazione', 'Giulia Bianchi - b1000000']);
   });
 
@@ -80,7 +74,6 @@ test.describe('Pilot of the UI primitives: new payment (UI-02)', () => {
     await expect(page.getByLabel('Importo *')).toHaveAttribute('aria-invalid', 'true');
     await expect(page.getByLabel('Metodo di pagamento *')).toHaveAttribute('aria-invalid', 'true');
     await expect(page.getByLabel("Data dell'incasso *")).not.toHaveAttribute('aria-invalid', 'true');
-    // Each message is tied to its field and drawn with an icon (not only red text).
     await expect(booking).toHaveAccessibleDescription("La prenotazione e' obbligatoria");
     const alert = page.getByRole('alert').filter({ hasText: "La prenotazione e' obbligatoria" });
     await expect(alert).toBeVisible();
@@ -95,7 +88,6 @@ test.describe('Pilot of the UI primitives: new payment (UI-02)', () => {
       if (route.request().method() === 'POST') {
         posts += 1;
         postedBody = route.request().postDataJSON() as Record<string, unknown>;
-        // Long enough for the busy button to be seen and pressed again, even on a slow runner.
         await new Promise((resolve) => setTimeout(resolve, 1500));
         await route.fulfill({
           status: 201,
@@ -168,7 +160,6 @@ test.describe('Pilot of the UI primitives: new payment (UI-02)', () => {
       await page.getByRole('button', { name: 'Registra incasso' }).click();
       await expect(page.getByLabel('Importo *')).toHaveAttribute('aria-invalid', 'true');
 
-      // Not the whole page (its header is not ours): the form, its fields and its messages stay inside the screen.
       const sticksOut = await page.evaluate(() => {
         const form = document.querySelector('form');
         if (!form) return ['no form'];

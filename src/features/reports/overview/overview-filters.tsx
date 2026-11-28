@@ -12,12 +12,9 @@ import type { OverviewGrouping, OverviewState } from './overview-model';
 
 interface OverviewFiltersProps {
   state: OverviewState;
-  /** The days the period stands for now: the days to type start from them. */
   days: ReportPeriod;
   properties: ReadonlyArray<{ id: string; name: string }>;
-  /** The property in force (already checked against the list), or an empty string. */
   propertyId: string;
-  /** The ways the figures can be cut that this caller is offered, in order. */
   groupings: readonly OverviewGrouping[];
   onChange: (change: Partial<OverviewState>) => void;
 }
@@ -32,7 +29,6 @@ export function OverviewFilters({ state, days, properties, propertyId, groupings
   const compareId = useId();
 
   const choosePreset = (preset: PeriodPresetId) => {
-    // The days to type start from the ones the person was looking at.
     onChange(preset === 'custom' ? { preset, custom: days } : { preset });
   };
 

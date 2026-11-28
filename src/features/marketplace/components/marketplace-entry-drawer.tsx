@@ -16,7 +16,6 @@ import { marketplaceAction, marketplaceReturnTarget, parseMarketplaceEntry } fro
 import { MARKETPLACE_ENTRY_PARAM, MARKETPLACE_MINE_PATH, MARKETPLACE_PROPERTY_PARAM } from '../lib/marketplace-paths';
 import { MarketplaceStatusBadge } from './marketplace-status-badge';
 
-/** A part of the detail card: its heading and what it says. */
 function DetailSection({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section aria-labelledby={`marketplace-detail-${id}`} className="space-y-1.5" data-testid={`marketplace-detail-${id}`}>
@@ -28,17 +27,14 @@ function DetailSection({ id, title, children }: { id: string; title: string; chi
   );
 }
 
-/** A text the administrator or the server wrote: kept as plain text (its line breaks too), never as markup. */
 function Prose({ children }: { children: ReactNode }) {
   return <p className="whitespace-pre-line break-words text-sm text-foreground/80">{children}</p>;
 }
 
-/** «Fatturato dal partner», as a sentence of its own. */
 function sentence(text: string): string {
   return text.charAt(0).toLocaleUpperCase() + text.slice(1);
 }
 
-/** The card of an integration, read from the data of the server: nothing is added to it, and what it does not say is «non specificato». */
 function EntryDetail({ detail }: { detail: MarketplaceEntryDetail }) {
   const { t, i18n } = useTranslation();
   const notSpecified = t('marketplace.detail.notSpecified');
@@ -126,7 +122,6 @@ function EntryDetail({ detail }: { detail: MarketplaceEntryDetail }) {
   );
 }
 
-/** The foot of the card: the one thing to do, or why it cannot be done. */
 function EntryFooter({ detail, propertyId }: { detail: MarketplaceEntryDetail; propertyId?: string }) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
@@ -136,10 +131,8 @@ function EntryFooter({ detail, propertyId }: { detail: MarketplaceEntryDetail; p
     marketplaceReturnTarget(location),
     detail.activation.type,
   );
-  // «Gestisci» leads to the Active tab: on the Active tab itself (where the card is also opened from) it would lead to the page the person is on and only shut the card, so there is no foot there.
   if (action?.kind === 'manage' && location.pathname === MARKETPLACE_MINE_PATH) return null;
 
-  // The server says why it cannot be activated; a reason this page has no text for is said in general words.
   const reasonKey = `marketplace.detail.reason.${detail.actions.reason}`;
   const reason = t(detail.actions.reason && i18n.exists(reasonKey) ? reasonKey : 'marketplace.detail.reason.unknown');
 
@@ -160,21 +153,15 @@ function EntryFooter({ detail, propertyId }: { detail: MarketplaceEntryDetail; p
   );
 }
 
-/**
- * The inside of the drawer: the title, the card (or the state it is in) and its foot. It reads the entry, so it is mounted only while the
- * drawer is open: a closed drawer asks for nothing.
- */
 function EntryPanelContent({ kind, code, propertyId, bodyRef }: { kind: string; code: string; propertyId?: string; bodyRef: RefObject<HTMLDivElement | null> }) {
   const { t } = useTranslation();
   const entry = useMarketplaceEntry(kind, code, propertyId);
 
   const detail = entry.data;
-  // The card is not there for this person (a partner their plan or country does not allow, a code that does not exist): said as such.
   const notAvailable = !detail && entry.isError && getHttpStatus(entry.error) === 404;
 
   return (
     <>
-      {/* `pr-16`: room for the close button, which is 44 px wide and sits over the right corner. */}
       <div className="shrink-0 px-4 pb-3 pr-16 md:pb-4 md:pl-6 md:pr-16 md:pt-6">
         <DialogTitle className="break-words text-lg leading-snug">{detail?.name ?? t('marketplace.detail.fallbackTitle')}</DialogTitle>
       </div>
@@ -202,11 +189,6 @@ function EntryPanelContent({ kind, code, propertyId, bodyRef }: { kind: string; 
   );
 }
 
-/**
- * One element, two shapes, as the detail drawer of the app (UI-15): a sheet from the bottom edge under `md`, a panel at the right from
- * `md` up. The focus is trapped inside; Esc, a press outside and the close button close it (the dialog tells the drawer, which takes the
- * parameter away); the focus goes back to the card that opened it.
- */
 function EntryPanel({ kind, code, propertyId }: { kind: string; code: string; propertyId?: string }) {
   const { t } = useTranslation();
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -218,15 +200,12 @@ function EntryPanel({ kind, code, propertyId }: { kind: string; code: string; pr
       <DialogPrimitive.Content
         data-detail-sheet=""
         data-testid="marketplace-entry-drawer"
-        // The name is the title (Radix points `aria-labelledby` at it); there is no description to read out.
         aria-describedby={undefined}
-        // The container of the content takes the focus, not the first control: the arrow keys scroll what has the focus.
         onOpenAutoFocus={(event) => {
           rememberOpenerIfNone(focusedElement());
           event.preventDefault();
           bodyRef.current?.focus({ preventScroll: true });
         }}
-        // The card that opened the drawer gets the focus back (Radix does it only for a trigger).
         onCloseAutoFocus={(event) => {
           const opener = takeOpener();
           if (!opener) return;
@@ -261,7 +240,6 @@ export function MarketplaceEntryDrawer() {
   const propertyId = isActiveTab ? searchParams.get(MARKETPLACE_PROPERTY_PARAM) || undefined : undefined;
   const requested = entry && { ...entry, propertyId };
 
-  // Keep the last card and its scope while the panel closes.
   const [last, setLast] = useState(requested);
   if (requested && (last?.kind !== requested.kind || last.code !== requested.code || last.propertyId !== requested.propertyId)) {
     setLast(requested);

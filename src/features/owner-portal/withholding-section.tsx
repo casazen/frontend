@@ -12,13 +12,8 @@ import { currencyCode, formatMoney, periodLabel } from './owner-statement-model'
 import { PortalLoading, PortalReadProblem, StatusPill, type PillTone } from './portal-parts';
 import { MoneyNote } from './statement-parts';
 
-/** How many years the owner can look back at, the current one included. */
 const YEARS_SHOWN = 5;
 
-/**
- * Where a record of the CU stands, in the words of the owner and with no more than the agency recorded: the portal has no proof of a filing (no handoff, no receipt), so it never says that something was sent to the Revenue
- * Agency or accepted by it, only what the agency has recorded. A state this version does not know is told as a file the agency is working on.
- */
 const CU_STATE: Readonly<Record<string, { key: string; tone: PillTone }>> = {
   Generated: { key: 'preparing', tone: 'neutral' },
   Reviewed: { key: 'reviewed', tone: 'success' },
@@ -27,7 +22,6 @@ const CU_STATE: Readonly<Record<string, { key: string; tone: PillTone }>> = {
   Rejected: { key: 'rejected', tone: 'warning' },
 };
 
-/** How a record was made, in words that name no one else: for the owner, for the signatory of a property of several owners (who is told it holds the share of others, never whose), or for the share of the owner. */
 const CU_ATTRIBUTION: Readonly<Record<string, string>> = {
   owner: 'owner',
   signatory: 'signatory',
@@ -150,7 +144,6 @@ export function OwnerWithholdingSection() {
   const withholding = useOwnerWithholding(year, enabled);
   if (!enabled) return null;
 
-  // Drawn only while the last answer is good: after a refusal nothing of the answer before it stays under the notice.
   const data = currentData(withholding);
 
   return (

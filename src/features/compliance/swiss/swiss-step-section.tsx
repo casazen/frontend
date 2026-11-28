@@ -6,7 +6,6 @@ import type { SwissStepId, SwissStepState } from './swiss-day-model';
 
 interface SwissStepSectionProps {
   id: SwissStepId;
-  /** The number of the step (1 to 3). */
   position: number;
   state: SwissStepState;
   open: boolean;

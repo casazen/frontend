@@ -93,7 +93,6 @@ describe('checkoutResultLines', () => {
     const lines = checkoutResultLines(closed, true, key);
 
     expect(lines.map((line) => line.element)).toEqual(['departure', 'channelManager', 'alloggiati', 'cleaning', 'touristTax', 'propertyReady']);
-    // The same words and the same tone whatever the mirror of the booking says: the result has no state of the channel manager to tell.
     expect(lines[1]).toEqual({ element: 'channelManager', tone: 'attention', text: CHANNEL_MANAGER_LINE_KEY });
   });
 });

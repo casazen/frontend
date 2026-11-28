@@ -4,7 +4,6 @@ import { withoutRequest } from '@/features/marketplace/activation/use-sequential
 import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
 import type { PropertySender, SenderConnectionTest, SwitchSenderRequest } from '@/types';
 
-/** Root of the query key of the sender: one key for each property. */
 export const PROPERTY_SENDER_KEY = 'property-sender';
 
 const senderKey = (propertyId: string) => [PROPERTY_SENDER_KEY, propertyId] as const;
@@ -27,22 +26,12 @@ export function useSender(propertyId: string, enabled = true) {
   });
 }
 
-/**
- * What a change of the sender changes elsewhere: the sender itself, the connection health of the property page and the cockpit of the adempimenti. A change that carried the setting of
- * the automatic send of the guests (`orgWide`) changed something of the whole organization: the senders of all its properties hold the value that was in force before, so every one is read again.
- */
 function refreshAfterChange(queryClient: QueryClient, propertyId: string, orgWide = false): void {
   void queryClient.invalidateQueries({ queryKey: orgWide ? [PROPERTY_SENDER_KEY] : senderKey(propertyId) });
   void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_HEALTH_KEY, propertyId] });
   void queryClient.invalidateQueries({ queryKey: ['compliance'] });
 }
 
-/**
- * Changes who sends (`PUT`). The body is the host's consent to the delegation and its confirmation that the other sender goes off: the mutation is dropped as soon as nothing
- * observes it (`gcTime: 0`, not five minutes in the cache of the mutations) and a refusal is kept without the request that was sent (`withoutRequest`: the status and the
- * body of the answer stay, which is what the screen turns into words, the 409 that asks for a confirmation or for the new text included). The body may carry the setting of the
- * automatic send of the guests, which is the organization's: then the senders of all its properties are read again, not only this one.
- */
 export function useSwitchSender(propertyId: string) {
   const queryClient = useQueryClient();
 
@@ -82,7 +71,6 @@ export function useTestConnection(propertyId: string) {
   });
 }
 
-/** The host says it saw «Attivato» in the panel of the channel manager (`POST`): the sender answers `Declared`, never `Active`. */
 export function useDeclareActivated(propertyId: string) {
   const queryClient = useQueryClient();
 

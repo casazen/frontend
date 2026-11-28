@@ -5,9 +5,6 @@ import type { LeaseSummary, Property } from '@/types';
 import type { OrgMember } from '@/types/org-team.types';
 import { accountPropertyRows, candidatesFor, reachesProperty } from '../account-properties-model';
 
-// Only the rules that decide who is offered for a property and why a deletion is refused: a wrong answer offers a person the
-// backend will turn down (422), or leaves a person at a dead end in front of the 409.
-
 const property = (over: Partial<Property> = {}): Property =>
   ({ id: 'p1', name: 'Casa', city: 'Roma', cinCode: null, photoUrls: [], nightlyRate: 0, isPaused: false, complianceStatus: 'Pending', rentalMode: 'Short', ...over }) as Property;
 

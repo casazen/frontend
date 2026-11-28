@@ -2,10 +2,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createBrowserRouter, type RouteObject } from 'react-router-dom';
 import { createHostSiteWindow, toAppPath, toHostPath } from '../host-site-window';
 
-/**
- * BK-16 (A3-08): on an org's own host the browser shows clean addresses while the router keeps its `/book/:orgSlug/…`
- * routes. Everything is checked against a real router and the jsdom history, not against the mapping alone.
- */
 const SLUG = 'villa-rossi';
 
 function setBrowserUrl(url: string) {
@@ -22,11 +18,9 @@ describe('toAppPath / toHostPath', () => {
     ['/search', '/book/villa-rossi/search'],
     ['/booking/0f6c', '/book/villa-rossi/booking/0f6c'],
     ['/requests/0f6c/confirm', '/book/villa-rossi/requests/0f6c/confirm'],
-    // Anything else is the route itself: legal pages, and the `/book/…` links of older shares and Stripe return URLs.
     ['/legale/privacy', '/legale/privacy'],
     ['/book/villa-rossi/booking/0f6c', '/book/villa-rossi/booking/0f6c'],
     ['/unknown', '/unknown'],
-    // The guest check-in and the owner portal of the agency's domain (NF-140) are routes of their own, never rewritten into the booking site.
     ['/checkin/abc123', '/checkin/abc123'],
     ['/checkin/porta/door-token', '/checkin/porta/door-token'],
     ['/portale-proprietari', '/portale-proprietari'],
@@ -45,7 +39,6 @@ describe('toAppPath / toHostPath', () => {
     ['/book/villa-rossi/search', '/search'],
     ['/book/villa-rossi/booking/0f6c', '/booking/0f6c'],
     ['/book/villa-rossi/requests/0f6c/confirm', '/requests/0f6c/confirm'],
-    // A legacy single-segment link and another org's path stay as they are: there is no clean form of them.
     ['/book/villa-rossi/casa-mare', '/book/villa-rossi/casa-mare'],
     ['/book/villa-rossi-2/property/x', '/book/villa-rossi-2/property/x'],
     ['/legale/privacy', '/legale/privacy'],
@@ -152,13 +145,11 @@ describe('createHostSiteWindow with a real router', () => {
     setBrowserUrl('/checkin/abc123?step=identity');
     const router = startRouter();
 
-    // On load: the check-in is the route itself, with its address and query as they are.
     expect(router.state.location.pathname).toBe('/checkin/abc123');
     expect(router.state.location.search).toBe('?step=identity');
     expect(router.state.matches.at(-1)?.route.id).toBe('checkin');
     expect(window.location.pathname).toBe('/checkin/abc123');
 
-    // Moving between the pages of the agency's domain never writes a `/book/<slug>` address in the browser, nor turns one of these into the booking site.
     await router.navigate('/portale-proprietari/accedi');
     expect(window.location.pathname).toBe('/portale-proprietari/accedi');
     expect(router.state.matches.at(-1)?.route.id).toBe('owner-portal');
@@ -210,7 +201,6 @@ describe('createHostSiteWindow', () => {
   it('history_PushStateOfAnAbsoluteUrlOfAnotherHost_IsNotRewritten', () => {
     const proxy = createHostSiteWindow(window, SLUG);
 
-    // jsdom refuses cross-origin pushState: the point is that the url is passed through untouched, not rewritten.
     expect(() => proxy.history.pushState(null, '', 'https://other.example.test/book/villa-rossi')).toThrow();
   });
 

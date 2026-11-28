@@ -27,7 +27,6 @@ describe('the review of a stay (UX round 2026-11)', () => {
     expect(screen.getByRole('button', { name: 'Invia' })).toBeDisabled();
 
     fireEvent.click(within(stars).getByRole('radio', { name: '4 su 5' }));
-    // The stars up to the chosen one are filled, the others are not.
     expect(stars.querySelectorAll('[data-on]')).toHaveLength(4);
     fireEvent.click(screen.getByRole('button', { name: 'Invia' }));
 

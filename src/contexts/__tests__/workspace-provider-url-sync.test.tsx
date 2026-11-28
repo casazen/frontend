@@ -35,7 +35,6 @@ function Probe() {
   );
 }
 
-/** A user with `contexts`, who last worked in `stored`, opens `entry`. */
 function renderAt(entry: string, contexts: ContextBootstrapDto[], stored: string) {
   window.localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, stored);
   vi.mocked(useAuth).mockReturnValue({
@@ -61,8 +60,6 @@ async function settle() {
   });
 }
 
-// The area in the address is the active area of the workspace (the switcher, the profile link of the user menu and the
-// login redirect read it): it holds for every area, the supplier console included.
 describe('WorkspaceProvider follows the area of the address (UI-00)', () => {
   beforeEach(() => {
     window.localStorage.clear();
@@ -81,7 +78,6 @@ describe('WorkspaceProvider follows the area of the address (UI-00)', () => {
     ['/app/supplier/inbox', 'supplier'],
     ['/app/supplier', 'supplier'],
   ])('WorkspaceProvider_AddressInArea_%s_ActivatesThatArea', async (path, area) => {
-    // The user last worked in another area (and has them all).
     renderAt(path, ALL_AREAS, area === 'short-rent' ? 'long-rent' : 'short-rent');
 
     expect(await screen.findByText(area)).toBeInTheDocument();

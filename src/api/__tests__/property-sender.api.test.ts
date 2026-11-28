@@ -10,14 +10,12 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// E03/F01/US02/T02: a property of the organization that the caller does not reach answers 403 (no code) to the read of its sender. The wizard says «not found» for it.
 describe('propertySenderApi.get (E03/F01/US02/T02)', () => {
   it('get_PropertyTheCallerDoesNotReach_ResolvesNullInsteadOfThrowing', async () => {
     vi.mocked(axios.get).mockResolvedValueOnce({ status: 403, data: '' });
 
     await expect(propertySenderApi.get(PROPERTY_ID)).resolves.toBeNull();
 
-    // The shared client rejects a 403 on a read and sends the whole app to the no-access page; here it must reach the code as an answer. Any other refusal is still an error.
     const config = vi.mocked(axios.get).mock.calls[0][1];
     expect(config?.validateStatus?.(403)).toBe(true);
     expect(config?.validateStatus?.(200)).toBe(true);

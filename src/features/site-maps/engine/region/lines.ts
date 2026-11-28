@@ -1,7 +1,3 @@
-/**
- * Small helpers of the regional drawing (DB-19a): thinning of polylines, the stretches of a line that touch the frame, and the
- * placer that keeps labels from overlapping each other or leaving the frame.
- */
 import type { Pt } from '../geometry';
 
 export interface Box {
@@ -11,7 +7,6 @@ export interface Box {
   y1: number;
 }
 
-/** Thins a polyline (step `step` px inside the frame, `far` outside it), keeping the transitions. */
 export function thinPts(P: readonly Pt[], near: (p: Pt) => boolean, step = 2.6, far = 48): Pt[] {
   if (!P.length) return [];
   const out: Pt[] = [P[0]];
@@ -35,7 +30,6 @@ export function thinPts(P: readonly Pt[], near: (p: Pt) => boolean, step = 2.6, 
   return out;
 }
 
-/** The consecutive stretches of a polyline whose segments touch the window. */
 export function runsInBox(pts: readonly Pt[], win: Box): Pt[][] {
   const runs: Pt[][] = [];
   let cur: Pt[] = [];
@@ -55,7 +49,6 @@ export function runsInBox(pts: readonly Pt[], win: Box): Pt[][] {
   return runs;
 }
 
-/** Placer of labels: boxes that must not overlap nor leave the frame. */
 export function makePlacer(W: number, H: number): { free: (b: Box, m?: number) => boolean; add: (b: Box) => void } {
   const boxes: Box[] = [];
   return {
@@ -70,5 +63,4 @@ export function makePlacer(W: number, H: number): { free: (b: Box, m?: number) =
   };
 }
 
-/** Do two boxes overlap? */
 export const hits = (a: Box, b: Box): boolean => a.x0 <= b.x1 && a.x1 >= b.x0 && a.y0 <= b.y1 && a.y1 >= b.y0;

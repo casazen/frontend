@@ -20,7 +20,6 @@ export async function createSupplierOnboardingLink(): Promise<SupplierPaymentsLi
   return ApiClient.post<SupplierPaymentsLink>(`${BASE}/onboarding-link`);
 }
 
-/** The single-use address of the supplier's Express Dashboard on Stripe; 422 `supplier_payments_not_ready` without a ready account. */
 export async function createSupplierDashboardLink(): Promise<SupplierPaymentsLink> {
   return ApiClient.post<SupplierPaymentsLink>(`${BASE}/dashboard-link`);
 }

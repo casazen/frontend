@@ -1,19 +1,10 @@
-/**
- * The supplier's Stripe Connect account (SP-14, `GET api/supplier/payments/account`). Nothing here is bank data or the Stripe
- * account id: only what Stripe reports about what the account can do, and the names of the fields it still needs.
- */
 export interface SupplierPaymentsAccount {
-  /** An Express account is linked to the supplier: the onboarding was started. */
   hasAccount: boolean;
   chargesEnabled: boolean;
   payoutsEnabled: boolean;
-  /** The supplier sent the onboarding form; Stripe may still be checking it. */
   detailsSubmitted: boolean;
-  /** Names of the fields Stripe needs now (`external_account`, `individual.verification.document`, ...); empty when none. */
   requirementsDue: string[];
-  /** Account linked, charges and payouts enabled: the supplier can be paid through CasaZen. */
   canReceivePayments: boolean;
-  /** The "Verificato" badge (decision D11). It is not shown on this page: the profile and verification screen is a task of its own. */
   verified: boolean;
   verificationMissing: string[];
 }

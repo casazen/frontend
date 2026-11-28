@@ -22,7 +22,6 @@ const NO_USABLE_CURRENCY: ReadonlyArray<readonly [string, string | null | undefi
   ['a symbol', '€'],
 ];
 
-/** A symbol or a code of any currency the tests could meet: none of them may show where the data said no currency. */
 const ANY_CURRENCY = /[€$£¤]|EUR|CHF|USD|GBP/;
 
 describe('currencyCodeOf', () => {
@@ -43,7 +42,6 @@ describe('formatMoney', () => {
     expect(euro).toBe(new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(145));
     expect(euro).not.toContain('valuta non disponibile');
 
-    // A house in Switzerland is in francs: the euro is nowhere.
     const franc = formatMoney(145, 'CHF', 'en-GB', english);
     expect(franc).toBe(new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'CHF' }).format(145));
     expect(franc).toContain('CHF');
@@ -57,13 +55,11 @@ describe('formatMoney', () => {
 
     expect(inItalian).toBe('145,00 (valuta non disponibile)');
     expect(inEnglish).toBe('145.00 (currency not available)');
-    // The phrase is the only thing after the number: no symbol and no code of any currency, converted or invented.
     expect(inItalian.replace('valuta non disponibile', '')).not.toMatch(ANY_CURRENCY);
     expect(inEnglish.replace('currency not available', '')).not.toMatch(ANY_CURRENCY);
   });
 
   it('FormatMoney_CodeThatIntlRefuses_NeverThrowsWhereIntlDoes', () => {
-    // The reason for the rule: `Intl` throws for a code that is not three letters, and a render that throws blanks the page.
     expect(() => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'XX1' })).toThrow(RangeError);
     expect(() => new Intl.NumberFormat('it-IT', { style: 'currency', currency: '' })).toThrow(RangeError);
 
@@ -83,13 +79,11 @@ describe('formatMoney', () => {
   });
 
   it('FormatMoney_FormatsAreKept_ButACurrencyOfTheDataNeverLeaksIntoAnAmountWithNone', () => {
-    // The same language and digits, one call after the other: a format kept for the euro is not the one an amount with no currency gets, and the reverse.
     expect(formatMoney(145, 'EUR', 'it-IT', italian)).toContain('€');
     expect(formatMoney(145, undefined, 'it-IT', italian)).not.toContain('€');
     expect(formatMoney(145, 'CHF', 'it-IT', italian)).toContain('CHF');
     expect(formatMoney(145, 'CHF', 'it-IT', italian)).not.toContain('€');
     expect(formatMoney(145, '', 'it-IT', italian)).toBe('145,00 (valuta non disponibile)');
-    // The number alone has a format of its own too: it never gets the one kept for the euro, and the euro never gets it.
     expect(formatAmount(145, 'it-IT')).toBe('145,00');
     expect(formatMoney(145, 'EUR', 'it-IT', italian)).toContain('€');
   });

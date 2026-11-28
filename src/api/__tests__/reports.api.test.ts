@@ -10,14 +10,12 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// NF-96 / AC-NF96-4: the agency view is not for every caller. The server answers 403 and the page leaves the grouping out, quietly.
 describe('reportsApi.getByOwner (NF-96)', () => {
   it('getByOwner_Forbidden_ResolvesNullInsteadOfThrowing', async () => {
     vi.mocked(axios.get).mockResolvedValueOnce({ status: 403, data: {} });
 
     await expect(reportsApi.getByOwner(PERIOD)).resolves.toBeNull();
 
-    // The shared client rejects a 403 on a read and sends the whole app to the no-access page; here it must reach the code as an answer.
     const config = vi.mocked(axios.get).mock.calls[0][1];
     expect(config?.validateStatus?.(403)).toBe(true);
     expect(config?.validateStatus?.(200)).toBe(true);

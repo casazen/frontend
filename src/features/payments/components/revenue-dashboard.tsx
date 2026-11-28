@@ -23,7 +23,6 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
 
   return (
     <div className="grid min-w-0 gap-5 xl:grid-cols-2">
-      {/* The numbers, quiet and in one row (UI-16) */}
       <StatStrip className="xl:col-span-2">
         <StatTile icon={Wallet} label={t('payment.revenue.stats.totalRevenue')} value={formatCurrency(analytics.totalRevenue, currency)} />
         <StatTile icon={CalendarDays} label={t('payment.revenue.stats.totalBookings')} value={analytics.totalBookings} />
@@ -31,7 +30,6 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
         <StatTile icon={CalendarRange} label={t('payment.revenue.stats.periods')} value={rows.length} />
       </StatStrip>
 
-      {/* Revenue Chart */}
       <Card className="min-w-0">
         <CardHeader>
           <CardTitle>{t('payment.revenue.charts.revenueOverTime')}</CardTitle>
@@ -59,7 +57,6 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
         </CardContent>
       </Card>
 
-      {/* Bookings Chart */}
       <Card className="min-w-0">
         <CardHeader>
           <CardTitle>{t('payment.revenue.charts.bookingsAvgValue')}</CardTitle>
@@ -91,7 +88,6 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
         </CardContent>
       </Card>
 
-      {/* Period Table */}
       <Card className="min-w-0 xl:col-span-2">
         <CardHeader>
           <CardTitle>{t('payment.revenue.table.title')}</CardTitle>

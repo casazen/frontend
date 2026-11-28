@@ -77,7 +77,6 @@ describe('the steps that lack data', () => {
 
   it('importedSteps_AListingAlreadyOnTheChannels_OpensOnWhatLacksThenTheChannelsAndTheEnd', () => {
     expect(importedSteps(status(row('booking_xml', { missing: ['descriptions', 'base'] })))).toEqual(['base', 'descriptions', 'channels', 'finish']);
-    // Nothing lacks: the host still sees the channels and the activation.
     expect(importedSteps(status(row('booking_xml')))).toEqual(['channels', 'finish']);
   });
 
@@ -130,7 +129,6 @@ describe('a refused publication', () => {
 
     expect(publishProblemOf(other)).toEqual({ kind: 'other', error: other });
     expect(publishProblemOf(new Error('network'))).toMatchObject({ kind: 'other' });
-    // A list that is not a list of texts is no list.
     expect(publishProblemOf(problem('listing_content_incomplete', { missing: 'en.title' }, 422))).toEqual({ kind: 'content-incomplete', missing: [] });
   });
 });

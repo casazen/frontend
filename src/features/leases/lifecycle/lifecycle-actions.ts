@@ -2,13 +2,8 @@ import { todayInRome } from '@/lib/stay-dates';
 import type { LeaseDetail, LeaseStage } from '@/types';
 import { leaseNotBegun } from './lifecycle-format';
 
-/** The parameter of the address that opens an action on the sheet of a lease: `?azione=disdetta`. */
 export const LEASE_ACTION_PARAM = 'azione';
 
-/**
- * The actions of the life of a lease (LR-10), as the address names them (`?azione=`). A name never changes (a link, an e-mail, another
- * page of the area may point at it), it is only added to.
- */
 export const LEASE_ACTIONS = [
   'elimina-bozza',
   'annulla-firma',
@@ -20,19 +15,14 @@ export const LEASE_ACTIONS = [
 ] as const;
 export type LeaseAction = (typeof LEASE_ACTIONS)[number];
 
-/** The action an address asks for, or `null` for none and for a name this version does not know. */
 export function leaseActionOf(param: string | null): LeaseAction | null {
   return param !== null && (LEASE_ACTIONS as readonly string[]).includes(param) ? (param as LeaseAction) : null;
 }
 
 export interface LeaseActionContext {
-  /** Where the lease stands on its path, as the server says it (`useLeaseStage`); `undefined` while it is not known. */
   stage: LeaseStage | undefined;
-  /** The person may write the leases (`lease.create`): what every action asks, the server too. */
   canManage: boolean;
-  /** The person may change the mode of the property (`property.write`) and the page that does it exists. */
   canChangeMode: boolean;
-  /** Today in Rome (`yyyy-MM-dd`); the real one when not given. */
   today?: string;
 }
 

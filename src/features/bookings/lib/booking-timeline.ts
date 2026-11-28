@@ -6,7 +6,6 @@ import { formatRomeDateTime } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { BookingTimelineEvent, BookingTimelineKind } from '@/types';
 
-/** The icon of each kind of entry: what the entry is about, never only a color. */
 const ICONS: Record<BookingTimelineKind, LucideIcon> = {
   Created: CalendarPlus,
   RequestReceived: Inbox,
@@ -54,13 +53,11 @@ function toneOf({ kind, state, data }: BookingTimelineEvent): TimelineTone {
   }
 }
 
-/** The title of an entry: its kind (a refund: where it stands). A kind the app does not know yet (a newer server) is shown as it came. */
 function titleOf({ kind, data }: BookingTimelineEvent, t: TFunction, i18n: Pick<I18nInstance, 'exists'>): string {
   const key = kind === 'Refund' && data.refundStatus ? `booking.timeline.refund.${data.refundStatus}` : `booking.timeline.kind.${kind}`;
   return i18n.exists(key) ? t(key) : kind;
 }
 
-/** The line under the title, where the entry has something to add: where it came from, how much, until when, why. */
 function descriptionOf({ kind, state, data }: BookingTimelineEvent, t: TFunction, language: string, currency: string): string | undefined {
   const date = (instant: string) => formatRomeDateTime(instant, language);
   switch (kind) {
@@ -73,7 +70,6 @@ function descriptionOf({ kind, state, data }: BookingTimelineEvent, t: TFunction
       return data.expiresAt ? t('booking.list.respondBy', { date: date(data.expiresAt) }) : undefined;
     case 'PaymentReceived':
     case 'Refund': {
-      // The figure only for who may read payments: without it the entry says that money moved, never how much.
       const amount = typeof data.amount === 'number' ? formatCurrency(data.amount, currency) : '';
       const method = kind === 'PaymentReceived' && data.method ? getPaymentMethodLabel(data.method, t) : '';
       return [amount, method].filter(Boolean).join(' · ') || undefined;
@@ -86,7 +82,6 @@ function descriptionOf({ kind, state, data }: BookingTimelineEvent, t: TFunction
       return state === 'Current' && data.deadlineAt ? t('booking.timeline.alloggiatiDeadline', { status, date: date(data.deadlineAt) }) : status;
     }
     case 'Cancelled': {
-      // The host's own cancellation has no reason; the guest's says so (`GuestRequested`). The note is what the host wrote, for the host only.
       const parts = [data.reason ? t(`booking.timeline.cancelReason.${data.reason}`) : '', data.note ? t('booking.timeline.cancelNote', { note: data.note }) : ''];
       return parts.filter(Boolean).join(' ') || undefined;
     }
@@ -95,10 +90,6 @@ function descriptionOf({ kind, state, data }: BookingTimelineEvent, t: TFunction
   }
 }
 
-/**
- * The entries of `GET /bookings/:id/timeline` as the events of the `Timeline` (SR-05c). The server has put them in order
- * (an entry without a time takes its place from the date it belongs to): the list keeps that order (`order="given"`).
- */
 export function timelineEventsOf(
   events: readonly BookingTimelineEvent[],
   t: TFunction,
@@ -106,7 +97,6 @@ export function timelineEventsOf(
   currency: string,
 ): TimelineEvent[] {
   return events.map((event, index) => ({
-    // The same kind can come twice (two payments): the position tells them apart.
     id: `${index}-${event.kind}`,
     at: event.at,
     title: titleOf(event, t, i18n),

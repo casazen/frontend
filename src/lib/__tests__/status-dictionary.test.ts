@@ -20,41 +20,24 @@ import {
 type Tree = { [key: string]: string | string[] | Tree };
 const texts: Record<"it" | "en", Tree> = { it: (it_ as unknown as { status: Tree }).status, en: (en as unknown as { status: Tree }).status };
 
-/** The values each backend enum has, as the API serializes them. A new value in the backend is a new line here and in the dictionary. */
 const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
-  // Casazen.Core.Entities.BookingStatus
   booking: ["Pending", "Confirmed", "CheckedIn", "CheckedOut", "Cancelled"],
-  // PropertyComplianceStatus, and the pause the host sets (`IsPaused`, not an enum value)
   property: ["Pending", "Active", "Suspended", "Paused"],
-  // No enum: a property of Affitti lunghi is let or free, as the interface works it out from its leases (LR-07)
   longRentProperty: ["Rented", "Free"],
-  // ServiceRequestStatus, with Annullato (SP-04)
   request: ["Richiesto", "PresoInCarico", "InCorso", "Completato", "Pagato", "Rifiutato", "Annullato"],
-  // OrgMemberStatus (AM-01) and OrgInvitationStatus (AM-02)
   member: ["Active", "Deactivated", "Pending", "Accepted", "Revoked", "Expired"],
-  // SubscriptionStatus as `GET /api/billing/subscription` sends it
   subscription: ["active", "trialing", "past_due", "incomplete", "unpaid", "canceled", "none"],
   lease: [...LEASE_STATUSES],
-  // LeaseStage (LR-01b): the eight stages of the path of a long-term lease, as the server sends them with the lease
   leaseStage: ["Draft", "DataPending", "InReview", "SentForSignature", "Signed", "Active", "Expiring", "Concluded"],
-  // RentLedgerStatus, and the overdue installment that the API flags with `isOverdue`
   rent: ["Scheduled", "Overdue", "Processing", "Paid", "Failed", "Cancelled"],
-  // Casazen.Core.Entities.PaymentStatus
   payment: ["Pending", "Processing", "Completed", "Failed", "Refunded", "PartiallyRefunded", "Canceled"],
   supplier: [...ADMIN_SUPPLIER_STATUSES],
-  // GuestCheckInSessionStatus
   checkin: ["Inviato", "InCompilazione", "Completo", "AlloggiatiInviato", "Scaduto"],
-  // The CIN status of `GET /api/properties/cin-compliance`
   cin: ["valid", "missing", "invalid"],
-  // No enum: the regime of a property for the tax year, as the interface works it out from what the host chose and confirmed (SR-FISC)
   fiscalRegime: ["Confirmed", "ToConfirm", "NotChosen"],
-  // AlloggiatiWebStatus
   alloggiati: ["Sending", "PartiallyAccepted", "ToVerify", "DaInviare", "DaInviareManualmente", "SentReceiptPending", "InviatoManualmente", "Inviato", "Rifiutato", "Errore", "NotDue", "EntrustedToChannelManager", "ChannelManagerWriteFailed"],
-  // SupplierServiceListingStatus (SP-06)
   serviceListing: ["Draft", "Active", "Paused"],
-  // ChannelPublishStatus (E02/F03/US01): the state of the content of a property on a channel
   channel: ["Draft", "Sending", "Accepted", "Published", "ToFix", "ManagedOnChannel"],
-  // The state of a payment in the earnings of a supplier (UI-14): an open set of the server, these are the values it sends today
   earning: ["to_collect", "paid", "late", "in_review", "refunded", "partially_refunded"],
 };
 
@@ -120,7 +103,6 @@ describe("dictionary shape", () => {
   });
 
   it.each(entries)("dictionary_$kind.$status_NeedGoesWithNext", ({ definition }) => {
-    // What it takes to move on exists only for a state that has somewhere to go.
     expect(Boolean(definition.need)).toBe(Boolean(definition.next));
   });
 
@@ -185,7 +167,6 @@ describe("texts of the dictionary", () => {
         }
       }
     }
-    // Namespaces of the shared parts and of the kinds, and nothing else.
     const topLevel = Object.keys(texts[language]).filter((key) => !kinds.includes(key as StatusKind));
     expect(topLevel.sort()).toEqual(["explainer", "pipeline"]);
     expect(stray).toEqual([]);
@@ -212,7 +193,6 @@ describe("texts of the dictionary", () => {
     expect(alloggiati).toContain("entro 24 ore dall'arrivo");
     expect(alloggiati).toContain("6 ore se il soggiorno non supera le 24 ore");
     expect(alloggiati).not.toMatch(/una sola notte/i);
-    // Registration of the lease: 30 days from signing or from the start date, whichever is earlier ("dalla firma" was the demo).
     const lease = textAt("it", ["lease", "Signed", "explain"]) as string;
     expect(lease).toContain("30 giorni dalla stipula o dalla decorrenza, se anteriore");
     expect(lease).not.toMatch(/dalla firma/i);

@@ -42,19 +42,14 @@ const FLAG_FIELDS = {
   closedToDeparture: 'booking.calendar.dayRules.closedToDeparture',
 } as const;
 
-/** The restrictions in the order the form shows them. */
 const RESTRICTION_FIELDS = ['minNights', 'maxNights', 'closedToArrival', 'closedToDeparture', 'minAdvanceDays', 'maxAdvanceDays'] as const;
 
 interface DayRulesFormProps {
-  /** `price`: one price per night; `restrictions`: the stay and the advance rules and the two closures. */
   mode: 'price' | 'restrictions';
   selection: DaySelection;
-  /** The nights that change (the days of the selection that are not over), from the day layer; absent when the caller may not read it: no current value is shown. */
   days?: readonly CalendarDayInfo[];
   currency: string;
-  /** The request is on its way: the buttons are off. */
   pending: boolean;
-  /** The refusal of the last try, shown above the buttons. */
   error: unknown;
   onSubmit: (request: CalendarChangeRequest) => void;
 }
@@ -75,7 +70,6 @@ export function DayRulesForm({ mode, selection, days, currency, pending, error, 
   const problemOf = (field: DayRuleField) => (submitted ? problems[field] : undefined);
 
   const handleSubmit = (event: FormEvent) => {
-    // A form of a panel that sits inside the page: the page must not see the press of its button.
     event.preventDefault();
     event.stopPropagation();
     setSubmitted(true);
@@ -132,7 +126,6 @@ export function DayRulesForm({ mode, selection, days, currency, pending, error, 
     const rule = values[field];
     const now = current ? nowText(current[field], 'flag') : undefined;
     const currentlyOn = current?.[field].kind === 'value' && current[field].value === true;
-    // What the box shows: what the host asked for, else what the days are now.
     const checked = rule.action === 'Set' ? true : rule.action === 'Clear' ? false : currentlyOn;
     return (
       <div key={field} className="space-y-2" data-testid={`day-rule-${field}`}>
@@ -143,7 +136,6 @@ export function DayRulesForm({ mode, selection, days, currency, pending, error, 
             checked={checked}
             disabled={pending}
             onChange={(event) => {
-              // Back to what the days are now is "leave as it is"; anything else is the host's choice.
               if (event.target.checked === currentlyOn) edit(field, KEEP);
               else edit(field, event.target.checked ? { action: 'Set', text: '' } : { action: 'Clear', text: '' });
             }}
@@ -169,7 +161,6 @@ export function DayRulesForm({ mode, selection, days, currency, pending, error, 
         ? t('booking.calendar.dayRules.current.mixedPrices')
         : undefined;
 
-  // Nothing to go back to when no night has a price of its own (and the layer says so); without the layer the host cannot know, so the button is there.
   const priceClearButton = !current || current.hasPriceRule ? clearButton('price', t('booking.calendar.dayRules.backToUsual'), t('booking.calendar.dayRules.keepPrice')) : null;
 
   return (

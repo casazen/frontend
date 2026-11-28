@@ -9,19 +9,13 @@ import { z } from 'zod';
  * string (at most 8). Real CINs are 18 characters, e.g. `IT058091C27G5FFZDZ`.
  */
 
-/** Valid normalized CIN. */
 export const CIN_PATTERN = /^IT[0-9]{6}[A-Z0-9]{2}[A-Z0-9]{1,8}$/;
 
-/**
- * The invented format CasaZen used to require (`IT-12345-0123456789`), normalized. It also matches
- * {@link CIN_PATTERN} (the category is only "2 characters"), so it is rejected explicitly.
- */
 export const LEGACY_CIN_PATTERN = /^IT[0-9]{15}$/;
 
 /** Every whitespace (non-breaking spaces included) and every hyphen/dash: ignored in a CIN. */
 const CIN_SEPARATORS = /[\s\u0085\-\u2010-\u2015\u2212]/g;
 
-/** i18n key of the "invalid CIN" message. */
 export const CIN_FORMAT_MESSAGE_KEY = 'property.validation.cin.format';
 
 /**

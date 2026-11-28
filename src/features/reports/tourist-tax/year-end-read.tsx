@@ -9,11 +9,8 @@ import { SkeletonLine } from '@/components/ui/skeleton';
 import { getHttpStatus } from '@/lib/api-errors';
 
 interface YearEndReadProps<T> {
-  /** The read of one of the three results of the year (the declaration, the account of the agent, the count of Ticino). */
   query: UseQueryResult<T>;
-  /** Names what this says in the tests: `<id>-refused` and `<id>-error`. */
   id: string;
-  /** What is drawn once there are data to draw. */
   children: (data: T) => ReactNode;
 }
 

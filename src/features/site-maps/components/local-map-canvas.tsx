@@ -16,7 +16,7 @@ const ICONS: Record<string, LucideIcon> = {
   health: Cross,
   parking: ParkingSquare,
 };
-const FAR_M = 20000; // farther than this (airports) a point stays in the list only
+const FAR_M = 20000;
 
 /**
  * Distance of a point on the drawing, in metres: the direction is true, the distance is compressed (square root) inside an
@@ -31,7 +31,6 @@ function drawDistance(p: LocalPoi, maxD: number, spanM: number): number {
   return (0.36 + 0.64 * Math.sqrt(Math.min(p.distM, maxD) / maxD)) * R;
 }
 
-/** The map of the zone: loaded on demand by `LocalMap`. */
 export default function LocalMapCanvas({ kind, seed, spanM = 1500, seaBearingDeg, pois = [], activeId, onActiveChange, addressUnlocked = false, labels }: LocalMapProps) {
   const { t } = useTranslation();
   const [box, size] = useElementSize<HTMLDivElement>();

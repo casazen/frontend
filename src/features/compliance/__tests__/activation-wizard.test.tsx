@@ -42,7 +42,6 @@ vi.mock('@/features/properties/components/ical-settings', () => ({
   IcalSettings: () => createElement('p', { 'data-testid': 'ical-settings' }),
 }));
 
-/** Stand-in of the property form: one field (name), sends the whole form like the real one. */
 function FakePropertyForm({
   property,
   onSubmit,
@@ -75,7 +74,6 @@ vi.mock('@/features/properties/components/property-form', () => ({
   PropertyForm: (props: Parameters<typeof FakePropertyForm>[0]) => createElement(FakePropertyForm, props),
 }));
 
-// The wizard reads only these fields: partial objects are cast to the full hook results.
 type Hook<T extends (...args: never[]) => unknown> = ReturnType<T>;
 
 const CIN_GUIDANCE_URL = 'https://www.ministeroturismo.gov.it/banca-dati-strutture-ricettive/';
@@ -148,7 +146,6 @@ function checklistItem(code: SafetyItemCode, patch: Partial<SafetyChecklistItem>
   };
 }
 
-/** Checklist saved and confirmed on an all-electric flat of one floor: the server says it is complete. */
 const savedChecklist: SafetyChecklist = {
   schemaVersion: 2,
   legalBasis: 'DL145/2023 art.13-ter, RS-3 2026-09',
@@ -278,13 +275,11 @@ describe('PropertyActivationWizard', () => {
     mockActivation(activation('Active'));
     renderWizard();
 
-    // Everything complete on the server: the wizard opens on the summary, with the status of the API.
     expect(screen.getByTestId('compliance-status-badge')).toHaveTextContent('Attivo');
     expect(screen.getByTestId('activation-review')).toBeInTheDocument();
     expect(screen.getByTestId('activation-review-active')).toBeInTheDocument();
     expect(screen.getByTestId('activation-no-blockers')).toBeInTheDocument();
 
-    // Safety step: the saved answers, never empty defaults.
     fireEvent.click(stepButton('safety'));
     expect(panel('safety')).toBeVisible();
     const entrepreneurial = screen.getByRole('group', { name: /forma imprenditoriale/ });
@@ -296,7 +291,6 @@ describe('PropertyActivationWizard', () => {
     expect(within(extinguishers).getByLabelText('Numero di estintori')).toHaveValue(1);
     expect(screen.getByTestId('safety-complete')).toBeInTheDocument();
 
-    // Base data and CIN saved without changes: nothing is sent.
     fireEvent.click(stepButton('base-data'));
     fireEvent.click(screen.getByRole('button', { name: 'save-base-data' }));
     await waitFor(() => expect(panel('cin')).toBeVisible());
@@ -309,7 +303,6 @@ describe('PropertyActivationWizard', () => {
     fireEvent.click(screen.getByTestId('activation-complete-button'));
 
     await waitFor(() => expect(completeActivation).toHaveBeenCalledTimes(1));
-    // Only the terms: the checklist is never sent (and overwritten with false) when completing.
     expect(completeActivation.mock.calls[0][0]).toEqual({ tosAccepted: true });
     expect(updateProperty).not.toHaveBeenCalled();
     expect(updateCin).not.toHaveBeenCalled();
@@ -318,7 +311,6 @@ describe('PropertyActivationWizard', () => {
   });
 
   it('remindersOpen_DocumentsAndSafetyAsWarnings_TheAcknowledgementIsAskedAndSentWithTheTerms', async () => {
-    // PO decision 2026-11-01 (option A): the documents and the safety sheet do not block; open, the host acknowledges them once.
     mockActivation(
       activation('Pending', {
         documents: { blocker: false, status: 'warning', message: 'Carica i documenti richiesti: CinCertificate.' },
@@ -355,7 +347,6 @@ describe('PropertyActivationWizard', () => {
     const warnings = screen.getByTestId('activation-step-warnings-cin');
     expect(warnings).toHaveTextContent('Il CIN contiene un altro comune: nota informativa.');
     expect(within(warnings).getByRole('listitem')).toHaveAttribute('data-code', 'cin_istat_comune_mismatch');
-    // A note only: the step stays complete and the property stays active.
     expect(screen.getByTestId('compliance-status-badge')).toHaveTextContent('Attivo');
     expect(screen.queryByTestId('activation-step-warnings-base-data')).not.toBeInTheDocument();
   });
@@ -421,7 +412,6 @@ describe('PropertyActivationWizard', () => {
     } as unknown as Hook<typeof properties.useProperty>);
     renderWizard();
 
-    // Opens on the first blocking step still open; every step shows whether it is complete.
     expect(stepButton('cin')).toHaveAttribute('aria-current', 'step');
     expect(stepButton('base-data')).toHaveAttribute('data-status', 'complete');
     expect(stepButton('cin')).toHaveAttribute('data-status', 'pending');
@@ -440,7 +430,6 @@ describe('PropertyActivationWizard', () => {
     expect(panel('ical')).toBeVisible();
     fireEvent.click(screen.getByTestId('activation-next'));
 
-    // Summary: known blockers with their link, "Completa" disabled, unsaved input flagged.
     const known = screen.getByTestId('activation-known-blockers');
     expect(within(known).getByRole('link', { name: 'Vai a «Codice CIN»' })).toBeInTheDocument();
     expect(screen.getByTestId('activation-unsaved-base-data')).toBeInTheDocument();
@@ -448,7 +437,6 @@ describe('PropertyActivationWizard', () => {
     fireEvent.click(tosCheckbox()!);
     expect(screen.getByTestId('activation-complete-button')).toBeDisabled();
 
-    // Back and forth: what was typed is still there, and saving sends only the changes.
     fireEvent.click(stepButton('base-data'));
     expect(screen.getByLabelText('base-name')).toHaveValue('Casa al mare');
     fireEvent.click(screen.getByRole('button', { name: 'save-base-data' }));
@@ -570,7 +558,6 @@ describe('PropertyActivationWizard', () => {
   it('popupAlerts_WizardOnScreen_AreHeldBackUntilTheHostLeavesIt', () => {
     const { unmount } = renderWizard();
 
-    // ADR-025-R7: this wizard has no `WizardShell`, so the page itself tells the popup alerts to wait.
     expect(screen.getByTestId('property-activation-wizard')).toBeInTheDocument();
     expect(useUiStore.getState().openWizards).toBeGreaterThan(0);
 

@@ -2,7 +2,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET, HEAD, sitemapUpstreamPath, sitemapUpstreamUrl } from '../../api/sitemap';
 
-/** Vercel function behind /sitemap.xml (SE-02 / A8-02): the backend sitemap, proxied on the web app domain. */
 const API_BASE = 'https://api.example.test/api';
 const SITEMAP =
   '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
@@ -90,7 +89,6 @@ describe('api/sitemap.ts', () => {
     expect(await response.text()).toBe('');
   });
 
-  // BK-15: the sitemaps of the booking sites go through the same function.
   it.each([
     ['', 'public/sitemap.xml'],
     ['name=book', 'public/sitemap-book.xml'],
@@ -153,7 +151,6 @@ describe('api/sitemap.ts', () => {
     expect((await GET(new Request('https://public-site.example.test/api/sitemap?org=villa-rossi'))).status).toBe(503);
   });
 
-  // BK-16: the Host of the request makes /sitemap.xml the sitemap of an org's own site.
   it('sitemapUpstreamUrl_GuidesSitemapWithAHost_CarriesTheHost', () => {
     expect(sitemapUpstreamUrl(API_BASE, 'public/sitemap.xml', 'www.villa-rossi.example.test')?.toString()).toBe(
       `${API_BASE}/public/sitemap.xml?host=www.villa-rossi.example.test`,

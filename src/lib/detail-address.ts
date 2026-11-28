@@ -9,10 +9,8 @@
  * opens nothing.
  */
 
-/** The name of the parameter. A list does not use it (`list-state`), nor the tabs (`?tab=`). */
 export const DETAIL_PARAM = 'detail';
 
-/** A kind is a short lowercase word (`booking`, `service-request`): it names what the drawer shows and travels in the address. */
 const KIND = /^[a-z][a-z0-9-]{0,31}$/;
 
 /**
@@ -22,10 +20,8 @@ const KIND = /^[a-z][a-z0-9-]{0,31}$/;
  */
 const ID = /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,127}$/;
 
-/** The `detail=…` pair of a serialized query (not `f_detail=…`): the first one, with what comes before it. */
 const DETAIL_PAIR = new RegExp(`(^|&)${DETAIL_PARAM}=([^&]*)`);
 
-/** What a drawer shows: the kind that was registered, and the id of the thing. */
 export interface DetailRef {
   kind: string;
   id: string;
@@ -39,7 +35,6 @@ export function isValidDetailId(id: string): boolean {
   return ID.test(id);
 }
 
-/** `booking:3f2a9c1e` as a ref. The id is what follows the first colon, so it can hold colons; null if either part is not valid. */
 export function parseDetailValue(value: string | null | undefined): DetailRef | null {
   if (!value) return null;
   const separator = value.indexOf(':');
@@ -49,21 +44,14 @@ export function parseDetailValue(value: string | null | undefined): DetailRef | 
   return isValidDetailKind(kind) && isValidDetailId(id) ? { kind, id } : null;
 }
 
-/** The drawer an address asks for, or null when it asks for none (or for one that is not valid). */
 export function readDetail(search: string | URLSearchParams): DetailRef | null {
   return parseDetailValue(new URLSearchParams(search).get(DETAIL_PARAM));
 }
 
-/** The address carries the parameter, valid or not: closing the drawer takes a stale one away too. */
 export function hasDetailParam(search: string | URLSearchParams): boolean {
   return new URLSearchParams(search).has(DETAIL_PARAM);
 }
 
-/**
- * `search` with the drawer of `ref` open, or with no drawer when `ref` is null; every other parameter is kept as it was. The
- * result is a query string as `location.search` has it: `?a=b` or an empty string. The colon of the value is written as it is
- * (a legal character of a query), not as `%3A`: this address is read by people and pasted in emails.
- */
 export function searchWithDetail(search: string | URLSearchParams, ref: DetailRef | null): string {
   const params = new URLSearchParams(search);
   if (ref) params.set(DETAIL_PARAM, `${ref.kind}:${ref.id}`);

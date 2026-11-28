@@ -14,7 +14,6 @@ describe('route manifest: the money reports (NF-97, NF-98, E07/F03/US02)', () =>
     expect(entry?.context).toBe('short-rent');
     expect(entry?.requiredPermissions).toEqual(['payment.read']);
 
-    // Aggregated money: whoever may not read payments does not open it (the backend refuses the read too).
     const withoutPayments = (_context: string, permission: string) => permission !== 'payment.read';
     expect(entry && hasEntryPermission(entry, withoutPayments)).toBe(false);
     expect(entry && hasEntryPermission(entry, () => true)).toBe(true);
@@ -32,13 +31,11 @@ describe('route manifest: the money reports (NF-97, NF-98, E07/F03/US02)', () =>
   });
 
   it.each(PATHS)('RouteManifest_%s_HasATrailThroughIncassiAndTheListOfReports', (path) => {
-    // The trail of the header (`crumbs="auto"`): Incassi, Report, and the page itself (last, with no address).
     const trail = getManifestCrumbs({ contextKey: 'short-rent', pathname: path, current: 'Report', t: ((key: string) => key) as never });
 
     expect(trail.map((step) => step.to)).toEqual(['/app/short-rent/payments', '/app/short-rent/reports', undefined]);
   });
 
-  // The pages are loaded for the first time here, with their tables behind them: the 5 s of the default are not enough on a loaded CI runner.
   it.each(PATHS)('RouteManifest_%s_LoadsAPageThatIsAComponent', { timeout: 30_000 }, async (path) => {
     const entry = ROUTE_MANIFEST.find((candidate) => candidate.path === path);
     const page = await entry?.component();

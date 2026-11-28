@@ -24,11 +24,6 @@ export function useTouristTaxSummary(period: ReportPeriod, enabled = true) {
   });
 }
 
-/**
- * Records a payment of the tourist tax, with its receipt when one is sent. A failure that a field of the form explains (the comune is
- * not one of the host's, the amount, the days) is shown next to that field by the dialog, which stays open with everything typed;
- * any other failure (a missing permission, no network) has no field and is told by a toast. Every summary is read again.
- */
 export function useRecordTouristTaxRemittance() {
   const queryClient = useQueryClient();
 
@@ -45,10 +40,6 @@ export function useRecordTouristTaxRemittance() {
   });
 }
 
-/**
- * Deletes a wrong entry: the payment and its receipt. The summaries are read again after a failure too: the payment may be gone
- * already (deleted from another screen), and the page should show what is there.
- */
 export function useDeleteTouristTaxRemittance() {
   const queryClient = useQueryClient();
 
@@ -66,7 +57,6 @@ export function useDeleteTouristTaxRemittance() {
   });
 }
 
-/** Downloads the receipt of a payment (the caller saves the blob); a failure is told by a toast. */
 export function useDownloadTouristTaxReceipt() {
   return useMutation({
     mutationFn: (id: string) => touristTaxSummaryApi.downloadReceipt(id),
@@ -76,7 +66,6 @@ export function useDownloadTouristTaxReceipt() {
   });
 }
 
-/** Downloads the summary of the days as a CSV (the caller saves the blob); a failure is told by a toast. */
 export function useDownloadTouristTaxSummaryCsv() {
   return useMutation({
     mutationFn: (period: ReportPeriod) => touristTaxSummaryApi.downloadCsv(period),

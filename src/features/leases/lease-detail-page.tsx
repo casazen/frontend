@@ -42,7 +42,6 @@ import { PartnerDraftNotice } from './components/partner-draft-notice';
 import { ContinueDraftNotice } from './components/continue-draft-notice';
 
 
-/** The tenants by name ("Giulia Verdi e Acme Srl"), or what stands in their place while there is none. */
 function leaseTitle(lease: LeaseDetail, language: string, t: TFunction): string {
   const names = (lease.parties ?? [])
     .filter((party) => party.role === 'Tenant')
@@ -72,7 +71,6 @@ function LeaseFacts({ lease }: { lease: LeaseDetail }) {
   );
 }
 
-/** The state of the lease: a badge that is also the button that explains it. */
 function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatus; open: boolean; controls: string; onToggle: () => void }) {
   const { t } = useTranslation();
   return (
@@ -91,20 +89,11 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
   );
 }
 
-/** Contract details are the landing section; the guide and the history open on demand. */
 function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: LeaseNextStep | null; stage: LeaseStage | undefined }) {
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
-  // A concordato draft of the guided service (the one made for it, or one the server marked as its own): the contract comes from the
-  // service, not from the signature panel of CasaZen, and no data of it is typed. The card is its one voice, so the step of the server is
-  // not laid over it.
   const serviceDraft = isServiceDraft(lease);
-  // The contract the service delivered, uploaded to that draft (CF-IMPORT): the card that waited for it gives way to the one that goes on
-  // (the practice, where the reading stands and «Completa e importa il contratto»), which is then the one voice of the draft, and the way
-  // in to the service (the practice is done) is not offered any more. Null for any lease that is not that draft.
   const cfContract = useCfDeliveredContract(lease);
-  // Keeps the lease moving along with its practice: reads the uploaded documents into the draft, imports the contract as signed and declares
-  // the registration when the practice and the documents allow it, and asks the sheet to read the lease again when it changed.
   const completion = useCfCompletion(lease);
   const step = serviceDraft || cfContract ? null : nextStep;
   const operation = leaseOperationOf(searchParams.get(LEASE_OPERATION_PARAM));
@@ -130,7 +119,6 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
   const title = leaseTitle(lease, i18n.language, t);
   const actions = useLeaseActions(lease, { tenant: title, property: lease.property?.name ?? t('leaseList.property.unknown') });
   const links = useLeaseSheetMenu(lease, { serviceDraft });
-  // What changes the lease comes after what only takes somewhere, apart; the one that destroys is the last of the menu (LR-10).
   const menu: PageHeaderMenuItem[] = actions.menu.length > 0 ? [...links, { separator: true }, ...actions.menu] : links;
 
   return (
@@ -189,9 +177,7 @@ export function LeaseDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { data: lease, isLoading, isError, error, refetch } = useLease(id!);
-  // The step the lease waits for is not in its detail yet: it is read from its row in the list of leases, asked together with the lease.
   const nextStep = useLeaseNextStep(id!);
-  // Where it stands on its path comes with the step, from the same row of the same list: the guide knows the moment of the lease when it opens.
   const listStage = useLeaseListStage(id!);
 
   if (isLoading) {

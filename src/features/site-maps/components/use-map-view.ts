@@ -2,22 +2,17 @@ import { useState } from 'react';
 import { fitView, panView, zoomView, type LatLon, type View } from '../engine/view';
 import { FIT } from '../load';
 
-/** The smallest frame (km): the positions are rounded to about 1 km, so closer than this the map would only show the rounding. */
 const MIN_SPAN_KM = 8;
 const MAX_SPAN_KM = 1500;
 
 export interface MapViewControl {
   view: View;
-  /** True while the person has moved or zoomed the map: «Adatta ai risultati» brings it back. */
   custom: boolean;
   canZoomIn: boolean;
   canZoomOut: boolean;
-  /** Zooms by a factor (2 is twice as close) and returns the new view, or null when the zoom is already at its end. */
   zoom: (factor: number, anchor?: LatLon) => View | null;
-  /** Moves the frame by a fraction of its size: positive goes east and south. */
   pan: (dxFrac: number, dyFrac: number) => void;
   fit: () => void;
-  /** Brings the frame to a few positions (the houses of a group of pins) and returns the new view. */
   focus: (points: readonly LatLon[]) => View;
 }
 

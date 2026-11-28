@@ -7,11 +7,6 @@ import { ApiClient } from './client';
  * `bookingsApi.resendCheckInLink`) ask. The answer is private (`Cache-Control: no-store`): it can hold the link, a secret that opens the page of the guest.
  */
 export const checkinLinkApi = {
-  /**
-   * `GET /api/bookings/{id}/checkin/link-delivery`: the channel (`Email`, `PortalChat`, `Manual`), the state (`Sent`, `Sending`, a waiting state or `Failed`)
-   * with its stable error code, and the link to copy. A booking with no delivery record answers 200 with `channel` and `state` empty; one of another
-   * organization is a 404.
-   */
   getDelivery: (bookingId: string) =>
     ApiClient.get<CheckInLinkDelivery>(`/bookings/${encodeURIComponent(bookingId)}/checkin/link-delivery`),
 };

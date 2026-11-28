@@ -16,7 +16,6 @@ import type { AdminAssistRequest, AssistUpdateStatus } from '@/types/onboarding.
 import { assistRequestTitle } from '../lib/assist-request-title';
 import { AssistRequestDetailDialog } from '../onboarding-assist/assist-request-detail-dialog';
 
-/** The longest note the API accepts (`assist_note_invalid` above it). */
 const NOTE_MAX_LENGTH = 500;
 
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
@@ -29,17 +28,14 @@ const STATUS_VIEW: Record<string, { tone: StatusTone; Icon: LucideIcon; key: str
   Done: { tone: 'success', Icon: CheckCircle2, key: 'done' },
   Cancelled: { tone: 'neutral', Icon: Ban, key: 'cancelled' },
 };
-/** A status this version does not know (the server is newer) is never read as done or open: it is shown as not understood and has no action. */
 const UNKNOWN_STATUS = { tone: 'warning', Icon: CircleHelp, key: 'unknown' } as const;
 
-/** What a staff action asks, with the status it moves the request to and the words of its dialog. */
 const ACTIONS: ReadonlyArray<{ status: AssistUpdateStatus; key: 'take' | 'done' | 'cancel'; from: readonly string[] }> = [
   { status: 'inProgress', key: 'take', from: ['Requested'] },
   { status: 'done', key: 'done', from: ['Requested', 'InProgress'] },
   { status: 'cancelled', key: 'cancel', from: ['Requested', 'InProgress'] },
 ];
 
-/** The first characters of an identifier: enough to tell two apart in a list and to quote on the phone; the whole id is one press away (the copy button). */
 function shortId(id: string): string {
   return id.slice(0, 8);
 }
@@ -50,7 +46,6 @@ interface IdLineProps {
   testId: string;
 }
 
-/** An identifier of the request, short, with a button that copies it whole. */
 function IdLine({ label, id, testId }: IdLineProps) {
   const { t } = useTranslation();
 
@@ -59,7 +54,6 @@ function IdLine({ label, id, testId }: IdLineProps) {
       await navigator.clipboard.writeText(id);
       toast.success(t('onboardingPlan.assist.copied'));
     } catch {
-      // No clipboard (an insecure page, a refused permission): the short id is still there to read.
       toast.error(t('onboardingPlan.assist.copyError'));
     }
   }
@@ -79,15 +73,9 @@ interface ActionDialogProps {
   action: (typeof ACTIONS)[number];
   request: AdminAssistRequest;
   onClose: () => void;
-  /** Sends the change and settles when the server answered: a rejection is the refusal, said under the note. */
   onUpdate: (id: string, status: AssistUpdateStatus, note?: string) => Promise<unknown>;
 }
 
-/**
- * The small dialog of one staff action: an optional note of at most 500 characters (a counter, and «Non scrivere indirizzi email»: the note goes to the host
- * and the server refuses an e-mail address, 422 `assist_note_invalid`, which is said under the field). The dialog stays open on a refusal so the note can be
- * fixed, and closes when the server accepted the change. It cannot be closed, nor pressed twice, while the call is on its way.
- */
 function AssistActionDialog({ action, request, onClose, onUpdate }: ActionDialogProps) {
   const { t } = useTranslation();
   const ids = useId();
@@ -154,9 +142,7 @@ function AssistActionDialog({ action, request, onClose, onUpdate }: ActionDialog
 
 interface AssistRequestRowProps {
   request: AdminAssistRequest;
-  /** The time now, for «da 3 ore». */
   now: number;
-  /** Any update of the page is on its way: every action of every row is off until it answered (one at a time). */
   busy: boolean;
   onUpdate: (id: string, status: AssistUpdateStatus, note?: string) => Promise<unknown>;
 }

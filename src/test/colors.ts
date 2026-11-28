@@ -39,14 +39,12 @@ function oklabToHex([L, a, b]: Oklab): string {
   return `#${[r, g, bl].map((c) => hex2(toGamma(c))).join('')}`;
 }
 
-/** `oklch(L% C H)` (what `globals.css` uses) as a hex color. */
 export function oklchToHex(lightnessPercent: number, chroma: number, hue: number): string {
   const L = lightnessPercent / 100;
   const radians = (hue * Math.PI) / 180;
   return oklabToHex([L, chroma * Math.cos(radians), chroma * Math.sin(radians)]);
 }
 
-/** `color-mix(in oklab, <a> <percentOfA>%, <b>)`, the mix the soft button uses. */
 export function mixOklab(a: string, percentOfA: number, b: string): string {
   const [la, aa, ba] = hexToOklab(a);
   const [lb, ab, bb] = hexToOklab(b);
@@ -54,7 +52,6 @@ export function mixOklab(a: string, percentOfA: number, b: string): string {
   return oklabToHex([la * p + lb * (1 - p), aa * p + ab * (1 - p), ba * p + bb * (1 - p)]);
 }
 
-/** The hex color of a `--color-<token>` declared in the `@theme` of `globals.css` as `oklch(...)` (the colors of today). */
 export function themeColor(token: string): string {
   const css = readFileSync(resolve(process.cwd(), 'src/styles/globals.css'), 'utf8');
   const match = new RegExp(`--color-${token}:\\s*oklch\\(\\s*([\\d.]+)%\\s+([\\d.]+)\\s+([\\d.]+)\\s*\\)`).exec(css);
@@ -62,7 +59,6 @@ export function themeColor(token: string): string {
   return oklchToHex(Number(match[1]), Number(match[2]), Number(match[3]));
 }
 
-/** The fallback hex of `var(--color-<token>, #rrggbb)` in a class list: what the component paints until the token exists. */
 export function fallbackColor(classes: string, token: string): string {
   const match = new RegExp(`var\\(--color-${token},\\s*(#[0-9a-fA-F]{6})\\)`).exec(classes);
   if (!match) throw new Error(`No fallback for --color-${token} in: ${classes}`);

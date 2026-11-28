@@ -8,11 +8,8 @@ import { clearOwnerContactToken, OWNER_CONTACT_APP_STATE_KEY, OWNER_CONTACT_INVI
 import { clearOwnerInvitationToken, OWNER_INVITATION_APP_STATE_KEY, OWNER_INVITATION_PATH, peekOwnerInvitationToken } from '@/lib/owner-invitation';
 import { getRouter } from '@/routes';
 
-// The sign-in of the identity provider is the only thing replaced: its provider hands the app, once the sign-in is over, the `appState` that `login()` gave it (as the SDK does
-// after it has read the answer of the identity provider, never during a render). Everything else is the app: `App`, the auth bridge, `handleAuthRedirect`, the page of the link.
 const signIn = vi.hoisted(() => ({
   appState: undefined as Record<string, unknown> | undefined,
-  /** How many times the provider has handed the `appState` back to the app. */
   handed: 0,
   loginWithRedirect: vi.fn(),
   logout: vi.fn(),
@@ -39,7 +36,6 @@ vi.mock('@auth0/auth0-react', () => ({
   }),
 }));
 
-// The routes of the app are many and heavy: the router here holds the pages of the two links (the real ones: of an owner and of a contact), the portal the person is taken to and one page for everything else.
 vi.mock('@/routes', async () => {
   const { createMemoryRouter } = await import('react-router-dom');
   const { OwnerInvitationPage } = await import('@/features/owner-portal/owner-invitation-page');
@@ -53,18 +49,15 @@ vi.mock('@/routes', async () => {
   return { getRouter: () => router };
 });
 
-// Parts of the shell that read the network or the clock of the app: not what is tried here.
 vi.mock('@/contexts/feature-flags-provider', () => ({ FeatureFlagsProvider: ({ children }: { children: ReactNode }) => children }));
 vi.mock('@/routes/ui-version-sync', () => ({ UiVersionSync: () => null }));
 vi.mock('@/i18n/i18n-locale-sync', () => ({ I18nLocaleSync: () => null }));
 vi.mock('@/components/shared/app-toaster', () => ({ AppToaster: () => null }));
 vi.mock('@/lib/axios', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/axios')>()), default: { post: vi.fn(), get: vi.fn() } }));
 
-/** What the backend reads: 64 lowercase hex characters. */
 const TOKEN = 'c3'.repeat(32);
 const ACCEPTED = { ownerUserId: 'owner-user-1', agencyIds: ['agency-1'], ownedPropertyIds: ['property-1'], alreadyAccepted: false, claimsRefresh: 'published' };
 
-/** What the backend issues for a contact: 32 random bytes as URL-safe base64, 43 characters (case matters). */
 const CONTACT_TOKEN = 'Qx7_aB-9kLmN0pRsTuVwXyZ1234567890AbCdEfGhIj';
 const ACCEPTED_CONTACT = { ownerUserId: 'owner-user-9', agencyIds: ['agency-1'], propertyIds: ['property-1'], alreadyAccepted: false, claimsRefresh: 'published' };
 
@@ -87,7 +80,6 @@ describe('App: the secret of an owner invitation across the sign-in (E10/F03/US0
   });
 
   it('OwnerInvitationRoute_AuthRoundTripThroughTheApp_HandsTheSecretOfTheAppStateToThePageAndSendsItOnce_Test', async () => {
-    // The person signed in from the page of the link: `login()` kept the secret in the `appState`, and the app gets it back here, with the page to open.
     signIn.appState = { returnTo: OWNER_INVITATION_PATH, [OWNER_INVITATION_APP_STATE_KEY]: TOKEN };
     render(<App />);
 
@@ -101,7 +93,6 @@ describe('App: the secret of an owner invitation across the sign-in (E10/F03/US0
     expect(body).toEqual({ token: TOKEN });
     expect(getRouter().state.location.search).toBe('');
     expect(peekOwnerInvitationToken()).toBeNull();
-    // The claims were published: a new token was asked for, and nothing was written to the browser by the page or by the app.
     expect(signIn.getAccessTokenSilently).toHaveBeenCalledTimes(1);
     expect(Object.keys(localStorage)).toHaveLength(0);
     expect(Object.keys(sessionStorage)).toHaveLength(0);
@@ -117,7 +108,6 @@ describe('App: the secret of an owner invitation across the sign-in (E10/F03/US0
   });
 
   it('OwnerInvitationRoute_AuthRoundTripThroughTheApp_ThingsThatAreNotTheSecret_AreNotKept', async () => {
-    // Another sign-in of the app (a host who comes back to the console) and a value that is not a token of an invitation: nothing is kept in memory for the page of the link.
     const signIns: Array<Record<string, unknown> | undefined> = [
       { returnTo: '/app/short-rent' },
       { returnTo: '/app/short-rent', [OWNER_INVITATION_APP_STATE_KEY]: 'not-a-token' },
@@ -130,7 +120,6 @@ describe('App: the secret of an owner invitation across the sign-in (E10/F03/US0
       signIn.appState = appState;
       render(<App />);
 
-      // The app took the sign-in in (and went where it said to go) before anything is looked at.
       await waitFor(() => expect(signIn.handed).toBe(index + 1));
       await waitFor(() => expect(getRouter().state.location.pathname).toBe(typeof appState?.returnTo === 'string' ? appState.returnTo : '/'));
       expect(peekOwnerInvitationToken()).toBeNull();
@@ -158,7 +147,6 @@ describe('App: the secret of the invitation of a CONTACT across the sign-in (E07
   });
 
   it('OwnerContactRoute_AuthRoundTripThroughTheApp_HandsTheSecretOfTheAppStateToThePageAndSendsItOnce_Test', async () => {
-    // The person signed in from the page of the link: `login()` kept the secret in the `appState`, and the app gets it back here, with the page to open.
     signIn.appState = { returnTo: OWNER_CONTACT_INVITATION_PATH, [OWNER_CONTACT_APP_STATE_KEY]: CONTACT_TOKEN };
     render(<App />);
 
@@ -172,7 +160,6 @@ describe('App: the secret of the invitation of a CONTACT across the sign-in (E07
     expect(body).toEqual({ token: CONTACT_TOKEN });
     expect(getRouter().state.location.search).toBe('');
     expect(peekOwnerContactToken()).toBeNull();
-    // The claims were published: a new token was asked for, and nothing was written to the browser by the page or by the app.
     expect(signIn.getAccessTokenSilently).toHaveBeenCalledTimes(1);
     expect(Object.keys(localStorage)).toHaveLength(0);
     expect(Object.keys(sessionStorage)).toHaveLength(0);
@@ -188,8 +175,6 @@ describe('App: the secret of the invitation of a CONTACT across the sign-in (E07
   });
 
   it('OwnerContactRoute_AuthRoundTripThroughTheApp_ThingsThatAreNotTheSecret_AreNotKept', async () => {
-    // Another sign-in of the app (a host who comes back to the console, an owner who comes from the link of its own invitation) and values that are not a token of a contact:
-    // nothing is kept in memory for the page of the link of a contact.
     const signIns: Array<Record<string, unknown> | undefined> = [
       { returnTo: '/app/short-rent' },
       { returnTo: '/app/short-rent', [OWNER_CONTACT_APP_STATE_KEY]: 'not-a-token' },
@@ -204,7 +189,6 @@ describe('App: the secret of the invitation of a CONTACT across the sign-in (E07
       signIn.appState = appState;
       render(<App />);
 
-      // The app took the sign-in in (and went where it said to go) before anything is looked at.
       await waitFor(() => expect(signIn.handed).toBe(index + 1));
       await waitFor(() => expect(getRouter().state.location.pathname).toBe(typeof appState?.returnTo === 'string' ? appState.returnTo : '/'));
       expect(peekOwnerContactToken()).toBeNull();

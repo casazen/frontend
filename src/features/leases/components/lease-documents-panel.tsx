@@ -20,7 +20,6 @@ import { LEASE_CONFIRMED_STATE, documentsUploadPath } from '../lib/upload-link';
 
 const KINDS: LeaseDocumentKind[] = ['Contract', 'Attestation', 'Registration', 'Other'];
 
-/** Lease-owned originals: no property document API or propertyId is accepted here. */
 export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: string; canUpload?: boolean }) {
   const { t } = useTranslation();
   const client = useQueryClient();
@@ -31,7 +30,6 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
   const [validation, setValidation] = useState('');
   const [saved, setSaved] = useState(false);
   const documents = useQuery({ queryKey: ['lease-documents', leaseId], queryFn: () => leaseDocumentsApi.list(leaseId) });
-  // A contract uploaded to the draft ConcordatoFacile made is read at once: what the page shows of the reading is asked again.
   const refreshReading = useRefreshDraftReading(leaseId);
   const upload = useMutation({
     mutationFn: ({ file, kind }: { file: File; kind: LeaseDocumentKind }) => leaseDocumentsApi.upload(leaseId, file, kind),
@@ -39,7 +37,6 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
       setSelection(EMPTY_DOCUMENT); setSaved(true);
       await client.invalidateQueries({ queryKey: ['lease-documents', leaseId] });
       void refreshReading();
-      // The lease of the guided service moves on with what was uploaded (CF-DONE): where the sync of the lease is mounted, it is asked again.
       void client.invalidateQueries({ queryKey: CF_SYNC_QUERY_KEY(leaseId) });
     },
   });
@@ -118,7 +115,6 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
           <select id={`${formId}-kind`} aria-describedby={`${formId}-kind-hint`} className="block w-full rounded-md border p-2" value={kind} onChange={(event) => setKind(event.target.value as LeaseDocumentKind)} disabled={upload.isPending || preparing}>
             {KINDS.map((value) => <option key={value} value={value}>{t(`cfDocuments.kinds.${value}`)}</option>)}
           </select>
-          {/* One file for the contract and its attestation (CF-DOCS-REAL); the receipt of the Agenzia is a file of its own. */}
           <p id={`${formId}-kind-hint`} className="text-sm text-muted-foreground" data-testid="lease-documents-kind-hint">{t(`leaseDocs.upload.hint.${kind}`)}</p>
         </div>
         <DocumentPages value={selection} onChange={(next) => { setSelection(next); setSaved(false); setValidation(''); upload.reset(); }} disabled={preparing || upload.isPending} />

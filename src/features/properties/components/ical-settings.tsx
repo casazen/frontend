@@ -58,7 +58,6 @@ export function IcalSettings({ propertyId }: IcalSettingsProps) {
     removeFeed.reset();
   };
 
-  // The dialog closes only once the feed is gone; on error it stays open with the reason.
   const confirmRemove = () => {
     if (!feedToRemove) return;
     removeFeed.mutate(feedToRemove.id, { onSuccess: () => setFeedToRemove(null) });
@@ -161,7 +160,6 @@ function FeedRow({ propertyId, feed, onRemove, removing }: FeedRowProps) {
   const syncFeed = useSyncPropertyIcalFeed(propertyId);
   const status = feed.lastImportStatus ?? null;
   const syncing = status === 'Syncing' || syncFeed.isPending;
-  // The error of the last completed sync, translated from its stable code (the backend text only as a fallback).
   const lastError =
     status === 'Failure' || status === 'PartialFailure'
       ? translateErrorCode(feed.lastErrorCode, t) ?? feed.lastError ?? undefined
@@ -219,7 +217,6 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
   const [importUrl, setImportUrl] = useState('');
   const errorId = 'property-ical-add-error';
 
-  // A new attempt hides the error of the previous one.
   const edit = (update: () => void) => {
     if (addFeed.isError) addFeed.reset();
     update();
@@ -232,7 +229,6 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
     addFeed.mutate(
       { channel, label: label.trim() || undefined, importUrl: url },
       {
-        // The fields empty only on success: on error the host corrects the URL (e.g. http:// → https://).
         onSuccess: () => {
           setImportUrl('');
           setLabel('');

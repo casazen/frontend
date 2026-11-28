@@ -82,7 +82,6 @@ describe('useCompleteComplianceActivation onError (A5-18)', () => {
   });
 });
 
-// E03/F03/US01/T02 (NF-52): the lights of the cards and of the Home come from the summary of the adempimenti.
 describe('the reads of the compliance lights', () => {
   const none = { count: 0, items: [] };
   const summary = (light?: 'Green' | 'Yellow' | 'Red'): ComplianceSummaryResult => ({
@@ -100,7 +99,6 @@ describe('the reads of the compliance lights', () => {
   it('useComplianceLights_NotEnabled_NeverReadsTheSummary', async () => {
     const { result } = renderHook(() => useComplianceLights(false), { wrapper: withClient(sharedClient()) });
 
-    // Without the right to read the bookings the API would answer 403, and a bare 403 on a GET takes the user to «nessun accesso».
     expect(result.current.fetchStatus).toBe('idle');
     expect(fetchComplianceSummary).not.toHaveBeenCalled();
   });
@@ -115,7 +113,6 @@ describe('the reads of the compliance lights', () => {
     const second = renderHook(() => useComplianceLights(true), { wrapper: withClient(client) });
     await waitFor(() => expect(second.result.current.isSuccess).toBe(true));
 
-    // The lights move with the clock and with what happens elsewhere: a page that opens shows them as they are, not as they were a minute ago.
     await waitFor(() => expect(fetchComplianceSummary).toHaveBeenCalledTimes(2));
   });
 
@@ -128,7 +125,6 @@ describe('the reads of the compliance lights', () => {
     expect(fetchComplianceSummary).toHaveBeenCalledTimes(1);
   });
 
-  // TanStack Query keeps the data of a read that fails: a 404 is the traffic light off and no answer, whatever the cache still holds (a card is what it was).
   it('lightsOf_A404WithAnOldAnswerInTheCache_IsNoAnswerAndIsNotAFailure', async () => {
     const client = sharedClient();
     client.setQueryData([COMPLIANCE_KEY, 'summary'], summary('Red'));
@@ -167,7 +163,6 @@ describe('the reads of the compliance lights', () => {
     const { result } = renderHook(() => useComplianceLights(true), { wrapper: withClient(client) });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    // The same cache entry the live events refresh (`COMPLIANCE_KEY`): an open page changes without a reload.
     expect(client.getQueryData([COMPLIANCE_KEY, 'summary'])).toEqual(summary('Yellow'));
   });
 

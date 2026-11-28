@@ -20,7 +20,6 @@ export function HostAwareRoot({ children }: { children: ReactNode }) {
     let cancelled = false;
     void resolveHostSite().then((result) => {
       if (cancelled) return;
-      // Before the answer is shown: the router is created by the first render of the app and reads it.
       if (result.kind === 'site') setHostSite(result.site);
       setResolved(result);
     });

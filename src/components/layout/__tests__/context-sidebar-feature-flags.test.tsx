@@ -10,7 +10,6 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: vi.fn(),
 }));
-// The counters are not what this test is about.
 vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: () => ({}) }));
 
 import { useWorkspace } from '@/hooks/use-workspace';

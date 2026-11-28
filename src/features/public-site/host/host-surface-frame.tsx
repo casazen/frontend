@@ -28,7 +28,6 @@ export function HostSurfaceFrame() {
   const displayName = branding?.displayName ?? site?.displayName ?? '';
   const themeId = resolvePublicSiteTheme(branding?.themeId);
   const fontId = resolvePublicSiteFont(branding?.fontId);
-  // Only a valid hex colour reaches CSS; null keeps the colours of the theme. The text on it and its readable variant are derived (BK-13).
   const colorStyle = publicSiteColorStyle(branding?.primaryColor, themeId);
   const logoUrl = branding?.logoUrl ?? null;
   const initial = Array.from(displayName.trim())[0]?.toLocaleUpperCase() ?? '';
@@ -54,7 +53,6 @@ export function HostSurfaceFrame() {
             data-testid="host-surface-frame-home"
           >
             {logoUrl ? (
-              // The name is next to it: the logo is decoration for a screen reader.
               <img src={logoUrl} alt="" className="h-9 w-auto max-w-[160px] shrink-0 object-contain md:h-10 md:max-w-[200px]" />
             ) : initial ? (
               <span

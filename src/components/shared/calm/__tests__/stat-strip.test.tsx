@@ -61,9 +61,7 @@ describe('StatStrip and StatTile (UI-16)', () => {
     const link = screen.getByRole('link');
     expect(link).toHaveAttribute('href', '/app/long-rent/rents?filter=late');
     expect(link).toHaveAccessibleName(/^In ritardo\s?1\.200 €$/);
-    // A link tile says so with a chevron, not only with the pointer.
     expect(link.querySelector('svg.lucide-chevron-right')).not.toBeNull();
-    // The tiles without an href are not links.
     expect(screen.getAllByRole('listitem')[0].querySelector('a')).toBeNull();
   });
 
@@ -93,7 +91,6 @@ describe('StatStrip and StatTile (UI-16)', () => {
     renderStrip(CALM_TONES.map((tone) => <StatTile key={tone} label={`Numero ${tone}`} value={1} tone={tone} />));
 
     const items = screen.getAllByRole('listitem');
-    // Neutral: no icon, the text color of the page. The others: an icon before the label and the color of the tone.
     expect(items[0].querySelector('svg')).toBeNull();
     expect(items[0].querySelector('.text-2xl')).toHaveClass('text-foreground');
     for (const [index, tone] of CALM_TONES.entries()) {
@@ -105,7 +102,6 @@ describe('StatStrip and StatTile (UI-16)', () => {
 
   it('StatStrip_ThreeFourOrTwoTiles_FillTheRowFromATabletOrALaptopAndStackOnAPhone', () => {
     const { unmount } = renderStrip(THREE);
-    // Three tiles: three across from a tablet, not two and one alone on the next line.
     expect(screen.getByRole('list')).toHaveClass('grid-cols-1', 'sm:grid-cols-3');
     expect(screen.getByRole('list')).not.toHaveClass('sm:grid-cols-2');
     unmount();
@@ -117,7 +113,6 @@ describe('StatStrip and StatTile (UI-16)', () => {
   it('StatStrip_Tiles_AreSubgridsOfTheStripFromATablet', () => {
     renderStrip(THREE);
 
-    // Three rows for each tile (name, number, delta): the item of the list is a subgrid of the strip, and the tile in it of the item.
     for (const item of screen.getAllByRole('listitem')) {
       expect(item).toHaveClass('sm:row-span-3', 'sm:grid', 'sm:grid-rows-subgrid', 'sm:*:row-span-3', 'sm:*:grid', 'sm:*:grid-rows-subgrid');
     }
@@ -132,7 +127,6 @@ describe('StatStrip and StatTile (UI-16)', () => {
       expect(tile).toHaveClass('lg:row-span-3', 'lg:grid', 'lg:grid-rows-subgrid');
       expect(tile).not.toHaveClass('sm:grid-rows-subgrid');
     }
-    // The fourth row is the one that takes the room the list asks for; in two columns the strip is as it was.
     expect(list).toHaveClass('lg:row-span-4');
     expect(list).not.toHaveClass('sm:row-span-3');
     expect(screen.getByRole('list')).toHaveClass('lg:auto-rows-[auto_auto_auto_1fr]');
@@ -197,7 +191,6 @@ describe('StatStrip and StatTile (UI-16)', () => {
       </MemoryRouter>,
     );
 
-    // The same element, so a link that had the focus keeps it.
     expect(screen.getByRole('link', { name: /tre/ })).toBe(third);
   });
 

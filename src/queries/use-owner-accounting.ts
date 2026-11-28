@@ -15,12 +15,10 @@ import type {
 } from '@/types';
 import { saveDownload } from './save-download';
 
-/** Root of the query keys of the owner accounting: a write that changes the ledger invalidates everything under it. */
 export const OWNER_ACCOUNTING_KEY = 'owner-accounting';
 const WITHHOLDING_KEY = 'withholding';
 /** Root of the query key of a bulk run: apart from {@link OWNER_ACCOUNTING_KEY}, so that the read of the month which follows the end of a run never invalidates the run being read. */
 const OWNER_BULK_KEY = 'owner-bulk-run';
-/** How often a queued bulk run is asked how far it goes: 250 flats take a few minutes, and the answer is small. */
 const BULK_POLL_MS = 2_000;
 
 export const ownerAccountingKeys = {
@@ -44,7 +42,6 @@ export const ownerAccountingKeys = {
   annual: (year: number) => [WITHHOLDING_KEY, 'annual', year] as const,
 };
 
-/** Whatever a write changed: the ledger, the versions and the tax files read again on their next view (and now, where they are open). */
 function invalidateAll(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: [OWNER_ACCOUNTING_KEY] }),
@@ -52,21 +49,10 @@ function invalidateAll(queryClient: QueryClient) {
   ]);
 }
 
-// ── Reads ─────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-/**
- * The owners of the agency's registry: their names and, for each, what a row of the list draws (the properties, the kind and the currency of the fiscal profile, the mandate in force). A list that
- * other pages change (the activation adds owners, a mandate or a profile is written), read again every time a page asks for it and soon after (`staleTime`), so a list that stays open shows the
- * terms in force. `enabled: false` for who is not the agency's administrator: the registry is refused to anyone else with a 403, which a read sends to the page of no access, so nothing is asked for them.
- */
 export function useOwnerNames(enabled = true) {
   return useQuery({ queryKey: ownerAccountingKeys.owners, queryFn: () => ownerAccountingApi.listOwners(), enabled, refetchOnMount: 'always' as const, staleTime: 30_000 });
 }
 
-/**
- * The versions of an owner's mandate, the newest first. The mandates change on this page and from the standard mandate of the wizard: read again every time a page asks for them, and
- * soon after (`staleTime`), so a page that stays open shows the terms in force. A row of the list of the owners asks for them only when the list could not settle its mandate (`enabled`).
- */
 export function useOwnerMandates(ownerId: string | undefined, enabled = true) {
   return useQuery({
     queryKey: ownerAccountingKeys.mandates(ownerId ?? ''),
@@ -77,10 +63,6 @@ export function useOwnerMandates(ownerId: string | undefined, enabled = true) {
   });
 }
 
-/**
- * The billing address of an owner, in clear: personal data, read only by who manages the owners' finances (`enabled`), and dropped as soon as the page that shows it is left
- * (`gcTime: 0`), so no address outlives the screen in the cache. `null` when the server does not give it to this caller.
- */
 export function useOwnerAddress(ownerId: string | undefined, enabled = true) {
   return useQuery({
     queryKey: ownerAccountingKeys.address(ownerId ?? ''),
@@ -91,12 +73,10 @@ export function useOwnerAddress(ownerId: string | undefined, enabled = true) {
   });
 }
 
-/** What is missing on each owner and property (the activation); `null` while that module is off. */
 export function useOwnerOnboardingReadiness() {
   return useQuery({ queryKey: ownerAccountingKeys.onboarding, queryFn: () => ownerAccountingApi.getOnboardingReadiness(), refetchOnMount: 'always' as const });
 }
 
-/** The readiness of the month. It only reads: nothing is posted or recalculated by opening the page. */
 export function useCloseReadiness(year: number, month: number) {
   return useQuery({
     queryKey: ownerAccountingKeys.readiness(year, month),
@@ -105,7 +85,6 @@ export function useCloseReadiness(year: number, month: number) {
   });
 }
 
-/** The versions of an owner's month, the newest first. */
 export function useOwnerVersions(year: number, month: number, ownerId: string, enabled = true) {
   return useQuery({
     queryKey: ownerAccountingKeys.versions(year, month, ownerId),
@@ -115,10 +94,6 @@ export function useOwnerVersions(year: number, month: number, ownerId: string, e
   });
 }
 
-/**
- * A version with its ledger lines and its tourist tax box. The box is worked out when it is read (from the channels the issuer confirmed and the tax of the stays: a change of either moves it
- * without a new version), so it is read again every time a page asks for it and soon after (`staleTime`): a statement left open shows the amounts of now when the person comes back to it.
- */
 export function useVersionDetail(versionId: string | undefined) {
   return useQuery({
     queryKey: ownerAccountingKeys.version(versionId ?? ''),
@@ -129,7 +104,6 @@ export function useVersionDetail(versionId: string | undefined) {
   });
 }
 
-/** The payouts of an owner (without their evidence). */
 export function useOwnerPayouts(ownerId: string | undefined, enabled = true) {
   return useQuery({
     queryKey: ownerAccountingKeys.payouts(ownerId),
@@ -155,7 +129,6 @@ export function usePayoutPreview(versionId: string | undefined, paidOn: string, 
   });
 }
 
-/** A payout with its withholding evidence: a detail, read again every time it is shown (a reversal adds to its evidence). */
 export function useOwnerPayout(payoutId: string | undefined) {
   return useQuery({
     queryKey: ownerAccountingKeys.payout(payoutId ?? ''),
@@ -165,7 +138,6 @@ export function useOwnerPayout(payoutId: string | undefined) {
   });
 }
 
-/** The links of a version to the invoices issued outside CasaZen, the removed ones included. */
 export function useExternalDocuments(versionId: string | undefined) {
   return useQuery({
     queryKey: ownerAccountingKeys.externalDocuments(versionId ?? ''),
@@ -189,7 +161,6 @@ export function useFiscalProfiles(ownerId: string | undefined) {
   });
 }
 
-/** The rule sets of the agency. */
 export function useAccountingPolicies(enabled = true) {
   return useQuery({ queryKey: ownerAccountingKeys.policies, queryFn: () => ownerAccountingApi.listPolicies(), enabled, refetchOnMount: 'always' as const });
 }
@@ -214,12 +185,9 @@ export function useF24Record(month: number, year: number, enabled: boolean) {
   });
 }
 
-/** The annual tax data of the year; `null` while there is none. `enabled: false` for a page that has no use of it (the exports of the CU are off). */
 export function useAnnualDataset(year: number, enabled = true) {
   return useQuery({ queryKey: ownerAccountingKeys.annual(year), queryFn: () => ownerAccountingApi.getAnnualDataset(year), enabled, refetchOnMount: 'always' as const });
 }
-
-// ── Writes: each is one explicit action of the person, none runs by itself ──────────────────────────────────────
 
 /** Posts the ledger lines of the month from their sources (idempotent). */
 export function usePostPeriod() {
@@ -230,11 +198,6 @@ export function usePostPeriod() {
   });
 }
 
-/**
- * Starts one step of the month-end for every owner of the month (the person's own click: nothing starts by itself). The answer holds ids, codes and the figures of a close that does not
- * reconcile, so the mutation is dropped as soon as nothing watches it (`gcTime: 0`) and what it keeps of a failure is the failure without its request (`withoutRequest`). Whatever the
- * answer, the month is read again (`onSettled`, which runs even when the dialog that asked has been closed): a step that was started changed it, or may have.
- */
 export function useStartBulkStep() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -252,10 +215,6 @@ export function useStartBulkStep() {
   });
 }
 
-/**
- * How far a queued bulk run goes: asked every few seconds while the run is `Queued` or `Running`, never kept once the page that shows it is left (`gcTime: 0`), and never asked again after
- * a failure (the page says it and offers «Riprova»: a 404 is the run that the server has forgotten, which is not «still running»). Without a `jobId` (a run that answered in the request) nothing is read.
- */
 export function useBulkRun(year: number, month: number, jobId: string | null, pollMs: number = BULK_POLL_MS) {
   return useQuery({
     queryKey: [OWNER_BULK_KEY, year, month, jobId ?? ''] as const,
@@ -269,7 +228,6 @@ export function useBulkRun(year: number, month: number, jobId: string | null, po
   });
 }
 
-/** Reads again what a bulk run changed (the readiness of the month, the versions, the payouts, the tax files): for the page that follows a queued run to its end. */
 export function useRefreshOwnerAccounting() {
   const queryClient = useQueryClient();
   return useCallback(() => {
@@ -277,7 +235,6 @@ export function useRefreshOwnerAccounting() {
   }, [queryClient]);
 }
 
-/** A new version of the owner's statement: the one it replaces is superseded and stays readable. */
 export function useGenerateVersion() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -296,7 +253,6 @@ export function usePublishVersion() {
   return useMutation({ mutationFn: (versionId: string) => ownerAccountingApi.publishVersion(versionId), onSuccess: () => invalidateAll(queryClient) });
 }
 
-/** Closes the owner's month; the reason of a waiver is sent only when the balance does not reconcile. */
 export function useCloseMonth() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -322,10 +278,6 @@ export function usePostCorrection() {
   });
 }
 
-/**
- * Confirms a payout: the only operation that decides a withholding. The command holds the reference the agency wrote for the wire, so the mutation is dropped as soon as nothing watches it (`gcTime: 0`) and what it
- * keeps of a failure is the failure without its request (`withoutRequest`): the status, the code and the body of the answer, which the dialog turns into words.
- */
 export function useConfirmPayout() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -341,7 +293,6 @@ export function useConfirmPayout() {
   });
 }
 
-/** Links a version to the invoice the agency's external system issued. */
 export function useAddExternalDocument(versionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -363,11 +314,6 @@ export function useRemoveExternalDocument() {
   });
 }
 
-/**
- * A new profile of the owner from a day: the one in force ends the day before. The command holds the identifiers, the address and the bank account of the owner, so the
- * mutation is dropped as soon as nothing watches it (`gcTime: 0`) and what it keeps of a failure is the failure without its request (`withoutRequest`): the status, the
- * code and the body of the answer, which the form turns into words, and no body that was sent.
- */
 export function useSaveFiscalProfile(ownerId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -383,10 +329,6 @@ export function useSaveFiscalProfile(ownerId: string) {
   });
 }
 
-/**
- * A new version of the owner's mandate from a day: the one in force ends the day before, and nothing already posted changes. The mutation is dropped as soon as nothing watches it
- * (`gcTime: 0`) and what it keeps of a failure is the failure without its request (`withoutRequest`): the command may name where the signed mandate is.
- */
 export function useCreateOwnerMandate(ownerId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -404,7 +346,6 @@ export function useCreateOwnerMandate(ownerId: string) {
   });
 }
 
-/** Replaces the billing address of the owner: personal data, so the mutation is dropped as soon as nothing watches it and keeps of a failure the answer without the request. */
 export function useSaveOwnerAddress(ownerId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -425,7 +366,6 @@ export function useCreatePolicy() {
   return useMutation({ mutationFn: (command: OwnerAccountingPolicyCommand) => ownerAccountingApi.createPolicy(command), onSuccess: () => invalidateAll(queryClient) });
 }
 
-/** Records the approval of the qualified accountant. */
 export function useApprovePolicy() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -443,7 +383,6 @@ export function useGenerateF24() {
   });
 }
 
-/** Moves an F24 along its filing states. */
 export function useSetF24FilingState() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -465,9 +404,6 @@ export function useSetDatasetFilingState() {
   });
 }
 
-// ── Downloads ─────────────────────────────────────────────────────────────────────────────────────────────────────
-
-/** Saves the published file of a version exactly as the owner received it. */
 export function useDownloadPublishedFile() {
   return useMutation({
     mutationFn: async ({ versionId, fileName }: { versionId: string; fileName: string }) => {
@@ -476,10 +412,6 @@ export function useDownloadPublishedFile() {
   });
 }
 
-/**
- * Saves the PDF or the CSV of a version under the name the server gave it, or under `fileName` when the page cannot read the header; the bytes are not kept. The language is the one of the
- * app (`en` asks for English, anything else is Italian).
- */
 export function useDownloadVersionFile() {
   return useMutation({
     mutationFn: ({ versionId, format, language, fileName }: { versionId: string; format: 'pdf' | 'csv'; language: string; fileName: string }) =>
@@ -491,7 +423,6 @@ export function useDownloadVersionFile() {
   });
 }
 
-/** Saves the stored F24 data of a month as a PDF. */
 export function useDownloadF24Pdf() {
   return useMutation({
     mutationFn: async ({ month, year, fileName }: { month: number; year: number; fileName: string }) => {

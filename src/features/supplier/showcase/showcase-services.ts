@@ -6,11 +6,8 @@ import type { SupplierService } from '@/types/supplier-services';
  * catalog; otherwise only the ones named, in that order. Only an `Active` service can be shown; a draft or a paused one is not offered.
  */
 export interface ServicePlan {
-  /** The active services the page shows, in the order it shows them. */
   shown: SupplierService[];
-  /** The active services the supplier left out. */
   hidden: SupplierService[];
-  /** The services that cannot be shown yet: drafts and paused ones. */
   inactive: SupplierService[];
 }
 
@@ -26,7 +23,6 @@ export function planServices(services: readonly SupplierService[], serviceOrder:
     const service = bySlug.get(slug);
     if (service && !shown.includes(service)) shown.push(service);
   }
-  // No order, or one that names nothing that is still active (the server drops those): every active service.
   if (shown.length === 0) return { shown: active, hidden: [], inactive };
   return { shown, hidden: active.filter((service) => !shown.includes(service)), inactive };
 }
@@ -41,7 +37,6 @@ export function serviceOrderOf(services: readonly SupplierService[], shown: read
   return sameAsCatalog ? null : shown.map((service) => service.slug);
 }
 
-/** The blocks of the home a supplier can hide, in the order of the page (the services and the closing actions always stay). */
 export const SECTION_KEYS = ['trust', 'how', 'works', 'zones', 'certs', 'faq'] as const satisfies readonly (keyof PublicShowcaseSections)[];
 
 /** The sections as the draft has them: every one is shown unless it says otherwise. */

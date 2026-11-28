@@ -76,13 +76,10 @@ describe('viewItemListEvent', () => {
     expect(event.items[19].item_id).toBe('property-19');
   });
 
-  /** A home as a site really has it: the id is a UUID and the name is a name, not «Casa 0». */
   const realHome = (position: number, overrides: Record<string, unknown> = {}) =>
     card(position, { id: `6f1c2b8e-3a4d-4e5f-8a9b-0c1d2e3f4a${10 + position}`, name: `Appartamento Vista Lago ${position}`, ...overrides });
 
   it('viewItemListEvent_TwentyHomesOfASite_FitTheMessageOfTheProtocolOrAreCutFromTheEnd', () => {
-    // 20 homes with a UUID, a name, a place, a price and the list on each of them are about 4.6 KB; the `params` of an event are at most 4 KB, and a message
-    // the protocol refuses is never posted: the page would hear nothing of the list. 17 homes are 3939 bytes, 18 are 4166.
     const cards = Array.from({ length: 20 }, (_, position) => realHome(position));
 
     const event = viewItemListEvent(cards, LIST);
@@ -90,7 +87,6 @@ describe('viewItemListEvent', () => {
     const message = parseEmbedMessage(buildEmbedMessage('event', { name: 'view_item_list', params: { ...event } }));
     expect(message).toEqual(buildEmbedMessage('event', { name: 'view_item_list', params: { ...event } }));
     expect(new TextEncoder().encode(JSON.stringify(event)).length).toBeLessThanOrEqual(4096);
-    // The first ones, in their order and with their position, as many as fit and not one fewer.
     expect(event.items).toHaveLength(17);
     expect(event.items.map((item) => item.item_id)).toEqual(cards.slice(0, 17).map((home) => home.id));
     expect(event.items.map((item) => item.index)).toEqual(Array.from({ length: 17 }, (_, position) => position));
@@ -99,7 +95,6 @@ describe('viewItemListEvent', () => {
   });
 
   it('viewItemListEvent_ForThePageItself_KeepsTheFirst20HomesWhateverTheirSize', () => {
-    // The `dataLayer` of an agency's own page is no message of the protocol: the 4 KB of the widgets do not apply, and the 20 homes of a site (about 4.6 KB) all go.
     const cards = Array.from({ length: 25 }, (_, position) => realHome(position));
 
     const event = viewItemListEvent(cards, LIST, { asEmbedMessage: false });
@@ -248,7 +243,6 @@ describe('the payloads carry no personal data (the proof of privacy)', () => {
   const PERSONAL = ['mario.rossi@example.com', '+39 333 123 4567', 'ABCDE-FGHIJ', 'Mario Rossi', 'gs1.signedtoken', 'FUJYKK'];
 
   it('ga4Ecommerce_payloads_carryNoPersonalData', () => {
-    // What a caller might have at hand next to the home: the guest, the e-mail, the phone, the code the guest is shown, a token.
     const personal = { guestName: 'Mario Rossi', email: 'mario.rossi@example.com', phone: '+39 333 123 4567', bookingCode: 'ABCDE-FGHIJ', token: 'gs1.signedtoken', hostName: 'FUJYKK' };
     const home = { ...card(0), ...personal };
     const payloads = [
@@ -288,7 +282,6 @@ describe('the payloads carry no personal data (the proof of privacy)', () => {
   });
 
   it('ga4Ecommerce_Payloads_AreJsonThatSurvivesAPostMessage', () => {
-    // They travel in the `params` of an `event` message: plain JSON, no `undefined`.
     const payload = viewItemListEvent([card(0)], { listId: 'search_results', listName: 'Risultati' });
 
     expect(JSON.parse(JSON.stringify(payload))).toEqual(payload);

@@ -1,10 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { requireE2eCredentials } from '../helpers/env';
 
-/**
- * L3 — real API. Do not page.route mock /api/fiscal.
- * Run: E2E_LOCAL=1 npm run test:e2e -- fiscal-regime-l3
- */
 test.describe('L3 fiscal regime 2026 (#3)', () => {
   test.skip(!process.env.E2E_LOCAL && !process.env.E2E_STAGING, 'Set E2E_LOCAL=1 or E2E_STAGING=1');
   test.setTimeout(120_000);
@@ -14,7 +10,6 @@ test.describe('L3 fiscal regime 2026 (#3)', () => {
     await page.goto('/app/short-rent/fiscal');
     await expect(page.getByTestId('fiscal-dashboard-page')).toBeVisible({ timeout: 60_000 });
 
-    // Staging UI requests use the Vite proxy to the real Railway API.
     const apiBase = process.env.E2E_STAGING === '1'
       ? '/api'
       : (process.env.E2E_LOCAL_API_URL ?? 'http://localhost:5000/api');

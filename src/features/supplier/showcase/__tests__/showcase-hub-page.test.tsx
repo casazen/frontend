@@ -24,7 +24,6 @@ vi.mock('sonner', () => sonner);
 
 const PATH = '/app/supplier/showcase';
 
-/** A showcase that was never published and is ready to be: the server's answer, with the fields the page reads. */
 function content(patch: Partial<ShowcaseContent> = {}): ShowcaseContent {
   return {
     schemaVersion: 1,
@@ -57,7 +56,6 @@ function renderPage(answer: ShowcaseContent) {
   return renderRouted({ at: PATH, routes: [{ path: PATH, element: <SupplierShowcaseHubPage /> }] });
 }
 
-/** What the toast of an action that can be undone offers: the word "Annulla" and what it does. */
 function undoOf(toastFn: ReturnType<typeof vi.fn>): { message: string; run: () => void } {
   const [message, options] = toastFn.mock.calls.at(-1) as [string, { action: { label: string; onClick: () => void } }];
   expect(options.action.label).toBe('Annulla');

@@ -20,7 +20,6 @@ import { dayOf, daysSince } from './team-dates';
 import { problemCodeOf, SEAT_LIMIT_CODE } from './team-errors';
 import { useCopyInvitationLink } from './use-copy-invitation-link';
 
-/** The permission of the owner and the administrators over the people of the org (the page is behind it too). */
 const MANAGE_PEOPLE = 'org.members.manage';
 
 type OpenDialog = 'role' | 'access' | 'deactivate';
@@ -49,7 +48,6 @@ export function PersonActions({ row, callerRole, close }: { row: PersonRow; call
   if (!allowed) return null;
 
   const failed = (error: unknown) => {
-    // A refusal for the last seat has its way out one click away: the plan.
     const seatLimit = problemCodeOf(error) === SEAT_LIMIT_CODE;
     toast.error(getProblemMessage(error, t) ?? t('team.actions.failed'), seatLimit ? { action: { label: t('team.invite.seats.plan'), onClick: () => void navigate(ACCOUNT_BILLING_PATH) } } : undefined);
   };
@@ -93,7 +91,6 @@ export function PersonActions({ row, callerRole, close }: { row: PersonRow; call
   const deactivate = async () => {
     try {
       await actions.deactivate(row.id);
-      // Back on, it takes a seat again: if the plan has none left by then, «Annulla» says so with the message of the server.
       toastUndo(t('team.actions.deactivate.done', { name: row.name }), {
         description: t('team.actions.deactivate.doneHint'),
         undo: async () => {
@@ -105,7 +102,6 @@ export function PersonActions({ row, callerRole, close }: { row: PersonRow; call
     }
   };
 
-  // A withdrawn invitation does not come back: the row leaves the list now and the invitation is withdrawn when the six seconds are over.
   const revoke = () => {
     const previous = invitations.hide(row.id);
     close();
@@ -125,7 +121,6 @@ export function PersonActions({ row, callerRole, close }: { row: PersonRow; call
     t('team.actions.deactivate.back'),
   ];
 
-  // What the state of the person asks for, in a line: how long an invitation has waited, that a link ran out, that an access is off.
   const days = row.kind === 'invitation' ? daysSince(row.since, new Date()) : 0;
   const now =
     row.kind === 'invitation'

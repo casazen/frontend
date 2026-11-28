@@ -9,10 +9,8 @@ import type { RequestFailure } from '@/lib/supplier-site/request-errors';
 import type { QuietCall } from './types';
 import { useInquiryMessages } from './use-inquiry-messages';
 
-/** The id of the section: the offer sends the person here to write to the supplier. */
 export const CONVERSATION_ID = 'vi-chat';
 
-/** The sentence under a message that could not be sent: the reason, in the words of the page. */
 function useSendProblem(failure: RequestFailure | undefined): string | null {
   const { t } = useTranslation();
   if (!failure) return null;
@@ -30,7 +28,6 @@ function useSendProblem(failure: RequestFailure | undefined): string | null {
 interface InquiryConversationProps {
   view: PublicBookingView;
   quiet: QuietCall;
-  /** The typical time to answer of the supplier, measured (never written by hand); null until it is. */
   typicalResponseMinutes: number | null;
 }
 

@@ -3,7 +3,6 @@ import { reportsApi, type HostReportKind, type PerformanceQuery, type ReportPeri
 
 const HOST_REPORTS_KEY = 'host-reports';
 
-/** Downloads the CSV of a report of short rent (the caller saves the blob and shows the error). */
 export function useDownloadHostReport() {
   return useMutation({
     mutationFn: (args: { kind: HostReportKind; period: ReportPeriod }) => reportsApi.downloadCsv(args.kind, args.period),
@@ -26,7 +25,6 @@ export function usePerformanceReport(query: PerformanceQuery, enabled = true) {
   });
 }
 
-/** The same figures week by week or month by month (NF-96): one line for the whole scope, or for each property or channel. */
 export function useTrendReport(query: PerformanceQuery, enabled = true) {
   return useQuery({
     queryKey: [HOST_REPORTS_KEY, 'trend', query],

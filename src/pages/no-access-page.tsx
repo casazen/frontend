@@ -7,12 +7,6 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useAuth } from '@/hooks/use-auth';
 import { useWorkspace } from '@/hooks/use-workspace';
 
-/**
- * Where a person lands with no area at all, and where a 403 on a read sends them (`setApiForbiddenHandler`). The two are told
- * apart: a person who has areas was only refused one page, so the page says so and leads back to the areas (the picker, or the
- * home of the only area), with a new sign-in as the second choice for a role just given; «no workspace, sign in again» is only
- * for a person with no area.
- */
 export function NoAccessPage() {
   const { t } = useTranslation();
   const { forceReauth } = useAuth();

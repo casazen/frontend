@@ -14,11 +14,9 @@ import { createCalendar, dayFormat, nightsBetween, node, todayLocal, type Day, t
 import { applyTheme } from './search-styles';
 import { SEARCH_TEXTS, type EmbedLang } from './texts';
 
-/** The most guests the bar takes when the page does not say, and the most it ever takes. */
 export const DEFAULT_MAX_GUESTS = 16;
 const ABSOLUTE_MAX_GUESTS = 99;
 
-/** One place the guest may choose; its `id` goes out as `where`. */
 export interface Destination {
   id: string;
   label: string;
@@ -27,13 +25,8 @@ export interface Destination {
 const DESTINATION_ID = /^[A-Za-z0-9._~-]{1,100}$/;
 const MAX_DESTINATIONS = 200;
 const MAX_LABEL_LENGTH = 80;
-/** 200 places with the longest id and label, and their quotes and commas, are about 40 KB. */
 const MAX_DESTINATIONS_JSON = 60_000;
 
-/**
- * The places a page offers (`data-casazen-destinations`, the JSON of `[{ "id", "label" }]`, or the list itself): at most 200, an id of the characters of
- * a slug and a label of 1 to 80 characters. An entry that is anything else, or repeats an id, is dropped.
- */
 export function parseDestinations(value: unknown): Destination[] {
   let list = value;
   if (typeof value === 'string') {
@@ -61,7 +54,6 @@ export function parseDestinations(value: unknown): Destination[] {
   return destinations;
 }
 
-/** The most guests (`data-casazen-max-guests`): a whole number from 1; above 99 it is 99, and anything that is not a number is 16. */
 export function parseMaxGuests(value: unknown): number {
   const count = Number(value);
   if (!Number.isInteger(count) || count < 1) return DEFAULT_MAX_GUESTS;
@@ -88,21 +80,15 @@ export function resolveTarget(value: unknown, site: { base: string; org: string 
   return web && !url.username && !url.password ? url : null;
 }
 
-/** What the guest chose. */
 export interface Stay extends Range {
   guests: number;
 }
 
-/** What is wrong with the stay, and which control the focus goes to. */
 export interface Problem {
   control: 'dates' | 'guests';
   message: 'needDates' | 'order' | 'past' | 'guestsRange';
 }
 
-/**
- * The first thing that is wrong with `stay`, in the order of the controls: a date missing, a departure that is not after the arrival, an arrival in the
- * past, guests that are not a whole number from 1 to `maxGuests`. Null when it can go. The server checks all of it again.
- */
 export function findProblem(stay: Stay, today: Day, maxGuests: number): Problem | null {
   if (!isDate(stay.checkIn) || !isDate(stay.checkOut)) return { control: 'dates', message: 'needDates' };
   if (stay.checkOut <= stay.checkIn) return { control: 'dates', message: 'order' };
@@ -111,10 +97,6 @@ export function findProblem(stay: Stay, today: Day, maxGuests: number): Problem 
   return null;
 }
 
-/**
- * The address the search leads to: `target` with `checkin`, `checkout`, `guests`, `lang` and, when a place was chosen, `where`; the other parameters and the
- * fragment of the target stay; the `utm_*` of the page (`pageSearch`) are copied for the ones the target does not set itself. No personal data.
- */
 export function buildSearchUrl(target: URL, stay: Stay, lang: EmbedLang, where: string, pageSearch: string): string {
   const url = new URL(target.href);
   url.searchParams.set('checkin', stay.checkIn);
@@ -128,12 +110,8 @@ export function buildSearchUrl(target: URL, stay: Stay, lang: EmbedLang, where: 
   return url.href;
 }
 
-/** The width from which the calendar shows two months. */
 const TWO_MONTHS_FROM = 640;
 
-/**
- * Draws the bar: returns its root, ready to be put in the page. `id` is unique on the page (the ids of the controls start with it).
- */
 export function createSearchForm(options: SearchOptions, id: string): HTMLElement {
   const lang: EmbedLang = options.lang === 'en' ? 'en' : 'it';
   const text = SEARCH_TEXTS[lang];
@@ -151,7 +129,6 @@ export function createSearchForm(options: SearchOptions, id: string): HTMLElemen
   const note = node('p', 'czs-note', { role: 'status' });
   const live = node('p', 'czs-live', { role: 'status', 'aria-live': 'polite' });
 
-  // Where: only when the page gave places to choose from.
   let where: HTMLSelectElement | null = null;
   if (destinations.length > 0) {
     const field = node('div', 'czs-field');
@@ -170,7 +147,6 @@ export function createSearchForm(options: SearchOptions, id: string): HTMLElemen
     form.appendChild(field);
   }
 
-  // When: one control that opens the range calendar.
   const whenField = node('div', 'czs-field');
   const whenLabel = node('span', 'czs-label', { id: `${id}-when-label` });
   whenLabel.textContent = text.when;
@@ -187,7 +163,6 @@ export function createSearchForm(options: SearchOptions, id: string): HTMLElemen
   opener.appendChild(openerValue);
   whenField.append(whenLabel, opener);
 
-  // Who: a stepper, with the number in a field that can be typed in.
   const whoField = node('div', 'czs-field');
   const whoLabel = node('label', 'czs-label', { for: `${id}-guests` });
   whoLabel.textContent = text.guests;
@@ -250,7 +225,6 @@ export function createSearchForm(options: SearchOptions, id: string): HTMLElemen
     openerValue.textContent = range.checkIn ? `${shortDay(range.checkIn)} – ${range.checkOut ? shortDay(range.checkOut) : '…'}` : text.addDates;
   };
 
-  // A page that is clicked anywhere outside the bar, or focus that leaves the calendar for another control, closes it without taking the focus back.
   const outside = (event: Event): void => {
     if (!root.contains(event.target as Node)) calendar.close(false);
   };
@@ -314,8 +288,6 @@ export function createSearchForm(options: SearchOptions, id: string): HTMLElemen
     }
 
     const place = where ? destinations.find((destination) => destination.id === where.value) : undefined;
-    // The report is for the analytics of the page: whatever goes wrong there (a data layer that is not a list, a loader that has no `emit`) must never keep
-    // the guest from searching.
     try {
       options.emit('search', {
         ...(place ? { search_term: place.label } : {}),

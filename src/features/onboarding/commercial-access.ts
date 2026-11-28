@@ -1,6 +1,5 @@
 import type { UserDetail } from '@/types';
 
-/** Product modules, independently of technical rollout flags and of team permissions. */
 export function commercialModuleForPath(path: string): string | null {
   if (/\/(?:integrations\/octorate|channels|ota)(?:\/|$)/.test(path)) return 'channels';
   if (/\/(?:settings\/(?:domain|embed|site-appearance|site-documents|payments)|vetrina)(?:\/|$)/.test(path)) return 'direct-booking';
@@ -15,7 +14,7 @@ export function commercialModuleForPath(path: string): string | null {
   return null;
 }
 export function commercialRouteAllowed(profile: UserDetail | null | undefined, path: string) {
-  if (!profile?.commercialSignup) return true; // Existing accounts retain their contracted access.
+  if (!profile?.commercialSignup) return true;
   const module = commercialModuleForPath(path);
   return !module || profile.commercialEnabledAddons?.includes(module) === true;
 }

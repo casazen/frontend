@@ -38,9 +38,7 @@ function renderPage(search = '', list = listOf(ALL)) {
   return renderRouted({ at: `${PATH}${search}`, routes: [{ path: PATH, element: <SupplierServicesPage /> }] });
 }
 
-/** The table of the list, once it is there: the page has the table and the cards of a phone, and a media query shows one. */
 const findTable = () => screen.findByRole('table', { name: 'Servizi e prezzi' });
-/** The row of a service in the table (the cards have the same test ids). */
 const rowOf = (table: HTMLElement, id: string) => within(table).getByTestId(`list-row-${id}`);
 
 async function openMenu(name: string) {
@@ -49,7 +47,6 @@ async function openMenu(name: string) {
   return screen.findByRole('menu');
 }
 
-/** What the toast of an action that can be undone offers: the word "Annulla" and what it does. */
 function undoOf(toastFn: ReturnType<typeof vi.fn>): { message: string; run: () => void } {
   const [message, options] = toastFn.mock.calls.at(-1) as [string, { action: { label: string; onClick: () => void } }];
   expect(options.action.label).toBe('Annulla');
@@ -60,7 +57,6 @@ describe('SupplierServicesPage (SP-06, SP-SERV)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     window.localStorage.clear();
-    // A test that connected the fake catalog must not leave its answers to the next one.
     for (const fn of Object.values(api)) fn.mockReset();
     await i18n.changeLanguage('it');
   });
@@ -86,7 +82,6 @@ describe('SupplierServicesPage (SP-06, SP-SERV)', () => {
     expect(NO_BREAK(paused.textContent)).toContain('1 h 30 min');
     expect(paused).toHaveTextContent('Lavanderia');
     expect(paused.querySelector('[data-status="Paused"]')).toHaveTextContent('In pausa');
-    // No photo: no image, the row does not break.
     expect(paused.querySelector('img')).toBeNull();
 
     const draft = rowOf(table, 'd');
@@ -122,7 +117,6 @@ describe('SupplierServicesPage (SP-06, SP-SERV)', () => {
 
     const empty = await screen.findByTestId('supplier-services-empty');
     expect(within(empty).getByRole('heading', { name: 'Crea il tuo primo servizio' })).toBeInTheDocument();
-    // The four steps are behind «Come funziona»: closed until the supplier asks.
     const how = within(empty).getByTestId('supplier-services-how') as HTMLDetailsElement;
     expect(how.open).toBe(false);
     fireEvent.click(within(how).getByText('Come funziona'));
@@ -218,7 +212,6 @@ describe('SupplierServicesPage (SP-06, SP-SERV)', () => {
 
       const table = await findTable();
       expect(within(rowOf(table, 'd')).getByRole('link', { name: 'Continua' })).toHaveAttribute('href', `${PATH}/new?bozza=d`);
-      // A published service has no main action: its name is the way in.
       expect(within(rowOf(table, 'a')).queryByRole('link', { name: 'Continua' })).not.toBeInTheDocument();
       expect(within(rowOf(table, 'a')).queryByRole('button', { name: 'Riattiva' })).not.toBeInTheDocument();
     });
@@ -291,11 +284,9 @@ describe('SupplierServicesPage (SP-06, SP-SERV)', () => {
       });
 
       fireEvent.click(within(await openMenu('Pulizia cambio ospiti')).getByRole('menuitem', { name: 'Duplica' }));
-      // The copy is made while no screen shows the list, and its draft opens...
       await waitFor(() => expect(addressNow(screen)).toBe(`${PATH}/new?bozza=copy-1`));
       fireEvent.click(await screen.findByTestId('service-wizard-exit'));
 
-      // ...and the list, when it opens again, has it: what was made while it was away is not missing until something else reads it.
       const copy = await within(await findTable()).findByTestId('list-row-copy-1');
       expect(copy).toHaveTextContent('Pulizia cambio ospiti (copia)');
     });
@@ -304,7 +295,6 @@ describe('SupplierServicesPage (SP-06, SP-SERV)', () => {
       api.pauseSupplierService.mockRejectedValue(problem(404, { code: 'supplier_service_not_found' }));
       renderPage();
       const table = await findTable();
-      // The server no longer has it: the list it answers from now on does not.
       api.fetchSupplierServices.mockResolvedValue(listOf([PAUSED, DRAFT]));
 
       fireEvent.click(within(await openMenu('Pulizia cambio ospiti')).getByRole('menuitem', { name: 'Metti in pausa' }));

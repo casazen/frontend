@@ -18,7 +18,6 @@ import {
   type StayVatTreatment,
 } from '@/types';
 
-/** The name of the flow, for the shell (`WizardShell` asks for one): the answers are not kept in the browser, the setup on the server is the draft. */
 export const BILLING_WIZARD_ID = 'fiscal-billing-setup';
 
 /** The two countries a document can be issued from today: the regimes, the VAT and the stamp follow the country. */
@@ -29,22 +28,17 @@ export type BillingCountry = (typeof BILLING_COUNTRIES)[number];
 export const ITALIAN_REGIMES = ['PrivatePerson', 'VatOrdinary', 'VatFlatRate'] as const;
 export type ItalianRegime = (typeof ITALIAN_REGIMES)[number];
 
-/** The portals a booking can come from (backend `BookingSource` where a portal is one): a tourist tax is collected by the portal or by the host for each. */
 export const PORTAL_SOURCES = ['Airbnb', 'BookingCom', 'Expedia', 'Vrbo', 'TripAdvisor', 'Agoda', 'OtherChannel'] as const;
 
-/** The portals of the table of the account holders: the four the agencies run their listings on. */
 export const ACCOUNT_HOLDER_PORTALS = ['Airbnb', 'BookingCom', 'Expedia', 'Vrbo'] as const;
 
-/** Who collects the tourist tax of the bookings of a portal: the portal itself, or the host (so the document of the stay carries the line). */
 export const TOURIST_TAX_COLLECTORS = ['portal', 'host'] as const;
 export type TouristTaxCollector = (typeof TOURIST_TAX_COLLECTORS)[number];
 
-/** What a listing is set to in the table of the account holders: the default of the organization, or the holder it was given. */
 export type HolderChoice = 'default' | PortalAccountHolder;
 
 /** What the person answers in the wizard: the answers of every step, as text or one of the fixed answers, so that nothing in it is anything but plain data. */
 export interface BillingWizardValues {
-  // 1 «Chi emette»
   countryCode: '' | BillingCountry;
   legalName: string;
   addressStreet: string;
@@ -52,7 +46,6 @@ export interface BillingWizardValues {
   postalCode: string;
   city: string;
   province: string;
-  // 2 «IVA»
   swissVatRegistered: '' | 'yes' | 'no';
   regime: '' | ItalianRegime;
   swissVatNumber: string;
@@ -62,19 +55,13 @@ export interface BillingWizardValues {
   fatturaPaRegimeCode: string;
   stayVatTreatment: StayVatTreatment;
   cleaningFeeTreatment: CleaningFeeTreatment;
-  // 3 «Numerazione»
   guestDocumentSeries: string;
   ownerInvoiceSeries: string;
-  // 4 «Tassa di soggiorno» (Switzerland), by portal; empty until answered
   touristTaxCollectors: Record<string, '' | TouristTaxCollector>;
-  // 5 «Commissioni dei canali»
   portalAccountHolder: PortalAccountHolder;
   rechargePortalCommissions: boolean;
-  /** What the table of the holders changed and the server does not have yet: `<propertyId>|<portal>` → the choice. */
   holderChanges: Record<string, HolderChoice>;
-  /** The percent a portal keeps when its reservation carries no commission, by portal, as typed. */
   commissionPercents: Record<string, string>;
-  // 6 «Mandato standard»
   mandateValidFrom: string;
   mandateCommissionPercent: string;
   mandateCommissionBase: CommissionBase;
@@ -82,10 +69,8 @@ export interface BillingWizardValues {
   mandateLinenFlatRate: string;
   mandatePassthroughPaymentFees: boolean;
   mandateCommissionIncludesVat: boolean;
-  // 7 «Emissione»
   autoIssueGuestDocuments: boolean;
   emailGuestDocuments: boolean;
-  // 8 «Italia»
   conservationAgreementConfirmed: boolean;
   virtualStampConfirmed: boolean;
   stampDutyReference: string;
@@ -98,13 +83,11 @@ export interface BillingWizardValues {
   accountantContents: string[] | null;
 }
 
-/** What of the tax profile the organization has already: the wizard asks only for what is missing. */
 export interface BillingIdentityOnRecord {
   vatNumber: boolean;
   fiscalCode: boolean;
 }
 
-/** The messages of the checks are i18n keys, translated where they are shown (the shell and `Field` translate them). */
 export const BILLING_ERROR_KEYS = {
   accountantContents: 'billingWizard.errors.accountantContents',
   accountantDay: 'billingWizard.errors.accountantDay',
@@ -135,7 +118,6 @@ export const BILLING_ERROR_KEYS = {
   stampDutyReference: 'billingWizard.errors.stampDutyReference',
 } as const;
 
-// The limits of the server (`OrgFiscalIssuerProfile`, `FiscalNumberFormat`): the form refuses what the server would refuse, in simple words.
 const LEGAL_NAME_MAX = 200;
 const STREET_MAX = 200;
 const CIVIC_MAX = 20;
@@ -155,15 +137,12 @@ const PERCENT = /^\d{1,3}([.,]\d{1,2})?$/;
 const AMOUNT = /^\d{1,9}([.,]\d{1,2})?$/;
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
-/** The placeholder of the year of the issue in a series (`{year}`, backend `FiscalNumberFormat.YearPlaceholder`). */
 export const SERIES_YEAR_PLACEHOLDER = '{year}';
 
-/** The series a document issued in `year` gets from a pattern: `{year}` replaced by the year, as the server does it. */
 export function seriesOf(pattern: string, year: number): string {
   return pattern.trim().split(SERIES_YEAR_PLACEHOLDER).join(String(year));
 }
 
-/** A decimal as typed (comma or point) as a number; `null` for what is not one. */
 export function parseDecimal(value: string): number | null {
   const text = value.trim().replace(',', '.');
   if (text === '' || !/^\d+(\.\d+)?$/.test(text)) return null;
@@ -175,12 +154,10 @@ const isBlank = (value: string) => value.trim() === '';
 
 type StepSchema = ZodType<unknown, FieldValues>;
 
-/** Adds the problem of `path` when `valid` is false. */
 function check(context: RefinementCtx, valid: boolean, path: string | readonly (string | number)[], message: string): void {
   if (!valid) context.addIssue({ code: 'custom', path: typeof path === 'string' ? [path] : [...path], message });
 }
 
-/** Whether a text is a percent from 0 to 100 with at most two decimals. */
 export function isPercent(value: string): boolean {
   const text = value.trim();
   if (!PERCENT.test(text)) return false;
@@ -188,12 +165,10 @@ export function isPercent(value: string): boolean {
   return parsed !== null && parsed <= 100;
 }
 
-/** Whether a text is an amount of money with at most two decimals. */
 function isAmount(value: string): boolean {
   return AMOUNT.test(value.trim());
 }
 
-/** The first step «Chi emette»: the country, the name on the documents and the address, as the documents want them. */
 export const issuerStepSchema: StepSchema = z
   .object({
     countryCode: z.enum(BILLING_COUNTRIES, BILLING_ERROR_KEYS.country),
@@ -217,7 +192,6 @@ export const issuerStepSchema: StepSchema = z
     const province = value.province.trim();
     if (value.countryCode === 'CH') {
       check(context, SWISS_POSTAL_CODE.test(postalCode), 'postalCode', BILLING_ERROR_KEYS.postalCodeCh);
-      // The canton is the two letters of the canton and is not asked of a Swiss address by the server: it may be left out.
       check(context, province === '' || PROVINCE.test(province), 'province', BILLING_ERROR_KEYS.provinceCh);
     } else {
       check(context, ITALIAN_POSTAL_CODE.test(postalCode), 'postalCode', BILLING_ERROR_KEYS.postalCodeIt);
@@ -262,7 +236,6 @@ export function vatStepSchema(onRecord: BillingIdentityOnRecord): StepSchema {
     });
 }
 
-/** The third step «Numerazione»: both series, written as the document will carry them: letters, digits, `._/-` and the year, at most ten characters once the year is in. */
 export const numberingStepSchema: StepSchema = z
   .object({ guestDocumentSeries: z.string(), ownerInvoiceSeries: z.string() })
   .superRefine((value, context) => {
@@ -281,10 +254,6 @@ export const touristTaxStepSchema: StepSchema = z
     }
   });
 
-/**
- * The fifth step «Commissioni dei canali» (agencies): the account holder of the portals and the percent each portal keeps when it sends none. A percent may be left empty (the
- * portal has no rule of its own then); one that is written is from 0 to 100 with at most two decimals.
- */
 export const channelsStepSchema: StepSchema = z
   .object({
     portalAccountHolder: z.enum(PORTAL_ACCOUNT_HOLDERS),
@@ -297,7 +266,6 @@ export const channelsStepSchema: StepSchema = z
     }
   });
 
-/** The sixth step «Mandato standard» (agencies): what is written is a percent, amounts and a day; the step may be left empty, the action that applies it asks for the percent. */
 export const mandateStepSchema: StepSchema = z
   .object({
     mandateValidFrom: z.string(),
@@ -313,29 +281,21 @@ export const mandateStepSchema: StepSchema = z
     check(context, ISO_DAY.test(value.mandateValidFrom.trim()), 'mandateValidFrom', BILLING_ERROR_KEYS.date);
   });
 
-/** The eighth step «Italia»: the stamp reference is at most sixty characters; the two ticks are reminders and may be left. */
 export const italyStepSchema: StepSchema = z
   .object({ stampDutyReference: z.string() })
   .superRefine((value, context) => {
     check(context, value.stampDutyReference.trim().length <= STAMP_REFERENCE_MAX, 'stampDutyReference', BILLING_ERROR_KEYS.stampDutyReference);
   });
 
-/** The longest address the server keeps (`AccountantPackageSettings.EmailMaxLength`). */
 export const ACCOUNTANT_EMAIL_MAX = 254;
 
-/**
- * A plain address, as the server takes it (`CrmNormalizer.TryNormalizeEmail`): no name in front of it, no space, one `@` and a host with a dot. What the server would refuse is refused here in
- * simple words, on the field, before the step is saved.
- */
 const PLAIN_EMAIL = /^[^\s@<>(),;:"[\]\\]+@[^\s@<>(),;:"[\]\\]+\.[^\s@<>(),;:"[\]\\]+$/;
 
-/** Whether a text is a plain address of at most 254 characters (spaces around it do not count: they are cut off before it is saved). */
 export function isPlainEmail(value: string): boolean {
   const text = value.trim();
   return text.length > 0 && text.length <= ACCOUNTANT_EMAIL_MAX && PLAIN_EMAIL.test(text);
 }
 
-/** The settings of the send to the accountant as the step shows them and would save them: what the person changed, laid over what the server has. */
 export interface AccountantAnswers {
   email: string;
   enabled: boolean;
@@ -345,18 +305,12 @@ export interface AccountantAnswers {
 
 type AccountantFields = Pick<BillingWizardValues, 'accountantEmail' | 'accountantMonthly' | 'accountantDay' | 'accountantContents'>;
 
-/** Whether the person has not touched any setting of the send: the step is then left as the server has it. */
 export function accountantUntouched(values: AccountantFields): boolean {
   return values.accountantEmail === null && values.accountantMonthly === null && values.accountantDay === null && values.accountantContents === null;
 }
 
 const OWNER_FOLDER_KEYS: ReadonlySet<string> = new Set(ACCOUNTANT_OWNER_FOLDERS);
 
-/**
- * The folders of the package this person may choose. The ones that carry the owner accounting are the agency's: on an agency's organization the backend lets only a caller who holds
- * `agency.statement.view` choose them (422 `accountant_package_owner_accounting_required` for anyone else), and that is the administrator of an organization on the agency plan, who is the
- * only `ownerAccounting` of the wizard (the same person the steps of the portals and of the mandate are for). For anyone else they are neither offered nor sent.
- */
 export function accountantFoldersFor(ownerAccounting: boolean): readonly AccountantPackageFolder[] {
   return ownerAccounting ? ACCOUNTANT_PACKAGE_FOLDERS : ACCOUNTANT_PACKAGE_FOLDERS.filter((folder) => !OWNER_FOLDER_KEYS.has(folder));
 }
@@ -373,7 +327,6 @@ export function accountantSettingsFor(settings: AccountantPackageSettings | null
   return ownerAccounting ? settings : { ...settings, contents: settings.contents.filter((folder) => !OWNER_FOLDER_KEYS.has(folder)) };
 }
 
-/** The settings the step shows: a field the person changed shows their answer (an address emptied is an answer: no address), any other the server's. */
 export function accountantAnswersOf(current: Pick<AccountantPackageSettings, 'email' | 'enabled' | 'sendDay' | 'contents'>, values: AccountantFields): AccountantAnswers {
   return {
     email: values.accountantEmail ?? current.email ?? '',
@@ -388,7 +341,6 @@ export function isSendDay(day: number): boolean {
   return Number.isInteger(day) && day >= ACCOUNTANT_SEND_DAYS.min && day <= ACCOUNTANT_SEND_DAYS.max;
 }
 
-/** A setting that is not right: the field of the form it belongs to, and the words (an i18n key) that say what is wanted. */
 export interface AccountantProblem {
   field: 'accountantEmail' | 'accountantDay' | 'accountantContents';
   messageKey: string;
@@ -409,10 +361,6 @@ export function accountantProblems(answers: AccountantAnswers): AccountantProble
   return problems;
 }
 
-/**
- * The ninth step «Commercialista» (optional): the settings the person changed must hold together with what the server has (`accountantProblems`). A step the person did not touch has nothing to
- * check, and so has a step whose settings could not be read (`current` is `null` or not there yet): nothing can be saved then either.
- */
 export function accountantStepSchema(current: AccountantPackageSettings | null | undefined): StepSchema {
   return z
     .object({
@@ -427,7 +375,6 @@ export function accountantStepSchema(current: AccountantPackageSettings | null |
     });
 }
 
-/** What the template of the mandate needs to be applied: the percent (from 0 to 100) and the day it is valid from. The flat fees are optional, but valid when written. */
 export function mandateTemplateProblems(values: Pick<BillingWizardValues, 'mandateCommissionPercent' | 'mandateValidFrom' | 'mandateCleaningFlatRate' | 'mandateLinenFlatRate'>): Array<
   'mandateCommissionPercent' | 'mandateValidFrom' | 'mandateCleaningFlatRate' | 'mandateLinenFlatRate'
 > {

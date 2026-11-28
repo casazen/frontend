@@ -6,11 +6,8 @@ import type {
   PropertyModeState,
 } from '@/types/property-mode.types';
 
-/** What the endpoints of the change of mode (PM-02) answer, for the tests of the wizard, the entries and the hooks. */
-
 export const PROPERTY_ID = 'c0c1d2e3-0000-4000-8000-0000000000aa';
 
-/** Tomorrow when the clock is fixed at noon of 24/09/2026 (`NOON_UTC` of `@/test/clock`): 14:00 of the same day in Rome. */
 export const TOMORROW = '2026-09-25';
 
 export const state = (overrides: Partial<PropertyModeState> = {}): PropertyModeState => ({
@@ -36,7 +33,6 @@ export const change = (overrides: Partial<PropertyModeChange> = {}): PropertyMod
   ...overrides,
 });
 
-/** A confirmed stay that ends on 3 October 2026, so the property is free from the 4th. */
 export const blocker = (overrides: Partial<PropertyModeBlocker> = {}): PropertyModeBlocker => ({
   id: 'b1',
   kind: 'Stay',
@@ -63,7 +59,6 @@ export const preview = (overrides: Partial<PropertyModePreview> = {}): PropertyM
   ...overrides,
 });
 
-/** The error of a request that the server refused, as axios builds it (the code is what the app translates). */
 export function axiosError(status: number, data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, {

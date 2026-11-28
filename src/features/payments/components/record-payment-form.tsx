@@ -16,7 +16,6 @@ import { useCreatePayment } from '@/queries/use-payments';
 import { newIdempotencyKey, RECORDABLE_METHODS } from '../lib/record-payment';
 import { paymentFormSchema, type PaymentFormValues } from '../schemas/payment.schema';
 
-/** A booking the host can record a receipt on: how it is named in the list and what is left to collect (`null` when not known). */
 export interface RecordPaymentOption {
   id: string;
   label: string;
@@ -24,11 +23,8 @@ export interface RecordPaymentOption {
 }
 
 interface RecordPaymentFormProps {
-  /** The bookings to choose from. */
   options: readonly RecordPaymentOption[];
-  /** The booking the receipt is for when it is already known (the sheet of a booking): there is no choice to make. */
   fixedBookingId?: string;
-  /** The booking selected when the form opens (a link from a row that waits for the host). */
   initialBookingId?: string;
   onRecorded: () => void;
   onCancel: () => void;
@@ -45,7 +41,6 @@ export function RecordPaymentForm({ options, fixedBookingId, initialBookingId, o
   const createPayment = useCreatePayment();
   const keyRef = useRef(newIdempotencyKey());
   const today = todayInRome();
-  // When the booking is already known (its sheet, or the link of a row that waits for the host) the usual receipt, what is left, is offered at once.
   const startBookingId = fixedBookingId ?? initialBookingId ?? '';
   const startBalance = options.find((option) => option.id === startBookingId)?.balance ?? null;
 
@@ -64,7 +59,6 @@ export function RecordPaymentForm({ options, fixedBookingId, initialBookingId, o
   const selected = options.find((option) => option.id === watch('bookingId'));
   const balance = selected?.balance ?? null;
 
-  // The usual receipt is what is left: offered when the amount is still empty, never over what the host typed.
   const offerTheBalance = (bookingId: string) => {
     const left = options.find((option) => option.id === bookingId)?.balance ?? null;
     const typed = getValues('amount');
@@ -82,17 +76,15 @@ export function RecordPaymentForm({ options, fixedBookingId, initialBookingId, o
         idempotencyKey: keyRef.current,
       });
     } catch {
-      return; // the reason is shown under the form
+      return;
     }
     keyRef.current = newIdempotencyKey();
     onRecorded();
   };
 
   return (
-    // The columns follow the width of the form: two on the page of its own, one in the dialog of a booking.
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="@container space-y-4">
       <div className={cn(FIELD_COLUMNS, 'gap-y-4')}>
-        {/* What was received, and beside it how and with which note. */}
         <div className="min-w-0 space-y-4">
           {fixedBookingId ? (
             <input type="hidden" {...register('bookingId')} />

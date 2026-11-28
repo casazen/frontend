@@ -55,7 +55,6 @@ export function OnboardingPartPage() {
   const draft = useWizardDraft('octorate-connect', { server: { type: 'OnboardingActivation' }, enabled: partKey === 'compliance' });
 
   if (!known || !commercialPartAllowed(profile, partKey)) return <Navigate to={ONBOARDING_PLAN_PATH} replace />;
-  // An answer that holds no such part (the server knows less than the address): the plan.
   if (plan.isSuccess && !part) return <Navigate to={ONBOARDING_PLAN_PATH} replace />;
 
   const state = part ? normalizePartState(part.state) : 'open';
@@ -65,9 +64,7 @@ export function OnboardingPartPage() {
   const target = part ? resolveLaunchTarget(part.launchTarget, null, null, hasPermission, part.reason, flags) : null;
   const launch = target && isEntryFeatureEnabled(target.entry, flags) && commercialRouteAllowed(profile, target.to) ? target : null;
   const waiting = state === 'blocked' || state === 'notAvailable' || state === 'done';
-  // The notification of the guests in Switzerland names the properties that lack something, each with its own way in: the one button of the part would only repeat them.
   const missingItems = part && part.code === 'guestRegistration' && !waiting ? missingItemsOf(part) : [];
-  // What is missing, in plain words; a part that waits for others names them, and a reason this version has no text for reads as a neutral line.
   const waitedFor = part ? partsWaitedFor(part, parts).map((waited) => t(partTitleKey(waited.code))).join(', ') : '';
   const reasonKeyOfPart = part ? partReasonTextKey(part) : null;
   const reason = part && state !== 'done' ? (reasonKeyOfPart && i18n.exists(reasonKeyOfPart) ? t(reasonKeyOfPart, { parts: waitedFor }) : t('onboardingPlan.reasons.unknown')) : null;

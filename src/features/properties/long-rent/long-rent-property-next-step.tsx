@@ -8,16 +8,9 @@ import { longRentLeasePath, newLeaseForPropertyPath } from './paths';
 
 interface LongRentPropertyNextStepProps {
   row: LongRentPropertyRow;
-  /** `lease.create`: a lease is made by who may create leases. */
   canCreateLease: boolean;
 }
 
-/**
- * The one highlighted block of the page of a property (LR-07d), read from its leases and nothing else: who lives there, for how
- * much and until when, with the way to the lease; or the lease that is being prepared; or, when the property is free, the lease
- * to make. Nothing for a property whose leases are not known (the person may not read them), and nothing to offer a free property
- * to who may not create a lease.
- */
 export function LongRentPropertyNextStep({ row, canCreateLease }: LongRentPropertyNextStepProps) {
   const { t, i18n } = useTranslation();
   const lease = leaseOfRow(row);

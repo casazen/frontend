@@ -18,19 +18,11 @@ import { ActivationTermsCard } from './components/activation-terms-card';
 import { IdentityStep, PresentationStep, ServicesStep } from './components/activation-steps';
 import { TosReacceptance } from './components/tos-reacceptance';
 
-/**
- * What the supplier sees: at most four screens, from the five steps the server tracks (SU-05). The identity (business name,
- * phone) is asked at registration, so its screen only appears when the server still finds it incomplete; the optional
- * showcase photos live with the description; the optional calendar is offered after the activation, from the dashboard.
- * The server keeps the step number, so the wizard still resumes where the supplier stopped, on any device.
- */
 type ScreenId = 'identity' | 'services' | 'profile' | 'terms';
 
 interface Screen {
   id: ScreenId;
-  /** Step number the server remembers while the screen is open (1-5). */
   serverStep: number;
-  /** Server steps whose requirements the screen collects. */
   stepIds: ActivationStepId[];
 }
 
@@ -41,7 +33,6 @@ const ALL_SCREENS: Screen[] = [
   { id: 'terms', serverStep: 5, stepIds: ['terms'] },
 ];
 
-/** Screen that collects a server step (1-5). */
 function screenIdForServerStep(step: number): ScreenId {
   if (step <= 1) return 'identity';
   if (step === 2) return 'services';
@@ -60,14 +51,12 @@ function isScreenDone(activation: ActivationStatus, screen: Screen): boolean {
     .every((step) => step.status === 'completed');
 }
 
-/** Last screen: Terms of Service and the check of what is still missing before activating. */
 function TermsStep({ activation, onGoToStep }: { activation: ActivationStatus; onGoToStep: (step: number) => void }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const complete = useCompleteSupplierActivation();
   const [tosAccepted, setTosAccepted] = useState(false);
 
-  // What the server still finds missing in the stored profile (everything but the Terms, which are the checkbox below).
   const missing = activation.steps
     .map((step, index) => ({ step, number: index + 1 }))
     .filter(({ step }) => step.required && step.blocker && step.id !== 'terms');
@@ -84,7 +73,6 @@ function TermsStep({ activation, onGoToStep }: { activation: ActivationStatus; o
 
   return (
     <div className="space-y-6">
-      {/* The Terms and, beside them from `xl`, what is still missing (under each other on a narrower screen). */}
       <div className={PAGE_COLUMNS}>
         <ActivationTermsCard
           version={activation.tos.currentVersion}
@@ -180,10 +168,8 @@ function StepNav({
 
 function ActivationWizard({ activation, profile }: { activation: ActivationStatus; profile: SupplierProfile }) {
   const { t } = useTranslation();
-  // The popup alerts wait in their queue while the steps are on screen (ADR-025-R7): this wizard has no `WizardShell`.
   useWizardOpenFlag();
   const saveStep = useSaveSupplierActivationStep();
-  // Fixed for the visit: a screen never disappears under the supplier's hands when its data is saved.
   const [screens] = useState(() => visibleScreens(activation));
   const [index, setIndex] = useState(() => {
     const resumed = screens.findIndex((screen) => screen.id === screenIdForServerStep(activation.currentStep));
@@ -211,7 +197,6 @@ function ActivationWizard({ activation, profile }: { activation: ActivationStatu
         {t('supplier.activation.stepOf', { current: index + 1, total: screens.length })}
       </p>
 
-      {/* `key`: each step starts from the data saved on the server, not from the previous step's form. */}
       {current.id === 'identity' && <IdentityStep key="identity" profile={profile} onSaved={() => goToScreen(index + 1)} />}
       {current.id === 'services' && <ServicesStep key="services" profile={profile} onSaved={() => goToScreen(index + 1)} />}
       {current.id === 'profile' && <PresentationStep key="profile" profile={profile} onSaved={() => goToScreen(index + 1)} />}
@@ -255,7 +240,6 @@ export function SupplierActivationPage() {
   }
 
   if (activation.status === 'Suspended') {
-    // A suspended supplier cannot activate itself: only an admin reactivates it (SU-12).
     return (
       <div className={cn(FOCUS_COLUMN, 'space-y-4')} data-testid="supplier-activation-suspended">
         <ServicePageHeader icon={BadgeCheck} title={t('supplier.statusSuspended')} description={t('supplier.suspendedHint')} />

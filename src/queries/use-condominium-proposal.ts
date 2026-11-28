@@ -6,12 +6,7 @@ import type { ProposeTenantExpense, TenantExpenseProposal } from '@/types/condom
 const CONDOMINIUM_EXPENSE_KEY = 'lease-condominium-expense';
 
 interface CondominiumExpenseView {
-  /** The fiscal-year proposal, or null when nothing is loaded yet. */
   proposal: TenantExpenseProposal | null;
-  /**
-   * The choice the person kept. While this is set, opening the step again must not POST an empty body:
-   * that answer is a budget and drops `settledAtConsuntivo`.
-   */
   saved: { proposal: TenantExpenseProposal; request: ProposeTenantExpense } | null;
 }
 
@@ -50,13 +45,11 @@ export function useProposeCondominiumExpense(leaseId: string) {
     mutationFn: (body: ProposeTenantExpense) => condominiumProposalApi.propose(leaseId, body),
     onSuccess: (proposal, request) => {
       rememberCondominiumExpense(queryClient, leaseId, proposal, request);
-      // Refresh the review, not the draft values: those may still be edited in the form.
       void queryClient.invalidateQueries({ queryKey: [DRAFT_KEY, leaseId, 'review'] });
     },
   });
 }
 
-/** Keeps a proposal on the lease so the economic step still shows it after it unmounts. */
 export function useRememberCondominiumExpense(leaseId: string) {
   const queryClient = useQueryClient();
   return (proposal: TenantExpenseProposal, request: ProposeTenantExpense) => {

@@ -13,37 +13,25 @@ export interface TabItem<T extends string = string> {
   /** What goes in the address (`?tab=ical`): short, lowercase, and the same forever, because emails and links point at it. */
   value: T;
   label: string;
-  /** A number beside the name: things waiting in that tab (requests to answer, errors). Nothing when it is 0 or missing. */
   count?: number;
-  /** What the number counts, for a screen reader ("2 da approvare"). Without it only the number is read. */
   countLabel?: string;
   /** How the number weighs: `warning` for what needs an answer, `danger` for what failed (UI-15). Without it, the accent of the app. */
   tone?: TabTone;
-  /** Where the step of a path stands (done, to do): an icon at the end of the tab, said in words to a screen reader and in the menu of a phone. */
   state?: TabStateMark;
   icon?: LucideIcon;
   testId?: string;
 }
 
 export interface TabsProps<T extends string> {
-  /** The name of the group of tabs for a screen reader ("Sezioni della prenotazione"). */
   label: string;
   items: readonly TabItem<T>[];
-  /** The search parameter that holds the tab: `tab` (default), `vista`, … The other parameters of the address are kept. */
   param?: string;
-  /**
-   * The tab to show when the address has no parameter or an unknown value. Its own link has no parameter at all, so the
-   * plain address of the page is the address of this tab. Default: the first one.
-   */
   defaultValue?: T;
-  /** The tab to show, when the page already decides it (it reads the same parameter). Default: the one the address says. */
   value?: T;
-  /** The content of the tab that is shown: what the page renders for it. It sits in the panel that the tabs control. */
   children?: React.ReactNode;
   className?: string;
   layout?: 'row' | 'sidebar';
   panelClassName?: string;
-  /** Test ids for the panel and, on a phone, for the menu that replaces the tabs. */
   panelTestId?: string;
   selectTestId?: string;
 }
@@ -89,7 +77,6 @@ export function Tabs<T extends string>({
   const fromAddress = searchParams.get(param);
   const active: T = value ?? (items.some((item) => item.value === fromAddress) ? (fromAddress as T) : fallback);
 
-  /** The address of a tab: this page, this query, with only its own parameter changed (and none for the default tab). */
   const searchFor = (tab: T): string => {
     const next = new URLSearchParams(searchParams);
     if (tab === fallback) next.delete(param);
@@ -105,7 +92,6 @@ export function Tabs<T extends string>({
     const target = (event.target as HTMLElement).closest<HTMLElement>('[role="tab"]');
     if (!target) return;
     if (event.key === ' ') {
-      // A link is opened by Enter on its own; Space would scroll the page.
       event.preventDefault();
       target.click();
       return;
@@ -188,8 +174,6 @@ export function Tabs<T extends string>({
       {children ? (
         <div
           id={panelId}
-          // Under the tabs the panel is the content of the tab that is open and takes its name from it. Under the menu of a
-          // phone there are no tabs, so it is only a box.
           role={isPhone ? undefined : 'tabpanel'}
           aria-labelledby={isPhone ? undefined : tabId(active)}
           data-testid={panelTestId}

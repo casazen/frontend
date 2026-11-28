@@ -6,7 +6,6 @@ import { CommandPaletteContext, type CommandPaletteApi } from './command-palette
 import { isShortcutKey, shortcutIsTaken } from './shortcut';
 import type { RemoteCommandSource } from './types';
 
-/** Another modal (a form, a confirmation, the sheet "Altro" of the phone) is open; the palette would open on top of it. */
 function anotherModalIsOpen(): boolean {
   return (
     document.querySelector(
@@ -16,14 +15,8 @@ function anotherModalIsOpen(): boolean {
 }
 
 interface CommandPaletteProviderProps {
-  /** The area of the page that is open. */
   contextKey: AppContextKey;
-  /**
-   * Who is signed in, for the recents (kept for one user in one area). The shell already reads it: the palette does not ask
-   * for it again. Without one nothing is remembered.
-   */
   userId?: string | null;
-  /** The server search (UI-13). Not passed today. */
   remoteSource?: RemoteCommandSource;
   children: React.ReactNode;
 }
@@ -40,11 +33,9 @@ interface CommandPaletteProviderProps {
 export function CommandPaletteProvider({ contextKey, userId = null, remoteSource, children }: CommandPaletteProviderProps) {
   const { pathname } = useLocation();
   const [openedOn, setOpenedOn] = useState<string | null>(null);
-  // Open for the page it was opened on: once the address has changed it is closed, and stays closed if the person comes back.
   if (openedOn !== null && openedOn !== pathname) setOpenedOn(null);
   const isOpen = openedOn === pathname;
 
-  // Where the focus goes back, and whether it should: a choice that led to another page leaves it to that page's heading.
   const opener = useRef<HTMLElement | null>(null);
   const leaveFocusToThePage = useRef(false);
 
@@ -68,7 +59,6 @@ export function CommandPaletteProvider({ contextKey, userId = null, remoteSource
     else open();
   }, [isOpen, open, close]);
 
-  // The keyboard handler is set once and reads the latest state through this ref.
   const latest = useRef({ isOpen, toggle });
   useEffect(() => {
     latest.current = { isOpen, toggle };
@@ -86,8 +76,6 @@ export function CommandPaletteProvider({ contextKey, userId = null, remoteSource
   }, []);
 
   const handleCloseAutoFocus = useCallback((event: Event) => {
-    // The focus is given back here and not by Radix: it knows no trigger (the palette is opened by a key as often as by a
-    // button), and a click does not focus a button in Safari, so the opener was noted when the palette opened.
     event.preventDefault();
     if (leaveFocusToThePage.current) {
       leaveFocusToThePage.current = false;

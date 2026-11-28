@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AI_PHOTOS_MAX, reducePhotosForAi } from '../photos/reduce-photo';
 
-/** An image that never loads (a network error): what jsdom can stand in for, without a network or a canvas. */
 class BrokenImage {
   static sources: string[] = [];
   crossOrigin = '';

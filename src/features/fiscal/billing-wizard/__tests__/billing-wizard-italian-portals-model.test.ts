@@ -11,7 +11,6 @@ const MILANO_PAIR = { channel: 'Airbnb', comuneIstat: '015146' };
 const FIRENZE_PAIR = { channel: 'Airbnb', comuneIstat: '048017' };
 const COMO_PAIR = { channel: 'Airbnb', comuneIstat: '013075' };
 
-/** An Italian setup whose section `touristTax` carries the given values (what the server sends for an Italian issuer). */
 function withTouristTax(values: Record<string, unknown>): BillingSetup {
   return setupOf(italianSetup().sections.map((entry) => (entry.section === 'touristTax' ? section('touristTax', values, [], false) : entry)));
 }
@@ -24,7 +23,6 @@ function refused(status: number | null, data?: unknown): AxiosError {
 
 describe('italianTouristTaxOf: the proposals, the confirmed portals and the hint as the setup says them (FIX/FE-IT-TOURISTTAX-PROPOSALS)', () => {
   it('ItalianTouristTaxOf_ASetupWithoutTheMembers_SaysNothing_AnOlderServerOrACallerWhoReachesOnlySomeOfTheProperties', () => {
-    // The section of an Italian issuer on an older server (or for a caller the server leaves the members out for), of a Swiss one, of an issuer with no country, and no setup at all.
     expect(italianTouristTaxOf(italianSetup())).toBeNull();
     expect(italianTouristTaxOf(withTouristTax({ defaultPlatformCollectedTouristTaxChannels: [] }))).toBeNull();
     expect(italianTouristTaxOf(swissSetup())).toBeNull();
@@ -39,7 +37,6 @@ describe('italianTouristTaxOf: the proposals, the confirmed portals and the hint
     );
 
     expect(view).toEqual({ proposals: [MILANO, FIRENZE], confirmed: [COMO_PAIR], conflict: true });
-    // Without the hint it is false, and an empty answer is an answer: nothing to ask, nothing confirmed.
     expect(italianTouristTaxOf(withTouristTax({ italianPortalProposals: [], confirmedPortalTouristTaxComuni: [], portalTouristTaxConflict: false }))).toEqual({
       proposals: [],
       confirmed: [],
@@ -66,11 +63,9 @@ describe('italianTouristTaxOf: the proposals, the confirmed portals and the hint
       }),
     );
 
-    // Milano once; Firenze is confirmed so it is no question; a status a newer server may add, an entry with no code or no portal, and what is not an entry, are not asked.
     expect(view?.proposals).toEqual([MILANO, { comuneIstat: '013075', comune: '', channel: 'Airbnb', status: 'to_confirm' }]);
   });
 
-  // Data rule: an answer is the WHOLE list, so a list of confirmed portals that cannot be read in full must never be the base of one (it would take confirmations away).
   it.each([
     { name: 'absent', members: { italianPortalProposals: [MILANO] } },
     { name: 'not_a_list', members: { italianPortalProposals: [MILANO], confirmedPortalTouristTaxComuni: 'Airbnb' } },
@@ -102,7 +97,6 @@ describe('portalComuniRequest: the body of a confirmation is the WHOLE list (dat
   it('PortalComuniRequest_ARemoval_IsTheListWithoutThatPair_AndTheLastOneIsAnEmptyList', () => {
     expect(portalComuniRequest([MILANO_PAIR, FIRENZE_PAIR, COMO_PAIR], { remove: FIRENZE_PAIR })).toEqual({ comuni: [MILANO_PAIR, COMO_PAIR] });
     expect(portalComuniRequest([MILANO_PAIR], { remove: MILANO_PAIR })).toEqual({ comuni: [] });
-    // A portal and a comune are one pair: the same comune on another portal stays.
     expect(portalComuniRequest([MILANO_PAIR, { channel: 'BookingCom', comuneIstat: '015146' }], { remove: MILANO_PAIR })).toEqual({ comuni: [{ channel: 'BookingCom', comuneIstat: '015146' }] });
   });
 
@@ -129,7 +123,6 @@ describe('portalComuniFailureOf: what the answer of a failed confirmation says',
     { name: '500', error: refused(500, { code: 'fiscal_settings_need_whole_org' }), failure: 'failed' },
     { name: 'NoAnswer', error: refused(null), failure: 'failed' },
     { name: 'AnAnswerThatIsNotTheSection', error: new UnexpectedApiResponseError('/billing-setup/touristTax/portal-comuni'), failure: 'failed' },
-    // The one failure where it is known that nothing was sent: the setup read just before could not be used, so no list was made.
     { name: 'TheListCouldNotBeMadeSoNothingWasSent', error: new PortalComuniNotSentError(), failure: 'notSent' },
     { name: 'SomethingThatIsNoErrorOfAxios', error: new Error('boom'), failure: 'failed' },
   ])('PortalComuniFailureOf_TheAnswer_IsTheFailureTheStepTells ($name: $failure)', ({ error, failure }) => {
@@ -150,10 +143,8 @@ describe('comuneNamesOf: the name of a comune for a confirmed pair, and the code
     const names = comuneNamesOf(properties, [{ ...MILANO, comune: 'Milano' }, { ...FIRENZE, comune: '' }], new Map([['048017', 'Firenze (FI)'], ['058091', 'Roma Capitale']]));
 
     expect(names.get('015146')).toBe('Milano');
-    // A proposal without a name leaves the name the step remembered, which beats the city a property carries.
     expect(names.get('048017')).toBe('Firenze (FI)');
     expect(names.get('058091')).toBe('Roma Capitale');
-    // A property with no code, or with no city, names nothing: the caller shows the code.
     expect(names.has('013075')).toBe(false);
     expect(names.size).toBe(3);
   });

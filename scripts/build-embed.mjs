@@ -16,26 +16,18 @@ import { build, loadEnv } from 'vite';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** Where the files are written (relative to the root of the repository) and the path they are served from: the version is part of it. */
 export const OUT_DIR = 'dist/embed/v1';
 export const URL_DIR = '/embed/v1';
 
-/** The bundles, in the order they are built. Each is an IIFE with no export; its file is `<name>.js`. */
 export const ENTRIES = [
   { name: 'embed', entry: 'src/embed/embed.ts' },
   { name: 'search', entry: 'src/embed/search.ts' },
 ];
 
-/** The widgets the manifest lists: three frames and the search bar. */
 export const WIDGETS = ['booking', 'property', 'guest-access', 'search'];
 
-/** What `src/config/api.config.ts` uses outside production when `VITE_API_BASE_URL` is not set. */
 export const DEV_API_BASE = 'http://localhost:5000/api';
 
-/**
- * The manifest (`/embed/v1/manifest.json`, contract §6): the version, the address of the API (the plugin reads it on its server to check the connection
- * and to know where to ask for the destinations), the widgets, and the two paths of the scripts, which belong to the host that serves the file.
- */
 export function buildManifest({ apiBase }) {
   return {
     v: 1,
@@ -69,10 +61,6 @@ export function resolveApiBase({ env, vercelEnv }) {
   return DEV_API_BASE;
 }
 
-/**
- * The options of the Vite build of one bundle: library mode, `iife`, ES2018, minified, no source map, nothing copied from `public/`. The test of the size
- * builds the same bundle in memory (`write: false`) with the same options.
- */
 export function embedBuildConfig({ root = ROOT, name, entry, outDir = OUT_DIR, write = true }) {
   return {
     configFile: false,
@@ -93,7 +81,6 @@ export function embedBuildConfig({ root = ROOT, name, entry, outDir = OUT_DIR, w
   };
 }
 
-/** Builds every bundle and writes the manifest into `outDir`; returns what was written, with sizes. */
 export async function buildEmbed({ root = ROOT, outDir = OUT_DIR, env = {}, vercelEnv } = {}) {
   const apiBase = resolveApiBase({ env, vercelEnv });
   for (const { name, entry } of ENTRIES) {
@@ -113,7 +100,6 @@ export async function buildEmbed({ root = ROOT, outDir = OUT_DIR, env = {}, verc
   return written;
 }
 
-// `node scripts/build-embed.mjs [--mode <mode>]`: the same environment files as the main build (`--mode demo` for `build:demo`).
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const modeAt = process.argv.indexOf('--mode');
   const mode = modeAt >= 0 && process.argv[modeAt + 1] ? process.argv[modeAt + 1] : 'production';

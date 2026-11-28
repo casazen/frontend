@@ -15,7 +15,6 @@ import { PhotoDetails } from '../photos/photo-details';
 import { usePhotoUploadQueue } from '../photos/use-photo-upload-queue';
 import type { PropertyWizardValues } from '../property-wizard-model';
 
-/** The photos the page asks for: the server advises the same number (`photos` in «cosa manca»); fewer is allowed. */
 const RECOMMENDED_PHOTOS = 5;
 
 interface PhotosStepProps {
@@ -23,17 +22,9 @@ interface PhotosStepProps {
   propertyId: string;
 }
 
-/**
- * Step 2 · «Mostra la casa con qualche foto» (SR-07b): the photos, and for each one its caption (Italian and English) and its room
- * (`PhotoDetails`, NF-32). The photos are uploaded one file at a time with the reason for each one that fails, the first is the cover,
- * the order is changed by dragging or with the buttons, and a photo that is deleted can be brought back for a few seconds. The title and
- * the description of the listing are the next steps' (the descriptions step has them in every language). Photos, and their captions, are
- * **recommended, not required**.
- */
 export function PhotosStep({ form, propertyId }: PhotosStepProps) {
   const { t } = useTranslation();
   const gallery = usePropertyPhotos(propertyId);
-  // An answer that is not a gallery (no list of photos) is as good as none: the step says it cannot read it, it does not break.
   const loaded = gallery.data && Array.isArray(gallery.data.photoUrls) ? gallery.data : undefined;
   const unreadable = gallery.isError || (gallery.isSuccess && !loaded);
   const rules = loaded ?? FALLBACK_PHOTO_RULES;
@@ -42,13 +33,11 @@ export function PhotosStep({ form, propertyId }: PhotosStepProps) {
   const { held, remove, flush } = useDelayedPhotoDelete(propertyId);
   const [announcement, setAnnouncement] = useState('');
 
-  // A photo with its delete on hold is already gone for the person, and the server still has it until the delete leaves.
   const photos = (loaded?.photoUrls ?? []).filter((url) => !held.includes(url));
   const queue = usePhotoUploadQueue(propertyId, photos.length, rules);
   const full = photos.length + queue.items.filter((item) => item.status !== 'failed').length >= rules.maxPhotos;
   const busy = reorder.isPending || setCover.isPending;
 
-  // Before any change to the gallery the deletes on hold go out: the server must have the photos that the person sees.
   const move = async (from: number, to: number) => {
     if (to < 0 || to >= photos.length || from === to) return;
     await flush();

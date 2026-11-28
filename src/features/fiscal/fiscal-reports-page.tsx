@@ -37,7 +37,6 @@ import type {
   WithholdingReport,
 } from '@/api/fiscal.api';
 
-/** Short reason shown in the "estimated tax" cell when the backend does not estimate it. */
 const ESTIMATE_NOTE_KEYS: Record<FiscalTaxNote, string> = {
   irpef_ordinaria_not_computed: 'fiscal.reports.estimateNote.irpef',
   impresa_not_computed: 'fiscal.reports.estimateNote.impresa',
@@ -45,7 +44,6 @@ const ESTIMATE_NOTE_KEYS: Record<FiscalTaxNote, string> = {
   short_stay_threshold_exceeded: 'fiscal.reports.estimateNote.threshold',
 };
 
-/** Test id prefix of the download buttons (the summary keeps the historical `fiscal-export-*`). */
 const EXPORT_TEST_IDS: Record<FiscalReportKind, string> = {
   annual: 'fiscal-export',
   withholding: 'fiscal-withholding-export',
@@ -188,7 +186,6 @@ interface ReportSectionProps<T> {
   children: (data: T) => ReactNode;
 }
 
-/** A report with its loading, error (never shown as empty) and empty states, and the CSV/PDF downloads. */
 function ReportSection<T>({
   kind,
   title,

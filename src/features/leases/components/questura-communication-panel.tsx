@@ -23,7 +23,6 @@ import { QuesturaCommunicationDialog } from './questura-communication-dialog';
 
 interface QuesturaCommunicationPanelProps {
   leaseId: string;
-  /** End of the lease (date-only value of the API): the delivery date cannot be later. */
   leaseEndDate: string;
 }
 

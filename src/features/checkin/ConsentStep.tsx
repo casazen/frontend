@@ -5,10 +5,8 @@ import { ConsentForm } from './components/ConsentForm';
 interface ConsentStepProps {
   privacyRead: boolean;
   onPrivacyRead: (checked: boolean) => void;
-  /** Privacy notice version shown to the guest. */
   privacyNoticeVersion?: string;
   privacyNoticeOrgSlug?: string;
-  /** Marketing consent version; when absent, no consent is offered. */
   marketingConsentVersion?: string;
 }
 
@@ -43,7 +41,6 @@ export function ConsentStep({ privacyRead, onPrivacyRead, privacyNoticeVersion, 
         </label>
       </section>
 
-      {/* Marketing consent: optional, offered only when context has marketingConsentVersion */}
       {marketingConsentVersion && (
         <section
           className="space-y-4 border-t pt-4"

@@ -8,23 +8,18 @@ import { hasLinesToShow, viewOfLines, type ComplianceLine } from '../lib/complia
 import { ComplianceLight } from './compliance-light';
 import { ROW_BUTTON } from './compliance-row';
 
-/** The page of the adempimenti, where every item is. */
 const COMPLIANCE_PATH = '/app/short-rent/compliance';
 
 interface ComplianceLinesProps {
-  /** The lines of the stay or the property, worst first (`stayLinesOf`, `propertyLinesOf`). */
   lines: readonly ComplianceLine[];
-  /** The name of the list for a screen reader: «Adempimenti di questo soggiorno». */
   label: string;
   hasPermission: PermissionPredicate;
-  /** The line the block already says in its title and its own button: not listed again. */
   skip?: string;
   /**
    * What a card says when nothing is left to do: each line that is in order (a stay has a few), or one count of them (a property has a
    * month of ISTAT and tax for each month it was lived in). Never «all in order»: a card tells the items it was given, not that it was given them all.
    */
   greens: 'each' | 'count';
-  /** How many of the lines that still ask something are listed before «e altri N». */
   max?: number;
 }
 
@@ -63,7 +58,6 @@ export function ComplianceLines({ lines, label, hasPermission, skip, greens, max
         <p className="flex flex-wrap items-center gap-x-2 text-sm text-foreground/70" data-testid="compliance-lines-more">
           <span>{t('compliance.lines.more', { count: hidden })}</span>
           {canOpenPage ? (
-            // A target of 44 px, as every link a calm block writes itself.
             <Link to={COMPLIANCE_PATH} className="inline-flex min-h-11 items-center font-medium text-primary-text underline underline-offset-2">
               {t('compliance.cockpit.openAll')}
             </Link>
@@ -84,8 +78,6 @@ function ComplianceLineItem({ line, hasPermission, reason }: ComplianceLineItemP
   const { t, i18n } = useTranslation();
   const name = t(`compliance.item.${line.action}`, { period: periodName(line.period, i18n.language) || t('compliance.item.noPeriod') });
 
-  // Only what is not in order has a button: the page it opens is the one of the action, or the read-only one for whoever cannot do it. A button
-  // that opens the page the card is on does nothing (the police send and the tourist tax rate of the property card): there is none.
   const location = useLocation();
   const target = line.state === 'green' ? null : complianceActionRoute(line.item, hasPermission);
   const route = target !== null && !isCurrentAddress(target, location) ? target : null;

@@ -4,16 +4,11 @@ import i18n from '@/i18n/config';
 import { manualBlocksApi } from '@/api/manual-blocks.api';
 import type { CreateManualBlockDto } from '@/types/calendar.types';
 
-/**
- * A manual block changes the host calendar and the dashboard nights (PC-09). The public availability is read by the
- * guests' browsers and is not cached here.
- */
 function refreshAfterBlockChange(queryClient: ReturnType<typeof useQueryClient>) {
   void queryClient.invalidateQueries({ queryKey: ['bookings', 'calendar'] });
   void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
 }
 
-/** "Blocca date" (PC-09). No error toast: the form shows the error next to its fields. */
 export function useCreateManualBlock() {
   const queryClient = useQueryClient();
 
@@ -27,7 +22,6 @@ export function useCreateManualBlock() {
   });
 }
 
-/** "Elimina blocco" (PC-09). No error toast: the block panel shows the error. */
 export function useDeleteManualBlock() {
   const queryClient = useQueryClient();
 

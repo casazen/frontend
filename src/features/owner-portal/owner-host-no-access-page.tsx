@@ -7,13 +7,6 @@ import { getHostSite } from '@/lib/host-site';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { ownerPortalPaths } from './paths';
 
-/**
- * `/portale-proprietari/accesso-negato` on the own domain of an agency whose owners can sign in there (E40/F02/US01/T02, NF-141): where the app sends a signed-in person whose read of the
- * portal was refused (403): an account that is no owner at all, an owner whose invitation is not accepted yet, an owner of ANOTHER agency (the server refuses the token of an owner on the domain
- * of an agency they do not belong to). `/app/no-access`, where the CasaZen domain sends them, is «not found» on a host, and the portal that had the way out is gone by then: without this page
- * the person could neither sign out nor come back with another account. It says that the account has no access to this agency, and gives the way out (sign out) and the way back to the site.
- * A visitor who is not signed in has nothing to be refused: the sign-in page of the domain takes them.
- */
 export function OwnerHostNoAccessPage() {
   const { t } = useTranslation();
   const { isAuthenticated, isLoading, logout } = useAuth();

@@ -6,7 +6,6 @@ export function useLeaseId(): string {
   return useParams<{ leaseId: string }>().leaseId ?? '';
 }
 
-/** The contract named in the address, still loading, or failed. */
 export function useTenantContractPage():
   | { status: 'loading'; leaseId: string; area: null; error: null; refetch: () => void }
   | { status: 'error'; leaseId: string; area: null; error: unknown; refetch: () => void }

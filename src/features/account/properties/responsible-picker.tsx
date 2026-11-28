@@ -17,7 +17,6 @@ import { memberName } from '@/features/team/people-rows';
 import { candidatesFor, type AccountPropertyRow } from './account-properties-model';
 import { useMemberAccess } from './use-account-property-rows';
 
-/** The choice that puts nobody in charge: the creator of the property is told again. */
 const NOBODY = '-';
 
 interface Failure {
@@ -27,7 +26,6 @@ interface Failure {
 }
 
 export interface ResponsiblePickerProps {
-  /** The properties to put somebody in charge of; `null` while the dialog is closed. */
   rows: readonly AccountPropertyRow[] | null;
   members: readonly OrgMember[];
   onClose: () => void;
@@ -38,7 +36,6 @@ export interface ResponsiblePickerProps {
   onAllDone?: () => void;
 }
 
-/** Who is in charge of every one of the properties now: the person, `NOBODY`, or `''` when they are not all the same. */
 function commonChoice(rows: readonly AccountPropertyRow[]): string {
   const choices = new Set(rows.map((row) => row.responsible?.userId ?? NOBODY));
   return choices.size === 1 ? [...choices][0] : '';
@@ -66,7 +63,6 @@ function PickerForm({ rows, members, onClose, onAllDone, busy, setBusy }: Picker
   const many = rows.length > 1;
   const unchanged = choice === '' || choice === initial;
 
-  // One after the other, not together: the backend takes a lock of the org for each change.
   const submit = async () => {
     if (unchanged || busy) return;
     const userId = choice === NOBODY ? null : choice;
@@ -83,7 +79,6 @@ function PickerForm({ rows, members, onClose, onAllDone, busy, setBusy }: Picker
     }
     setBusy(false);
 
-    // What was taken back is what each property had: the person who was in charge before, or nobody.
     const undoDone = async () => {
       for (const row of done) await assign.mutateAsync({ id: row.property.id, userId: row.responsible?.userId ?? null });
     };
@@ -128,7 +123,6 @@ function PickerForm({ rows, members, onClose, onAllDone, busy, setBusy }: Picker
       noValidate
       onSubmit={(event) => {
         event.preventDefault();
-        // The dialog sits inside the page for React: without this the submit would reach a form around it.
         event.stopPropagation();
         void submit();
       }}
@@ -189,10 +183,6 @@ function PickerForm({ rows, members, onClose, onAllDone, busy, setBusy }: Picker
   );
 }
 
-/**
- * «Assegna il responsabile» (AM-13): one property or a selection. It offers only the people who reach every one of them (the
- * backend refuses anyone else with a 422), says how each property went, and a toast with "Annulla" puts back who was in charge.
- */
 export function ResponsiblePicker({ rows, members, onClose, onAllDone }: ResponsiblePickerProps) {
   const [busy, setBusy] = useState(false);
 
@@ -200,7 +190,6 @@ export function ResponsiblePicker({ rows, members, onClose, onAllDone }: Respons
     <Dialog
       open={rows !== null}
       onOpenChange={(open) => {
-        // While the changes are on their way the dialog stays: closing it would hide how they went.
         if (!open && !busy) onClose();
       }}
     >

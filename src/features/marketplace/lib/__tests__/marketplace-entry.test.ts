@@ -17,7 +17,6 @@ describe('parseMarketplaceEntry', () => {
     expect(parseMarketplaceEntry(marketplaceEntryValue(entry))).toEqual(entry);
   });
 
-  // The value is typed and shared, and its kind and code end up in the path of a request.
   it.each([null, undefined, '', 'Channel', ':AIRBNB', 'Channel:', 'Channel:../admin', 'Channel:a/b', 'Channel:a b', 'Channel:a?b=1', 'Chan1nel:AIRBNB', 'Channel:-x', `Channel:${'x'.repeat(101)}`])(
     'parseMarketplaceEntry_%j_IsNotAnEntry',
     (value) => {

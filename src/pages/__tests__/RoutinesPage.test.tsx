@@ -49,7 +49,6 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: v
 
 const ROUTINES_PATH = '/app/short-rent/automations';
 
-/** What `GET /routines/actions` says today: the wait, the To do, the cleaning at check-out and the review request run; the others do not exist yet. */
 const CATALOG: RoutineActionCatalogItem[] = [
   { type: 'MessageToGuest', available: false, code: 'routine_action_not_available' },
   { type: 'NotifyOwner', available: false, code: 'routine_action_not_available' },
@@ -126,7 +125,6 @@ async function routineMenuItem(id: string, action: string) {
   return screen.findByTestId(`${action}-${id}`);
 }
 
-/** Opens «Crea routine» and waits for the form. */
 async function openCreateEditor() {
   fireEvent.click(await screen.findByTestId('create-routine-button'));
   return screen.findByTestId('routine-name-input');
@@ -139,7 +137,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
     vi.mocked(routinesApi.getActionCatalog).mockResolvedValue(CATALOG);
     vi.mocked(routinesApi.getExecutions).mockResolvedValue([]);
     vi.mocked(propertiesApi.getAll).mockResolvedValue([{ id: 'p1', name: 'Casa Mare' }, { id: 'p2', name: 'Casa Monti' }] as Property[]);
-    // The list of the properties carries no currency: the layer for many properties asks the setup of each one for it.
     vi.mocked(propertyCleaningApi.get).mockImplementation(async (propertyId) => ({
       propertyId,
       configured: false,
@@ -170,7 +167,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       expect(screen.getByTestId('active-tab')).toHaveTextContent('Attive (1)');
       expect(screen.getByTestId('test-tab')).toHaveTextContent('Test (1)');
       expect(screen.getByTestId('inactive-tab')).toHaveTextContent('Inattive (1)');
-      // The card names the event and its actions, as words and not as the codes of the API.
       expect(screen.getByTestId('routine-card-r1')).toHaveTextContent('Check-out effettuato');
       expect(screen.getByTestId('routine-card-r1')).toHaveTextContent('Crea un promemoria manuale');
       expect(screen.getByTestId('all-tab')).toHaveAttribute('aria-pressed', 'true');
@@ -201,7 +197,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       renderPage();
 
       expect(await screen.findByTestId('routines-empty')).toHaveTextContent('Nessuna routine visibile');
-      // One sentence on what a routine is, under the title.
       expect(screen.getByText(/provare ogni routine/)).toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId('open-library-button'));
@@ -223,7 +218,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       const { client } = renderPage();
       expect(await screen.findByTestId('routine-card-r1')).toBeInTheDocument();
 
-      // The flag went off while the page was open: the query keeps the old data on the error, the page must not.
       vi.mocked(routinesApi.getAll).mockRejectedValue(httpError(404));
       await client.refetchQueries({ queryKey: ['routines'] });
 
@@ -255,7 +249,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.click(screen.getByTestId('add-action-button'));
       const select = await screen.findByTestId('action-type-select-0');
 
-      // Every action is listed; the ones that cannot run yet are disabled and say it, the ones that run are not.
       expect(within(select).getAllByRole('option')).toHaveLength(11);
       expect(within(select).getByRole('option', { name: 'Notifica proprietario · Non ancora disponibile' })).toBeDisabled();
       expect(within(select).getByRole('option', { name: 'Invia messaggio all\'ospite · Non ancora disponibile' })).toBeDisabled();
@@ -263,7 +256,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       expect(within(select).getByRole('option', { name: 'Crea la pulizia' })).toBeEnabled();
       expect(within(select).getByRole('option', { name: 'Attendi' })).toBeEnabled();
       expect(screen.getByTestId('action-unavailable-hint')).toHaveTextContent('Le azioni non ancora disponibili non si possono scegliere');
-      // Adding a line never implicitly chooses a manual reminder.
       expect(select).toHaveValue('');
     });
 
@@ -307,12 +299,9 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       expect(screen.getByTestId('active-blocked')).toHaveTextContent('contiene azioni non ancora disponibili');
       expect(screen.getByTestId('action-unavailable-0')).toHaveTextContent('Non ancora disponibile');
 
-      // It can still be saved, and it goes out as off: the server would refuse it on.
       fireEvent.click(screen.getByTestId('save-routine-button'));
       await waitFor(() => expect(routinesApi.update).toHaveBeenCalledTimes(1));
       expect(vi.mocked(routinesApi.update).mock.calls[0][1]).toMatchObject({ testMode: false, active: false });
-
-      // In test mode the same routine may be on: it only simulates.
     });
 
     it('RoutineEditor_TestModeOnARoutineThatHoldsAnActionThatCannotRun_LetsItBeSwitchedOn', async () => {
@@ -331,7 +320,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       renderPage();
       fireEvent.change(await openCreateEditor(), { target: { value: 'Solo per i diretti' } });
 
-      // A new routine has no condition: it runs for every booking.
       expect(screen.getByTestId('condition-none')).toBeInTheDocument();
       fireEvent.click(screen.getByTestId('add-condition-button'));
       expect(within(screen.getByTestId('condition-field-0')).getAllByRole('option').map((option) => (option as HTMLOptionElement).value)).toEqual([
@@ -344,11 +332,9 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       fireEvent.change(screen.getByLabelText('Obiettivo dell’agente'), { target: { value: 'Valuta i soggiorni brevi' } });
 
-      // channel is one of a list: the names of the API, chosen and not typed.
       fireEvent.click(within(screen.getByTestId('condition-value-0')).getByLabelText('Sito diretto'));
       fireEvent.click(within(screen.getByTestId('condition-value-0')).getByLabelText('Inserita a mano'));
 
-      // The nights are between two whole numbers: numbers, not texts.
       fireEvent.click(screen.getByTestId('add-condition-button'));
       fireEvent.change(screen.getByTestId('condition-field-1'), { target: { value: 'stayDuration' } });
       fireEvent.change(screen.getByTestId('condition-operator-1'), { target: { value: 'between' } });
@@ -391,12 +377,10 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       vi.mocked(routinesApi.create).mockResolvedValue(CLEANING);
       renderPage();
       fireEvent.change(await openCreateEditor(), { target: { value: 'Solo Casa Mare' } });
-      // The properties are not asked for until a rule needs them.
       expect(propertiesApi.getAll).not.toHaveBeenCalled();
 
       fireEvent.click(screen.getByTestId('add-condition-button'));
       fireEvent.change(screen.getByTestId('condition-field-0'), { target: { value: 'propertyId' } });
-      // A property is one of a list: there is no «is equal to» for it.
       expect(within(screen.getByTestId('condition-operator-0')).getAllByRole('option').map((option) => (option as HTMLOptionElement).value)).toEqual(['in', 'notIn']);
 
       fireEvent.click(await within(screen.getByTestId('condition-value-0')).findByLabelText('Casa Mare'));
@@ -421,7 +405,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.change(screen.getByTestId('activity-text-0'), { target: { value: 'Qualcosa' } });
       expect(screen.getByTestId('save-routine-button')).toBeEnabled();
 
-      // A rule on the channel with no channel chosen is not a condition the server takes.
       fireEvent.click(screen.getByTestId('add-condition-button'));
 
       expect(screen.getByTestId('save-routine-button')).toBeDisabled();
@@ -433,21 +416,17 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       await openCreateEditor();
       fireEvent.click(screen.getByTestId('add-condition-button'));
 
-      // A rule on the channel, the field a new rule starts from, needs no such note.
       expect(screen.queryByTestId('condition-lead-time-note-0')).not.toBeInTheDocument();
 
-      // The server knows the lead time only of the bookings CasaZen takes itself: the person is told before relying on it.
       fireEvent.change(screen.getByTestId('condition-field-0'), { target: { value: 'bookingLeadTime' } });
       expect(screen.getByTestId('condition-lead-time-note-0')).toHaveTextContent(
         'Non vale per le prenotazioni dei portali (Airbnb, Booking.com): per quelle il dato non è noto e la regola non scatta mai.',
       );
       expect(screen.getByTestId('condition-field-0')).toHaveValue('bookingLeadTime');
 
-      // The note follows the field of the rule: another field takes it away.
       fireEvent.change(screen.getByTestId('condition-field-0'), { target: { value: 'guestCount' } });
       expect(screen.queryByTestId('condition-lead-time-note-0')).not.toBeInTheDocument();
 
-      // And it is told in the language of the page.
       fireEvent.change(screen.getByTestId('condition-field-0'), { target: { value: 'bookingLeadTime' } });
       await i18n.changeLanguage('en');
       await waitFor(() =>
@@ -483,7 +462,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
     });
 
     it('RoutineEditor_TimeOfAnEventStoredInHours_IsShownInDaysAndWrittenBackAsTheSameOffset', async () => {
-      // `{ hours: 50 }` and `{ days: 2, hours: 2 }` are the same offset to the server; the editor shows days and hours of the day.
       const stored = routine({ id: 'r7', name: 'Dopo due giorni', eventType: 'AfterCheckout', eventConfig: '{"hours":50}' });
       vi.mocked(routinesApi.getAll).mockResolvedValue([stored]);
       vi.mocked(routinesApi.update).mockResolvedValue(stored);
@@ -511,7 +489,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
     });
 
     it('RoutineEditor_ConditionThatTheEditorCannotShowWhole_IsLeftAsItIsOnSave', async () => {
-      // Two groups: a shape the editor does not draw. Saving the rest must not rewrite it (the server keeps what the body leaves out).
       const twoGroups = routine({
         id: 'r9',
         name: 'Con due gruppi',
@@ -576,7 +553,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
           'Non si può attivare: contiene azioni non ancora disponibili (Notifica proprietario). Puoi provarla in modalità test.',
         ),
       );
-      // The switch shows what the server holds: still off, and the routine is still in the tab of the inactive ones.
       expect(screen.getByTestId('toggle-active-r3')).not.toBeChecked();
       expect(toast.success).not.toHaveBeenCalled();
     });
@@ -646,7 +622,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       expect(await routineMenuItem('r1', 'toggle-test-mode')).toHaveAttribute('aria-disabled', 'true');
       expect(screen.getByTestId('delete-routine-r1')).toHaveAttribute('aria-disabled', 'true');
       fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
-      // Another routine is not waiting for it.
       expect(screen.getByTestId('toggle-active-r5')).toBeEnabled();
       expect(screen.getByTestId('edit-routine-r5')).toBeEnabled();
 
@@ -662,18 +637,15 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       vi.mocked(routinesApi.setActive).mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
       renderPage();
 
-      // A write on the first card and, while it is still on its way, one with the same hook on the second: a mutation hook follows only its last call.
       fireEvent.click(await screen.findByTestId('toggle-active-r1'));
       await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeDisabled());
       fireEvent.click(screen.getByTestId('toggle-active-r5'));
       await waitFor(() => expect(screen.getByTestId('edit-routine-r5')).toBeDisabled());
 
-      // The first card still waits for its own answer.
       for (const control of ['toggle-active-r1', 'edit-routine-r1']) {
         expect(screen.getByTestId(control), control).toBeDisabled();
       }
 
-      // The answer of the second one frees the second card only.
       second.resolve({ ...other, active: false });
       await waitFor(() => expect(screen.getByTestId('edit-routine-r5')).toBeEnabled());
       for (const control of ['toggle-active-r1', 'edit-routine-r1']) {
@@ -758,11 +730,9 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.click(await screen.findByTestId('open-library-button'));
       fireEvent.click(await screen.findByTestId('setup-cleaners-0'));
 
-      // The layer lists the properties and does not send the host away: the library is still under it.
       expect(await screen.findByTestId('bulk-cleaning-dialog')).toBeInTheDocument();
       expect(await screen.findByTestId('bulk-cleaning-property-p1')).toBeInTheDocument();
       expect(screen.getByTestId('library-template-0')).toBeInTheDocument();
-      // Only the cleaning offers it.
       expect(screen.queryByTestId('setup-cleaners-1')).not.toBeInTheDocument();
     });
 
@@ -865,7 +835,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       expect(screen.getByTestId('execution-actions-e2')).toHaveTextContent('Crea un promemoria manuale: Simulata: non è stato fatto nulla');
       expect(screen.getByTestId('execution-e3')).toHaveTextContent('Non riuscita');
       expect(screen.getByTestId('execution-actions-e3')).toHaveTextContent('L\'azione non è ancora disponibile: non ha fatto nulla.');
-      // Never the raw words of the API.
       for (const row of [waitingRow, screen.getByTestId('execution-e2'), screen.getByTestId('execution-e3')]) {
         expect(row).not.toHaveTextContent(/Success|Failed|Waiting|routine_action_not_available/);
       }
@@ -895,7 +864,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       fireEvent.click(await routineMenuItem('r1', 'show-log'));
 
-      // Nothing to do for this booking: neutral, never a green «Completata», and the reason in words.
       const skipped = await screen.findByTestId('execution-outcome-k1');
       expect(skipped).toHaveTextContent('Nulla da fare');
       expect(skipped).toHaveAttribute('data-tone', 'neutral');
@@ -903,14 +871,11 @@ describe('the routines page (E01/F04/US02/T01)', () => {
         "Richiedi recensione: Saltata: non c'era niente da fare - La prenotazione non arriva dal tuo sito di prenotazione",
       );
       expect(screen.getByTestId('execution-actions-k6')).toHaveTextContent("L'invito per questa prenotazione è già stato inviato");
-      // The invitation that did not leave is a failure, and says what is still possible.
       expect(screen.getByTestId('execution-outcome-k2')).toHaveTextContent('Non riuscita');
       expect(screen.getByTestId('execution-actions-k2')).toHaveTextContent("L'email di invito non è partita");
       expect(screen.getByTestId('execution-actions-k2')).toHaveTextContent('a mano');
-      // A property with no cleaner: blocked, with where to set it.
       expect(screen.getByTestId('execution-outcome-k3')).toHaveTextContent('Bloccata');
       expect(screen.getByTestId('execution-actions-k3')).toHaveTextContent('Crea la pulizia: Bloccata - Questo immobile non ha chi pulisce');
-      // A cleaning that a supplier could not take, for a reason the page does not list: what always follows, never the code.
       expect(screen.getByTestId('execution-actions-k4')).toHaveTextContent('La pulizia non si è potuta creare');
       expect(screen.getByTestId('execution-actions-k4')).toHaveTextContent('Pulizia da richiedere');
       expect(screen.getByTestId('execution-actions-k5')).toHaveTextContent('La richiesta di recensione si fa per una prenotazione');
@@ -922,7 +887,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
     });
 
     it('ExecutionLog_RunThatDidNothingForReal_IsNotAGreenCompleted', async () => {
-      // The server calls a run `Success` when every action ended done, simulated or blocked: only a run with an action really done is a green «Completata».
       const run = (id: string, actions: Array<{ type: string; outcome: string; code?: string }>): RoutineExecution => ({
         id,
         orgId: 'org-1',
@@ -946,7 +910,6 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       const done = await screen.findByTestId('execution-outcome-d1');
       expect(done).toHaveTextContent('Completata');
       expect(done).toHaveAttribute('data-tone', 'success');
-      // Nothing ran for real: neutral, and told as what it was.
       const simulated = screen.getByTestId('execution-outcome-s1');
       expect(simulated).toHaveTextContent('Simulata');
       expect(simulated).not.toHaveTextContent('Completata');

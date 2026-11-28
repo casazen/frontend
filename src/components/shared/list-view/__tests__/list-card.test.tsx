@@ -46,7 +46,6 @@ const down = (target: Element, x: number, y = 40) => fireEvent.pointerDown(targe
 const move = (target: Element, x: number, y = 40) => fireEvent.pointerMove(target, { ...touch, clientX: x, clientY: y });
 const up = (target: Element) => fireEvent.pointerUp(target, touch);
 
-/** What the finger does: goes down, moves along `path` (x values), is lifted. */
 function swipe(surface: Element, from: number, path: number[], y = 40) {
   down(surface, from, y);
   for (const x of path) move(surface, x, y);
@@ -279,7 +278,6 @@ describe('ListCardBody', () => {
     expect(email).toHaveTextContent('Email: mario@example.com');
     expect(email.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByText('€ 450')).toBeInTheDocument();
-    // They are not a list: a card in a list of cards would announce one each time.
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
     expect(screen.getByText('foot')).toBeInTheDocument();
   });

@@ -20,7 +20,6 @@ import { DURATION_CHOICES, NOTICE_CHOICES, SERVICE_LIMITS } from '../lib/service
 
 const T = 'supplier.services.form';
 
-/** A text that says what a switch does, under it what that means. The whole row is the target (44 px), not only the switch. */
 export function SwitchRow({ checked, onCheckedChange, label, hint, disabled, testId }: { checked: boolean; onCheckedChange: (checked: boolean) => void; label: string; hint?: string; disabled?: boolean; testId?: string }) {
   const id = useId();
   return (
@@ -40,7 +39,6 @@ export function SwitchRow({ checked, onCheckedChange, label, hint, disabled, tes
   );
 }
 
-/** The category of the service, from the catalog of the API (the only values it accepts), with its own loading and error. */
 function CategoryField() {
   const { t } = useTranslation();
   const { control, formState } = useFormContext<ServiceFormValues>();
@@ -81,7 +79,6 @@ function CategoryField() {
   );
 }
 
-/** First step: what the service is, in the words a customer reads. */
 export function BasicsFields() {
   const { t } = useTranslation();
   const { register, control, formState } = useFormContext<ServiceFormValues>();
@@ -111,10 +108,6 @@ export function BasicsFields() {
   );
 }
 
-/**
- * What a supplement is counted by: its own row of fields, with the one that removes it. Alone on a page it is a box of its own;
- * `flat` is for a part that already sits in a box (the page of a service): the rows are told apart by a line, not by a box in a box.
- */
 function SupplementRow({ index, onRemove, flat }: { index: number; onRemove: () => void; flat: boolean }) {
   const { t } = useTranslation();
   const { register, control, formState } = useFormContext<ServiceFormValues>();
@@ -168,7 +161,6 @@ function SupplementRow({ index, onRemove, flat }: { index: number; onRemove: () 
   );
 }
 
-/** The supplements of the service: created, changed and removed here, up to ten. */
 function SupplementsEditor({ flat }: { flat: boolean }) {
   const { t } = useTranslation();
   const { control, formState } = useFormContext<ServiceFormValues>();
@@ -280,7 +272,6 @@ export function PriceFields({ flat = false }: { flat?: boolean }) {
   );
 }
 
-/** The days of the week the service is offered on: seven buttons that are pressed or not, in the order of the week. */
 function WeekdayChips() {
   const { t, i18n } = useTranslation();
   const { control, formState } = useFormContext<ServiceFormValues>();
@@ -334,7 +325,6 @@ function WeekdayChips() {
   );
 }
 
-/** Third step: how long the work takes, how much notice it needs and on which days it is offered. */
 export function BookingFields() {
   const { t } = useTranslation();
   const { register, getValues, formState } = useFormContext<ServiceFormValues>();

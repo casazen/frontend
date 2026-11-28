@@ -17,11 +17,9 @@ import { useRailTooltip } from './rail-tooltip';
 
 interface ContextSidebarProps {
   contextKey: AppContextKey;
-  /** The organization of the user, shown under the name of the area. */
   organizationName?: string | null;
 }
 
-/** The button that reduces the sidebar to the icons and gives it back; reduced, its name is a tooltip like the others. */
 function CollapseToggle({ collapsed, label, onToggle }: { collapsed: boolean; label: string; onToggle: () => void }) {
   const { triggerProps, tooltip } = useRailTooltip(label, collapsed);
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
@@ -73,8 +71,6 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
 
 
   return (
-    // Sticky to the window, as tall as the visible viewport (`dvh`), with the menu scrolling inside it: the window is
-    // what scrolls in the shell (UI-03). `self-start` keeps the flex row from stretching it to the page height.
     <aside
       role="complementary"
       aria-label={t('shell.mainNavigation')}
@@ -103,7 +99,6 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
           </MenuSearch>
         )}
       </nav>
-      {/* The settings of the area, pinned under the menu that scrolls (on the rail of a tablet too), then the button that reduces the sidebar. */}
       {nav.footer.length > 0 ? (
         <nav aria-label={t('nav.group.footer')} className="border-t px-3 py-2">
           <FooterNavLinks entries={nav.footer} matchEntries={matchEntries} collapsed={collapsed} counts={counts} />

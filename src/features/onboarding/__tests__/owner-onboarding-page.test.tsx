@@ -54,7 +54,6 @@ const workspace = vi.hoisted(() => ({
 }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => workspace }));
 
-/** The plan of the org (`isAgency` of its entitlement): the server's agency policies ask for it, so nothing is read for another plan. */
 const org = vi.hoisted(() => ({ isAgency: true, isLoading: false }));
 vi.mock('@/hooks/useOrg', () => ({ useOrg: () => org }));
 vi.mock('@/config/support.config', () => ({ supportConfig: { email: 'aiuto@casazen.test' } }));
@@ -78,7 +77,6 @@ function owner(ownerId: string, displayName: string, overrides: Partial<OwnerRea
   };
 }
 
-/** A readiness with one property whose shares are wrong and two owners, one of them missing the IBAN: the agency has work to do. */
 function readiness(overrides: Partial<OwnerReadinessReport> = {}): OwnerReadinessReport {
   const count = (toComplete: number, total = 2) => ({ ready: total - toComplete, toComplete });
   return {
@@ -197,7 +195,6 @@ function renderAt(path: string, element: ReactNode, { agencyTier = true, client 
 
 const renderPage = (options?: Parameters<typeof renderAt>[2]) => renderAt(OWNER_STEP_PATH, <OwnerOnboardingPage />, options);
 
-/** The invitation methods that SEND or change something: the import must never reach any of them. */
 const INVITATION_WRITES = ['previewInvitations', 'confirmInvitations', 'resendInvitation', 'revokeInvitation', 'acceptInvitation'] as const;
 
 describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)', () => {
@@ -268,11 +265,9 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
         `3. ${i18n.t('ownerOnboarding.phases.accounting.title')}`,
         `4. ${i18n.t('ownerOnboarding.phases.portal.title')}`,
       ]);
-      // The registry is complete, so the shares (a property at 80%) are the one block to do now: one highlighted block.
       expect(screen.getByTestId('owner-phase-owners')).toHaveAttribute('data-state', 'done');
       expect(screen.getByTestId('owner-phase-shares')).toHaveAttribute('data-highlighted', 'true');
       expect(list.querySelectorAll('[data-highlighted="true"]')).toHaveLength(1);
-      // The states are in words as well as in color.
       expect(within(screen.getByTestId('owner-phase-shares')).getByTestId('owner-phase-shares-state')).toHaveTextContent(i18n.t('ownerOnboarding.states.toComplete'));
     });
 
@@ -282,10 +277,8 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
 
       const operational = await screen.findByTestId('owner-outcome-operational');
       const accounting = screen.getByTestId('owner-outcome-accounting');
-      // Two outcomes, told apart: the properties work, the statements for the owners are still to complete.
       await waitFor(() => expect(within(operational).getByTestId('owner-outcome-operational-state')).toHaveTextContent(i18n.t('ownerOnboarding.ready')));
       expect(within(accounting).getByTestId('owner-outcome-accounting-state')).toHaveTextContent(i18n.t('ownerOnboarding.toComplete'));
-      // The exact property and the exact field.
       expect(within(accounting).getByText('Casa del Faro')).toBeInTheDocument();
       expect(within(accounting).getByText(/Luca Bianchi/)).toHaveTextContent(i18n.t('ownerOnboarding.reasons.ibanMissing'));
       expect(within(accounting).getByText(/Luca Bianchi/)).toHaveTextContent(i18n.t('ownerOnboarding.fields.iban'));
@@ -315,13 +308,11 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       renderPage();
 
       const table = await screen.findByTestId('owner-mandate-table');
-      // The mandate is completed in «Dati finanziari»: the owner who lacks it has the way there even though no fiscal or payment fact is missing (the table of the third phase lists nobody).
       expect(screen.getByTestId('owner-accounting-table-all-ready')).toBeInTheDocument();
       expect(within(table).getAllByTestId('owner-mandate-table-row')).toHaveLength(2);
       const links = within(table).getAllByTestId('owner-mandate-table-complete');
       expect(links).toHaveLength(1);
       expect(links[0]).toHaveAttribute('href', ownerFinancialPath(OWNER_A));
-      // The shares are put right with the file, not there: the owner whose shares are wrong and whose mandate is fine has no link.
       expect(within(within(table).getAllByTestId('owner-mandate-table-row')[1]).queryByTestId('owner-mandate-table-complete')).not.toBeInTheDocument();
     });
 
@@ -358,7 +349,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       fireEvent.click(await screen.findByTestId('owner-import-manual-toggle'));
       fireEvent.change(await screen.findByTestId('owner-manual-name'), { target: { value: 'Maria Verdi' } });
 
-      // The next read fails (the refresh of the page, the return to the tab): what the person is filling in must not go with the page.
       vi.mocked(ownerOnboardingApi.getReadiness).mockRejectedValue(problemError(500, { code: 'server_error' }));
       await act(async () => {
         await client.refetchQueries({ queryKey: ownerOnboardingKeys.readiness });
@@ -371,7 +361,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       // What stays on the page is the last answer, told as such: the notice is a warning and the retry is next to it.
       expect(notice).toHaveTextContent(i18n.t('ownerOnboarding.updateFailed'));
 
-      // «Riprova» reads again and the notice goes.
       vi.mocked(ownerOnboardingApi.getReadiness).mockResolvedValue(readiness());
       fireEvent.click(within(notice).getByRole('button', { name: i18n.t('shared.errorState.retry') }));
       await waitFor(() => expect(screen.queryByTestId('owner-onboarding-update-failed')).not.toBeInTheDocument());
@@ -394,7 +383,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
 
     it('OwnerOnboarding_NotFoundEvenWithAnOlderAnswerInMemory_ShowsNotFoundAndNotTheOldData', async () => {
       const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-      // An older answer that says everything is ready: the 404 of the next read must win over it.
       client.setQueryData(ownerOnboardingKeys.readiness, ready100());
       vi.mocked(ownerOnboardingApi.getReadiness).mockRejectedValue(problemError(404, { code: 'not_found' }));
       renderPage({ client });
@@ -407,7 +395,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
 
   describe('what it never shows', () => {
     it('OwnerReadiness_NeverShowsGuestPii_Test', async () => {
-      // An answer that carries more than the contract says (a guest, a fiscal code, an IBAN): the page draws a fixed list of fields and nothing else.
       const leaking = readiness();
       const dirty = {
         ...leaking,
@@ -431,7 +418,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       for (const secret of ['Giulia Ospite', 'giulia.ospite@example.com', '+39 333 1234567', 'IT60X0542811101000000123456', 'BNCLCU80A01H501X']) {
         expect(text).not.toContain(secret);
       }
-      // What it does show: the owners' names in the agency's registry and the facts that are missing, in words.
       expect(text).toContain('Luca Bianchi');
       expect(text).toContain(i18n.t('ownerOnboarding.reasons.ibanMissing'));
     });
@@ -452,14 +438,12 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       const chosen = file();
       await chooseFile(chosen);
 
-      // The import is off until THIS file was checked.
       expect(screen.getByTestId('owner-import-apply')).toBeDisabled();
       fireEvent.click(screen.getByTestId('owner-import-check'));
       await screen.findByTestId('owner-import-result');
       expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(1);
       expect(ownerOnboardingApi.importOwners).toHaveBeenLastCalledWith(chosen, true);
 
-      // Then a separate act, confirmed with its exact effect, writes only the valid rows.
       fireEvent.click(screen.getByTestId('owner-import-apply'));
       expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(1);
       const dialog = await screen.findByRole('dialog');
@@ -470,7 +454,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       expect(ownerOnboardingApi.importOwners).toHaveBeenLastCalledWith(chosen, false);
       await waitFor(() => expect(screen.getByTestId('owner-import-result')).toHaveAttribute('data-dry-run', 'false'));
 
-      // From the first check to the end of the import not one invitation was previewed, sent, sent again, withdrawn or accepted.
       for (const method of INVITATION_WRITES) expect(ownerOnboardingApi[method]).not.toHaveBeenCalled();
     });
 
@@ -490,7 +473,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       fireEvent.click(screen.getByTestId('owner-import-apply'));
       fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') }));
 
-      // The write is on its way: the confirmation stays, says so, and neither of its buttons works (no second import); the page behind does not say «check the file first».
       const working = await screen.findByTestId('owner-import-confirm-working');
       const dialog = screen.getByRole('dialog');
       expect(dialog).toContainElement(working);
@@ -499,7 +481,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(2);
       expect(screen.queryByText(i18n.t('ownerOnboarding.import.applyNeedsCheck'))).not.toBeInTheDocument();
 
-      // The answer comes: the confirmation closes and the page shows the answer of the import.
       await act(async () => {
         answer(importResult(false));
       });
@@ -518,14 +499,12 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       fireEvent.click(screen.getByTestId('owner-import-apply'));
       fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') }));
 
-      // The server refused: the confirmation does not close as if it had worked; it shows the reason where the person is, and nothing is written twice.
       const dialog = screen.getByRole('dialog');
       expect(await within(dialog).findByTestId('owner-import-confirm-error')).toHaveTextContent(i18n.t('ownerOnboarding.import.error'));
       expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(within(dialog).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') })).toBeEnabled();
       expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(2);
 
-      // The same button tries again, and when the server answers the confirmation closes.
       vi.mocked(ownerOnboardingApi.importOwners).mockImplementation((_file, dryRun) => Promise.resolve(importResult(dryRun)));
       fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') }));
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -557,7 +536,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       expect(rows).toHaveLength(2);
       expect(within(rows[0]).getByText(i18n.t('ownerOnboarding.import.rowOk'))).toBeInTheDocument();
       expect(within(rows[0]).getByText(new RegExp(i18n.t('ownerOnboarding.import.ownerActions.create_owner')))).toBeInTheDocument();
-      // The error is in words, with the column it is about; never the bare code.
       expect(within(rows[1]).getByText(new RegExp(i18n.t('ownerOnboarding.rowCodes.propertyNotFound')))).toBeInTheDocument();
       expect(rows[1]).not.toHaveTextContent('property_not_found');
       expect(screen.getByTestId('owner-import-summary')).toHaveTextContent(i18n.t('ownerOnboarding.import.checkSummary', { valid: 1, invalid: 1 }));
@@ -575,7 +553,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       const row = await screen.findByTestId('owner-import-row');
       expect(row).toHaveTextContent(i18n.t('ownerOnboarding.import.ownerActions.match_owner'));
       expect(row).toHaveTextContent(i18n.t('ownerOnboarding.import.matchedBy.fiscal_identifier'));
-      // An owner is never found by e-mail, and no fiscal identifier is shown: only how it was found.
       expect(row).not.toHaveTextContent(/@/);
     });
 
@@ -600,7 +577,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       expect(await screen.findByTestId('owner-import-error')).toBeInTheDocument();
       expect(screen.getByTestId('owner-import-apply')).toBeDisabled();
       cleanup();
-      // Nothing of the file or of the answer is left in the cache of the mutations once the panel is closed.
       await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
     });
 
@@ -647,7 +623,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       vi.mocked(ownerOnboardingApi.confirmInvitations).mockResolvedValue({ sent: 1, invitations: [{ invitationId: 'inv-a', ownerId: OWNER_A, expiresAt: '2026-11-20T09:00:00Z' }], failed: [] });
       renderPage();
 
-      // Nothing to preview before an owner is chosen, and choosing sends nothing.
       expect(await screen.findByTestId('owner-invitations-preview')).toBeDisabled();
       await selectMarta();
       expect(ownerOnboardingApi.previewInvitations).not.toHaveBeenCalled();
@@ -657,7 +632,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       expect(ownerOnboardingApi.previewInvitations).toHaveBeenCalledWith([OWNER_A]);
       expect(ownerOnboardingApi.confirmInvitations).not.toHaveBeenCalled();
 
-      // The exact effect: to whom (with the address), for which properties and with which permissions, and who is left out.
       expect(within(dialog).getByTestId('owner-invitation-recipients')).toHaveTextContent('Marta Esposito - marta@example.com');
       expect(within(dialog).getByTestId('owner-invitation-exclusions')).toHaveTextContent(`Anna Neri: ${i18n.t('ownerOnboarding.reasons.emailMissing')}`);
       expect(dialog).toHaveTextContent(i18n.t('ownerOnboarding.invitations.confirm.permissions'));
@@ -666,7 +640,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('ownerOnboarding.invitations.confirm.action', { count: 1 }) }));
 
       await waitFor(() => expect(ownerOnboardingApi.confirmInvitations).toHaveBeenCalledTimes(1));
-      // The confirmation carries the fingerprint of the preview and the same owners.
       expect(ownerOnboardingApi.confirmInvitations).toHaveBeenCalledWith([OWNER_A], 'fp-1');
       expect(await screen.findByTestId('owner-invitations-outcome')).toHaveTextContent(i18n.t('ownerOnboarding.invitations.sent', { count: 1 }));
     });
@@ -705,7 +678,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       fireEvent.click(await screen.findByTestId('owner-invitation-revoke'));
       let dialog = await screen.findByRole('dialog');
       expect(dialog).toHaveTextContent(i18n.t('ownerOnboarding.invitations.revokeConfirm.effect'));
-      // Asking is not doing: nothing is withdrawn, and nothing is sent again, until the confirmation.
       expect(ownerOnboardingApi.revokeInvitation).not.toHaveBeenCalled();
       expect(ownerOnboardingApi.resendInvitation).not.toHaveBeenCalled();
       fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('ownerOnboarding.invitations.revokeConfirm.action') }));
@@ -781,7 +753,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
 
       await act(() => vi.advanceTimersByTimeAsync(2 * OWNER_WATCH_MS));
 
-      // Opened once, never again: with nobody who may accept there is nothing to wait for, and no notice about a check that was never made.
       expect(calls('listInvitations')).toBe(1);
       expect(calls('getReadiness')).toBe(1);
       expect(screen.queryByTestId('owner-invitations-watch-over')).not.toBeInTheDocument();
@@ -793,12 +764,10 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       await screen.findByTestId('owner-invitations-list');
       expect(calls('listInvitations')).toBe(1);
 
-      // The window is open: the page asks by itself and says nothing about it.
       await act(() => vi.advanceTimersByTimeAsync(3 * OWNER_REFRESH_MS + 5_000));
       expect(calls('listInvitations')).toBeGreaterThanOrEqual(4);
       expect(screen.queryByTestId('owner-invitations-watch-over')).not.toBeInTheDocument();
 
-      // Ten minutes after it opened it stops: a neutral notice (a status, not an error) and a button, and not one read more by itself.
       await act(() => vi.advanceTimersByTimeAsync(OWNER_WATCH_MS));
       const notice = await screen.findByTestId('owner-invitations-watch-over');
       expect(notice).toHaveAttribute('role', 'status');
@@ -809,7 +778,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       await act(() => vi.advanceTimersByTimeAsync(OWNER_WATCH_MS));
       expect(calls('listInvitations')).toBe(stopped);
 
-      // «Controlla di nuovo» reads at once and opens the window again: the notice goes and the page follows the link again.
       fireEvent.click(within(notice).getByRole('button', { name: i18n.t('ownerOnboarding.invitations.checkAgain') }));
       await waitFor(() => expect(calls('listInvitations')).toBe(stopped + 1));
       await waitFor(() => expect(screen.queryByTestId('owner-invitations-watch-over')).not.toBeInTheDocument());
@@ -824,7 +792,6 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       await act(() => vi.advanceTimersByTimeAsync(OWNER_WATCH_MS + 5 * 60_000));
       expect(calls('listInvitations')).toBe(1);
 
-      // The person confirms a batch after a quarter of an hour on the page (the write reads the list again): the new link is followed all the same, not told at once as «stopped».
       vi.mocked(ownerOnboardingApi.listInvitations).mockResolvedValue([
         invitation(OWNER_A, 'Marta Esposito', 'invited', { invitationId: 'inv-a', sentAt: '2026-11-13T10:00:00Z', expiresAt: '2026-11-20T10:00:00Z' }),
         invitation(OWNER_C, 'Anna Neri', 'notReady'),
@@ -1005,12 +972,10 @@ describe('the owner entered by hand (NF-109, manual completion)', () => {
     expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(1);
     const [sent, dryRun] = vi.mocked(ownerOnboardingApi.importOwners).mock.calls[0];
     expect(dryRun).toBe(true);
-    // The row goes to the server as a file, with the columns the server reads; the server is the only judge of it.
     expect((await sent.text()).split(/\r?\n/).slice(0, 2)).toEqual([
       'cinCode,ownerKey,legalName,email,entityKind,fiscalCode,sharePercent,ownershipStart',
       'IT-CIN-9,P-9,Maria Verdi,maria@example.com,person,VRDMRA80A41H501Z,100,2026-01-01',
     ]);
-    // Then the same separate, confirmed import writes it; the form is emptied once something was written.
     await waitFor(() => expect(screen.getByTestId('owner-import-apply')).toBeEnabled());
     fireEvent.click(screen.getByTestId('owner-import-apply'));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') }));
@@ -1029,14 +994,12 @@ describe('the owner entered by hand (NF-109, manual completion)', () => {
     await screen.findByTestId('owner-import-result');
     await waitFor(() => expect(screen.getByTestId('owner-import-apply')).toBeEnabled());
 
-    // The person corrects the share after the check: that check was about the row as it was, so its answer goes and the import is off until the row is checked again.
     type('owner-manual-share', '60');
     await waitFor(() => expect(screen.queryByTestId('owner-import-result')).not.toBeInTheDocument());
     expect(screen.getByTestId('owner-import-apply')).toBeDisabled();
     expect(screen.queryByTestId('owner-import-forget')).not.toBeInTheDocument();
     expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(1);
 
-    // A new check of the row as the form holds it now; the import then writes that row, never the old one.
     fireEvent.click(screen.getByTestId('owner-manual-submit'));
     await waitFor(() => expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(2));
     expect((await vi.mocked(ownerOnboardingApi.importOwners).mock.calls[1][0].text()).split(/\r?\n/)[1]).toContain(',60,');
@@ -1062,12 +1025,10 @@ describe('the owner entered by hand (NF-109, manual completion)', () => {
     fireEvent.click(screen.getByTestId('owner-import-apply'));
 
     const dialog = await screen.findByRole('dialog');
-    // What will be written, in words: the row as it was sent and the effect the check announced, not only counts of rows.
     expect(within(dialog).getByTestId('owner-import-confirm-source')).toHaveTextContent(
       i18n.t('ownerOnboarding.import.confirm.row', { owner: 'Maria Verdi (P-9)', property: 'IT-CIN-9', share: '100', start: '2026-01-01' }),
     );
     expect(dialog).toHaveTextContent(i18n.t('ownerOnboarding.import.confirm.effect', { owners: 1, matched: 0, ownerships: 1, periods: 0 }));
-    // The tax code and the e-mail typed in the form are not printed again.
     expect(dialog.textContent ?? '').not.toContain('VRDMRA80A41H501Z');
     expect(dialog.textContent ?? '').not.toContain('maria@example.com');
   });
@@ -1079,7 +1040,6 @@ describe('the owner entered by hand (NF-109, manual completion)', () => {
     fireEvent.click(screen.getByTestId('owner-manual-submit'));
     expect(await screen.findByTestId('owner-manual-problem')).toHaveTextContent(i18n.t('ownerOnboarding.manual.property'));
 
-    // An e-mail alone identifies nobody: a key or a tax code is needed.
     type('owner-manual-property', 'IT-CIN-9');
     type('owner-manual-name', 'Maria Verdi');
     type('owner-manual-email', 'maria@example.com');

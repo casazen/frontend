@@ -12,7 +12,6 @@ import { GUEST_REGISTER_LAYER_KIND, guestRegisterLayerPath } from '../lib/guest-
 interface GuestRegistrationLayersProps {
   propertyId: string;
   regime: GuestRegistrationRegime;
-  /** What CasaZen treats as the duty of the property: a host who answered that they need not notify is not offered the notification (the register is theirs to keep all the same). */
   effectiveDuty: GuestRegistrationDuty;
 }
 

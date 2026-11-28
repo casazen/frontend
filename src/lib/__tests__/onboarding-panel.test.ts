@@ -51,7 +51,6 @@ describe('the pages of the guided steps in the manifest', () => {
   it('panelStepRoutes_BothAddresses_AreEntriesOfTheManifestThatNeedToWriteTheProperties', () => {
     expect(getManifestEntry(PANEL_STEP_ROUTE)).toMatchObject({ context: 'short-rent', requiredPermissions: ['property.write'], featureFlag: 'octorateOnboarding' });
     expect(getManifestEntry(PANEL_STEP_PATH)).toMatchObject({ context: 'short-rent', requiredPermissions: ['property.write'], featureFlag: 'octorateOnboarding' });
-    // In no menu: the plan, the parts and the «Da fare» lead here.
     expect(getManifestEntry(PANEL_STEP_ROUTE)?.navPlacement).toBeUndefined();
     expect(getManifestEntry(PANEL_STEP_ROUTE)?.navParent).toBeUndefined();
   });
@@ -85,12 +84,9 @@ describe('handoffPhase, the state of the screen', () => {
   });
 
   it('handoffPhase_ResultCasaZenCannotTell_AsksOnlyWhenThePersonIsBackFromThePanel', () => {
-    // Still on the panel: nothing to confirm yet, whatever the server says.
     expect(handoffPhase(unverifiable, onThePanel)).toBe('waiting');
-    // Back (the window closed, the tab came to the front) or never opened by this page: the question.
     expect(handoffPhase(unverifiable, away)).toBe('unverifiable');
     expect(handoffPhase(unverifiable, { launched: false, blocked: false, ended: false })).toBe('unverifiable');
-    // The server did not say it cannot tell: no question, however long the person was away.
     expect(handoffPhase(step({ lastVerificationOutcome: 'unverifiable', canConfirm: false }), away)).toBe('waiting');
     expect(handoffPhase(step({ lastVerificationOutcome: null, canConfirm: true }), away)).toBe('waiting');
   });
@@ -120,7 +116,6 @@ describe('the callback of a panel that sends the person back', () => {
 
     expect(readPanelStepCallback(params)).toEqual({ stepId: STEP_ID, state: 'abc_DEF-123' });
     expect(withoutPanelStepCallback(params).toString()).toBe('propertyId=p1');
-    // A copy: the address it was given is not changed.
     expect(params.get('state')).toBe('abc_DEF-123');
   });
 
@@ -189,20 +184,16 @@ describe('what the page opens and what it asks', () => {
       ...(channelCode === undefined ? {} : { channelCode }),
     });
 
-    // The step of a channel is its context, its property and its channel.
     expect(findOpenAssist([request('142')], 'panelChannelAccess', null, '142')?.id).toBe('r');
     expect(findOpenAssist([request('142')], 'panelChannelAccess', null, '274')).toBeUndefined();
-    // A step with no channel matches only a request with none (an older request, or one that is not about a channel), whether the server says `null` or says nothing.
     expect(findOpenAssist([request('142')], 'panelChannelAccess')).toBeUndefined();
     expect(findOpenAssist([request('142')], 'panelChannelAccess', null, null)).toBeUndefined();
     expect(findOpenAssist([request(null)], 'panelChannelAccess')?.id).toBe('r');
     expect(findOpenAssist([request()], 'panelChannelAccess', null, null)?.id).toBe('r');
-    // And the other way: a request with no channel is not the request of a channel.
     expect(findOpenAssist([request(null)], 'panelChannelAccess', null, '142')).toBeUndefined();
     expect(findOpenAssist([request('274'), request('142')], 'panelChannelAccess', null, '142')?.channelCode).toBe('142');
   });
 
-  // E20/F03/US02/T01: how support closed a request, for the step it was closed for.
   describe('the outcome of a request that is done', () => {
     const request = (overrides: Partial<AssistRequest>): AssistRequest => ({
       id: 'r',
@@ -234,7 +225,6 @@ describe('what the page opens and what it asks', () => {
 
       expect(findDoneAssist([older, newer], 'panelPolice', 'p1')?.id).toBe('newer');
       expect(findDoneAssist([newer, older], 'panelPolice', 'p1')?.id).toBe('newer');
-      // A request with no readable instant is the oldest, never the most recent.
       expect(findDoneAssist([request({ id: 'unknown', completedAt: null, updatedAt: 'not a date' }), older], 'panelPolice', 'p1')?.id).toBe('older');
     });
 
@@ -249,7 +239,6 @@ describe('what the page opens and what it asks', () => {
     it('assistOutcomeOf_OnlyVerifiedIsVerified_AnythingElseIsTheWordOfTheSupport', () => {
       expect(assistOutcomeOf({ outcome: 'verified' })).toBe('verified');
       expect(assistOutcomeOf({ outcome: 'declared' })).toBe('declared');
-      // A request closed before the outcome was recorded, and a word this version does not know: never shown as a check that was made.
       expect(assistOutcomeOf({ outcome: null })).toBe('declared');
       expect(assistOutcomeOf({})).toBe('declared');
       expect(assistOutcomeOf({ outcome: 'telepathy' as never })).toBe('declared');

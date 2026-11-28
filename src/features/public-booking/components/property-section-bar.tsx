@@ -4,18 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 export interface PropertySection {
-  /** `id` of the section in the page. */
   id: string;
   label: string;
 }
 
-/** After a click the bar keeps the section that was clicked while the page scrolls there (ms): a short page may not reach the line. */
 const CLICK_HOLD = 1000;
 
-/**
- * How far down the window the bar sticks: right under the header of the site when that one sticks too (the shell of the
- * booking site decides, and may change), else at the top of the window.
- */
 function stickOffset(nav: HTMLElement): number {
   const header = nav.closest('.public-site-root')?.querySelector(':scope > header');
   if (!header) return 0;
@@ -23,11 +17,6 @@ function stickOffset(nav: HTMLElement): number {
   return position === 'sticky' || position === 'fixed' ? header.getBoundingClientRect().height : 0;
 }
 
-/**
- * Row of links to the sections the page has: it stays at the top while the sections go by and marks the one being read. The page
- * decides which sections exist (a section without data is not in the page and not here), so there are no dead links. From a tablet
- * up the links are tabs with an underline; on a phone they are chips that scroll sideways (DB-04a).
- */
 export function PropertySectionBar({ sections }: { sections: PropertySection[] }) {
   const { t } = useTranslation();
   const navRef = useRef<HTMLElement>(null);
@@ -35,7 +24,6 @@ export function PropertySectionBar({ sections }: { sections: PropertySection[] }
   const [active, setActive] = useState(sections[0]?.id);
   const ids = sections.map((section) => section.id).join('|');
 
-  // Where it sticks, decided by the DOM (not by state): it follows the header of the site on every resize.
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -47,7 +35,6 @@ export function PropertySectionBar({ sections }: { sections: PropertySection[] }
     return () => window.removeEventListener('resize', place);
   }, []);
 
-  // The section being read is the last one whose top has passed a line just under the bar.
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -62,7 +49,6 @@ export function PropertySectionBar({ sections }: { sections: PropertySection[] }
         const element = document.getElementById(id);
         if (element && element.getBoundingClientRect().top <= line) current = id;
       }
-      // At the end of the page the last section may be too short to reach the line: it is the one being read.
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) current = list[list.length - 1];
       setActive(current);
     };
@@ -86,7 +72,6 @@ export function PropertySectionBar({ sections }: { sections: PropertySection[] }
     event.preventDefault();
     heldUntil.current = event.timeStamp + CLICK_HOLD;
     setActive(id);
-    // The section lands just under the bar (and the header, when it sticks).
     const top = target.getBoundingClientRect().top + window.scrollY - (stickOffset(nav) + nav.offsetHeight + 16);
     const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: Math.max(0, top), behavior: calm ? 'auto' : 'smooth' });

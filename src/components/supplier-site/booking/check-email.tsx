@@ -8,24 +8,15 @@ import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 interface CheckEmailProps {
   slug: string;
   supplierName: string;
-  /** The address the person typed: shown back so it can see a slip. Held in memory only; missing when the person came back from the bank. */
   email?: string;
-  /** When the hold lapses (UTC); missing together with the address. */
   expiresAt?: string;
-  /** What is waiting for the link: a booking (the default) or a request on measure (SP-12c), whose words are its own. */
   variant?: 'booking' | 'inquiry';
 }
 
-/**
- * "Controlla la tua email": the booking is held, nothing was sent to the supplier yet. The link of the e-mail sends the request; until
- * it is opened the supplier knows nothing, and when the time runs out the slot is free again. It says nothing it cannot keep: the
- * message may land in the spam folder, and there is no way to ask for it again from here.
- */
 export function CheckEmail({ slug, supplierName, email, expiresAt, variant = 'booking' }: CheckEmailProps) {
   const { t, i18n } = useTranslation();
   const base = variant === 'inquiry' ? 'supplierSite.inquiry.checkEmail' : 'supplierSite.booking.checkEmail';
   const heading = useRef<HTMLHeadingElement>(null);
-  // The page that says "check your e-mail" takes the focus on its heading, so a screen reader lands on it.
   useEffect(() => {
     heading.current?.focus();
   }, []);

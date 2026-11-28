@@ -39,7 +39,6 @@ describe('useRailTooltip (UI-04b)', () => {
     it('useRailTooltip_AFinger_ShowsNothing', () => {
       render(<Icon />);
 
-      // A tap has no hover: the name would only flash while the page opens.
       fireEvent.pointerEnter(button(), { pointerType: 'touch' });
 
       expect(tooltip()).not.toBeInTheDocument();
@@ -89,7 +88,6 @@ describe('useRailTooltip (UI-04b)', () => {
       const target = button();
       vi.spyOn(target, 'matches').mockReturnValue(false);
 
-      // A click that gives a button the focus does not call for a tooltip.
       act(() => target.focus());
 
       expect(tooltip()).not.toBeInTheDocument();
@@ -114,7 +112,6 @@ describe('useRailTooltip (UI-04b)', () => {
       tabTo(button());
 
       const shown = screen.getByTestId('rail-tooltip');
-      // In the body: the menu scrolls and clips what overflows it. The icon already has its name for a screen reader.
       expect(shown.parentElement).toBe(document.body);
       expect(screen.getByTestId('rail')).not.toContainElement(shown);
       expect(shown).toHaveAttribute('aria-hidden', 'true');
@@ -128,7 +125,6 @@ describe('useRailTooltip (UI-04b)', () => {
 
       tabTo(button());
 
-      // 8 px from the edge of the sidebar (not of the icon, which has the padding of the menu around it); centered on the icon.
       expect(screen.getByTestId('rail-tooltip')).toHaveStyle({ top: '120px', left: '80px' });
     });
 
@@ -137,7 +133,6 @@ describe('useRailTooltip (UI-04b)', () => {
       tabTo(button());
       expect(tooltip()).toBeInTheDocument();
 
-      // The menu scrolls inside the sidebar: a scroll event does not bubble, the listener is on the capture phase.
       fireEvent.scroll(screen.getByTestId('rail'));
 
       expect(tooltip()).not.toBeInTheDocument();

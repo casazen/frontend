@@ -1,8 +1,3 @@
-/**
- * Neighbourhood maps (DB-19a): `localMapSvg` draws a stylised 4:3 map of the area around a house (countryside, coast or historic
- * centre) from a seed, and `localPlace` puts a point of interest («east, 400 m») where the map shows land. The maps are schemes
- * generated from the seed, not the real streets: the page that shows them says so.
- */
 import type { Pt } from '../geometry';
 import { DEG, hashStr, num } from '../numeric';
 import { nextPrefix } from '../style';
@@ -18,18 +13,14 @@ export type { MapLabel };
 
 export interface LocalSpec {
   kind: LocalKind;
-  /** Any stable text or number (the slug of the house): the same seed always gives the same map. */
   seed?: string | number;
-  /** Width of the drawn area in metres: it converts the metres of `localPlace` into map units. */
   spanM?: number;
-  /** Compass bearing of the sea on a `coast` map (0 = north, 90 = east, the default). */
   seaBearingDeg?: number;
 }
 
 interface ModelBase {
   isLand: (x: number, y: number) => boolean;
   inLandMargin: (x: number, y: number) => boolean;
-  /** Rotation applied to the drawing, in degrees (only coast maps with a sea direction other than east). */
   rotDeg: number;
 }
 type LocalModel =
@@ -37,7 +28,6 @@ type LocalModel =
   | (ModelBase & { kind: 'historic'; d: HistoricData })
   | (ModelBase & { kind: 'country'; d: CountryData });
 
-/** Applies a function to every `[x, y]` pair of a data structure (arrays of two numbers are points, other numbers stay as they are). */
 function mapPoints<T>(o: T, f: (p: Pt) => Pt): T {
   const walk = (v: unknown): unknown => {
     if (Array.isArray(v)) {
@@ -54,7 +44,6 @@ function mapPoints<T>(o: T, f: (p: Pt) => Pt): T {
   return walk(o) as T;
 }
 
-/** Rotation of the drawing that puts the sea (east in the generated drawing) at the given compass bearing; 0 when it is already there. */
 function seaRotation(bearingDeg: number | undefined): number {
   if (bearingDeg == null || !Number.isFinite(bearingDeg)) return 0;
   const r = Math.round((((bearingDeg - 90) % 360) + 540) % 360) - 180;
@@ -63,7 +52,6 @@ function seaRotation(bearingDeg: number | undefined): number {
 
 const LOCAL_CACHE = new Map<string, LocalModel>();
 
-/** Model of a map (already flipped and rotated from the seed): the data is generated once. */
 function localModel(kind: string, seed: string, seaBearingDeg: number | undefined): LocalModel {
   const k: LocalKind = (LOCAL_KINDS as readonly string[]).includes(kind) ? (kind as LocalKind) : 'country';
   const rotDeg = k === 'coast' ? seaRotation(seaBearingDeg) : 0;
@@ -71,7 +59,7 @@ function localModel(kind: string, seed: string, seaBearingDeg: number | undefine
   const hit = LOCAL_CACHE.get(key);
   if (hit) return hit;
   const h = hashStr(`flip|${k}|${seed}`);
-  const fx = (h & 1) === 1 && k !== 'coast'; // the Adriatic is always east
+  const fx = (h & 1) === 1 && k !== 'coast';
   const fy = (h & 2) === 2;
   const flip = (p: Pt): Pt => [fx ? UW - p[0] : p[0], fy ? UH - p[1] : p[1]];
   const cosR = Math.cos(rotDeg * DEG);
@@ -105,10 +93,6 @@ function drawModel(m: LocalModel, c: ReturnType<typeof localCtx>, id: string): D
   return drawCountry(m.d, c, id);
 }
 
-/**
- * Map of the neighbourhood (stylised, 4:3): viewBox `0 0 width width*0.75`; the house is at 50 %, 50 %.
- * labels: [{ text, x, y }] with x, y in percent of the frame (light halo, like the regional maps).
- */
 export function localMapSvg(spec: LocalSpec & { width?: number; labels?: readonly MapLabel[] }): string {
   const { kind, seed = 1, width = 800, labels = [], seaBearingDeg } = spec;
   const m = localModel(kind, String(seed), seaBearingDeg);
@@ -123,28 +107,21 @@ export function localMapSvg(spec: LocalSpec & { width?: number; labels?: readonl
   return `<svg class="sm-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${num(c.W)} ${num(c.H, 2)}" preserveAspectRatio="xMidYMid slice" role="presentation" aria-hidden="true" focusable="false"><defs>${defs.join('')}</defs>${out.join('')}</svg>`;
 }
 
-/**
- * Position (percent of the frame, house at 50, 50) of a point of interest `distM` metres away towards `bearingDeg`
- * (0 = north, 90 = east). The point is snapped: always on land and, when possible, on a street.
- */
 export function localPlace({ kind, seed = 1, spanM = 1500, seaBearingDeg }: LocalSpec, { bearingDeg = 0, distM = 0 }: { bearingDeg?: number; distM?: number } = {}): { x: number; y: number } {
   const m = localModel(kind, String(seed), seaBearingDeg);
-  const unitM = (spanM > 0 ? spanM : 1500) / UW; // metres per drawing unit
+  const unitM = (spanM > 0 ? spanM : 1500) / UW;
   const rad = (Number.isFinite(bearingDeg) ? bearingDeg : 0) * DEG;
   const dist = Number.isFinite(distM) && distM > 0 ? distM : 0;
   const dx = (Math.sin(rad) * dist) / unitM;
   const dy = (-Math.cos(rad) * dist) / unitM;
   if (Math.hypot(dx, dy) < 0.5) return { x: 50, y: 50 };
-  // stays inside the frame (margin of 5 units) along the same direction
   let t = 1;
   if (dx > 0) t = Math.min(t, (95 - 50) / dx);
   else if (dx < 0) t = Math.min(t, (5 - 50) / dx);
   if (dy > 0) t = Math.min(t, (VY1 - 5 - 50) / dy);
   else if (dy < 0) t = Math.min(t, (VY0 + 5 - 50) / dy);
-  // if it falls into the sea, walks back towards the house until there is land with some margin from the cliff
   while (t > 0 && !m.inLandMargin(50 + dx * t, 50 + dy * t)) t -= 0.01;
   let p: Pt = [50 + dx * Math.max(0, t), 50 + dy * Math.max(0, t)];
-  // snaps to the nearest street or alley
   let best: Pt | null = null;
   let bd = 3.4;
   for (const s of m.d.streets) {

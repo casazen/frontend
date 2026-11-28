@@ -17,7 +17,6 @@ import { GuestRegistrationLayers } from './guest-registration-layers';
 import { RefreshFailedNotice } from './guest-registration-notice';
 import { GuestRegistrationReadiness } from './guest-registration-readiness';
 
-/** The 422 of the API for a property whose country the catalog has no regime for. */
 const COUNTRY_NOT_SUPPORTED = 'guest_registration_country_not_supported';
 
 const CERTAINTY_ICONS: Record<StatusTone, LucideIcon> = {
@@ -30,18 +29,10 @@ const CERTAINTY_ICONS: Record<StatusTone, LucideIcon> = {
 
 interface GuestRegistrationCardProps {
   propertyId: string;
-  /**
-   * `page`: the tab of the property, where the link to the official portal opens (in a new tab, only from here). `wizard`: a step in progress, which never sends the host
-   * out of the process: no link leaves it, and what is missing is fixed inside it.
-   */
   variant: 'page' | 'wizard';
-  /** `property.write`: the answer and the structure number can be changed. The API asks the same permission. */
   canWrite: boolean;
-  /** A wizard sends the host to its own step where the municipality is set. */
   onFixMunicipality?: () => void;
-  /** A page opens the form of the property, where the municipality is set. */
   municipalityHref?: string;
-  /** After the structure number is saved (a wizard reads its steps again). */
   onChanged?: () => void;
   className?: string;
 }
@@ -52,10 +43,8 @@ export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMuni
   const query = useGuestRegistration(propertyId);
   const answer = useSetGuestRegistrationOverride(propertyId);
   const [numberSaving, setNumberSaving] = useState(false);
-  // The buttons of the card wait while ANY change of the card is on its way: the answer or the structure number.
   const busy = answer.isPending || numberSaving;
   const numberSaved = () => {
-    // What the property lacks is told by the activation too: it reads its steps again.
     void queryClient.invalidateQueries({ queryKey: ['compliance', 'activation', propertyId] });
     onChanged?.();
   };
@@ -190,7 +179,6 @@ export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMuni
           onSaved={numberSaved}
         />
 
-        {/* The register and the assisted notification are layers over the page of the property: a step of a wizard in progress never opens them (it never leaves the process). */}
         {variant === 'page' ? <GuestRegistrationLayers propertyId={propertyId} regime={regime} effectiveDuty={query.data.effectiveDuty} /> : null}
       </>
     );

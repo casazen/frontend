@@ -53,7 +53,6 @@ describe('the booking in five steps: what is sent to the server', () => {
     expect(body.privacyNoticeVersion).toBe('2026-11-v1');
     expect(body.website).toBe('');
     expect(body.locale).toBe('en');
-    // Trimmed, and only what fits the service: a quantity on a price per job, a supplement the service does not have, are left out.
     expect(body.address).toBe('Via Roma 1');
     expect(body.fullName).toBe('Anna Rossi');
     expect(body.email).toBe('anna@example.test');

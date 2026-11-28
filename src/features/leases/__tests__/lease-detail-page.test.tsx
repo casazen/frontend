@@ -10,7 +10,6 @@ import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { LeaseDetailPage } from '../lease-detail-page';
 import { buildDetail, HTML_FALLBACK, httpError, renderAt } from './lease-test-utils';
 
-// The real leasesApi runs; the panels with their own queries are covered by their own tests.
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('../components/cedolare-decision-panel', () => ({ CedolareDecisionPanel: () => null }));
 vi.mock('../components/rli-checklist', () => ({ RliChecklist: () => null }));
@@ -24,18 +23,13 @@ vi.mock('../components/lease-signing-panel', () => ({ LeaseSigningPanel: () => n
 const get = vi.mocked(axios.get);
 const post = vi.mocked(axios.post);
 
-/** The address the server signs for the guided form (CF-FLOW): the tab of the browser goes to it. */
 const FORM_URL = 'https://form.example.test/?leaseId=lease-1&signature=abc123';
 
-/** The sync of the lease with its practice (CF-DONE): asked by itself when the sheet of a lease of the guided service opens. */
 const SYNC_URL = '/leases/lease-1/concordatofacile/sync';
-/** What the server answers to it while the lease waits for its contract. */
 const WAITING = { state: 'WaitingForContract', leaseStatus: 'Draft' };
 
-/** Every call of `post` that is not the sync: the ones the gestures of the person make. */
 const gestures = () => post.mock.calls.filter(([url]) => url !== SYNC_URL);
 
-/** `post`: the sync answers as `syncAnswer` says (the lease waits for its contract), any other call as `gesture` says (nothing by default). */
 function mockPost(
   gesture: (url: string) => Promise<unknown> = () => Promise.resolve(undefined),
   syncAnswer: () => Promise<unknown> = () => Promise.resolve({ data: WAITING }),
@@ -49,13 +43,10 @@ function mockLease(response: () => Promise<unknown>) {
   );
 }
 
-// The data of the lease are in the tab `dati`; the sheet opens on the guide (LR-GUIDE-1), whose tools and advice have their own tests.
 function renderPage(search = '') {
   return renderAt(`/app/long-rent/leases/lease-1${search}`, '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
 }
 
-// The same page with the backend flags a person would have (all off without a provider, as in the tests above), and the page of
-// payment as a second route: the main button of the sheet leads there when the access is missing.
 function renderPageWithFlags(search: string, flags: Partial<FeatureFlags>) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const value = { flags: { ...DEFAULT_FEATURE_FLAGS, ...flags }, isLoading: false };
@@ -76,9 +67,7 @@ function renderPageWithFlags(search: string, flags: Partial<FeatureFlags>) {
 /** What the server says about the access to the guided form: none, with the privacy notice accepted, unless `overrides` say otherwise. */
 const accessOf = (overrides: object = {}) => ({ hasAccess: false, source: null, giftAvailable: false, giftConsumed: false, privacyAccepted: true, ...overrides });
 const ACTIVE = { hasAccess: true, source: 'payment' };
-/** The form was opened before (the link was made on this day). */
 const OPENED = { linkOpenedAt: '2026-10-24T09:00:00Z' };
-/** The status of the practices of a lease with none yet (a date in the past: nothing asks again). */
 const NO_PRACTICES = { practices: [], lastCheckedAt: '2020-01-01T00:00:00Z', nextUpdateAt: '2020-01-01T00:15:00Z', stale: false, available: true };
 const PRACTICE = { practiceId: 'P-0123456789abcdef', status: 'InProgress', statusChangedAt: '2026-10-24T12:00:00Z', comuneDiffersFromLink: false };
 
@@ -104,10 +93,8 @@ function mockLeaseWithService(
   });
 }
 
-/** The status of a practice that is over: the service says it is registered. */
 const CONCLUDED_PRACTICE = () => Promise.resolve({ data: { ...NO_PRACTICES, practices: [{ ...PRACTICE, status: 'Registered' }] } });
 
-/** The contract file that was uploaded was read and filled in a field: what the server says of it (names and fates, never a value). */
 const READ_CONTRACT = {
   state: 'Done',
   documents: [{ id: 'doc-1', fileName: 'contratto.pdf', status: 'Completed', error: null }],
@@ -116,7 +103,6 @@ const READ_CONTRACT = {
   contractDocumentId: 'doc-1',
 };
 
-/** A draft the server marked as the service's after reading its documents: it has dates and a rent now, and no longer looks like a draft with only its property. */
 const readDraft = (): Parameters<typeof buildDetail>[0] => ({
   ...partnerDraft(),
   origin: 'Imported',
@@ -126,14 +112,12 @@ const readDraft = (): Parameters<typeof buildDetail>[0] => ({
   monthlyRent: 595,
 });
 
-/** The main button of the block of the draft, once the server has said what it needs to (a button that is working is not pressed yet). */
 async function mainButton() {
   const button = await screen.findByTestId('lease-partner-proceed');
   await waitFor(() => expect(button).not.toHaveAttribute('aria-busy'));
   return button;
 }
 
-/** A draft saved with only its property for ConcordatoFacile: the API keeps 1 January 3000 and a rent of 0 until they are typed. */
 const partnerDraft = (): Parameters<typeof buildDetail>[0] => ({
   contractType: 'Concordato',
   startDate: '3000-01-01T00:00:00Z',
@@ -175,11 +159,9 @@ describe('LeaseDetailPage', () => {
     expect(within(landlord).getByText(/\*{12}501Z/)).toBeInTheDocument();
     expect(within(landlord).getByText('m***@example.com')).toBeInTheDocument();
     expect(within(parties[1]).getByText('Conduttore')).toBeInTheDocument();
-    // The title is the tenant, the line under it says what the lease is about.
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Giulia Verdi');
     expect(within(screen.getByTestId('page-header')).getByText('Casa Trastevere · Roma')).toBeInTheDocument();
     expect(within(screen.getByTestId('lease-facts')).getByText(/950,00\s€\/mese/)).toBeInTheDocument();
-    // History with translated event types, never the raw enum value (A7-26), the latest first, with who did it.
     expect(screen.getByTestId('lease-timeline')).not.toHaveAttribute('open');
     fireEvent.click(screen.getByText(i18n.t('leases.timeline')));
     const events = within(screen.getByTestId('lease-timeline')).getAllByRole('listitem');
@@ -203,7 +185,6 @@ describe('LeaseDetailPage', () => {
     expect(screen.getByText('Rejected')).toBeInTheDocument();
   });
 
-  /** A canone concordato lease whose range the server computed at its creation: indicative with Partial data, the rent outside it. */
   const concordatoOutOfRange = () =>
     buildDetail({
       fiscalRegime: 'CanoneConcordato',
@@ -243,12 +224,10 @@ describe('LeaseDetailPage', () => {
     });
 
   it('render_ConcordatoLeaseWithIndicativeRange_TheGuideAnswersInOneSentenceAndTheWindowShowsTheServerRangeWithWarning', async () => {
-    // LT-10 (A7-12, A7-23): the range the API computed at creation, indicative with Partial data, rent outside it.
     mockLease(() => Promise.resolve({ data: concordatoOutOfRange() }));
 
     renderPage('?tab=guida');
 
-    // The tool says its answer without being opened (LR-GUIDE-1): the rent is above the limit of the agreement.
     expect(await screen.findByTestId('guide-tool-rent-summary')).toHaveTextContent(/supera il limite dell'accordo/);
     expect(screen.getByTestId('guide-tool-rent-summary')).toHaveTextContent(/460,41/);
     fireEvent.click(screen.getByTestId('guide-tool-rent-open'));
@@ -268,15 +247,13 @@ describe('LeaseDetailPage', () => {
 
     expect(await screen.findByTestId('lease-type-regime')).toHaveTextContent('Canone concordato (3+2) · Regime ordinario');
     expect(screen.getByText(/2\.?700,00/)).toBeInTheDocument();
-    // The comparison of the regimes, the range of the agreement, the guidance and the IMU communication are tools of the guide now.
     expect(screen.queryByTestId('concordato-assessment')).not.toBeInTheDocument();
     expect(screen.queryByTestId('advisory-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('guide-tool-dialog')).not.toBeInTheDocument();
   });
 
   it('render_LiberoLease_TheGuideOffersTheRegimeToolAndNotTheRangeOfTheAgreement', async () => {
-    // A7-24: the range of the agreement is for a canone concordato contract only.
-    mockLease(() => Promise.resolve({ data: buildDetail() })); // contractType: 'Libero' by default
+    mockLease(() => Promise.resolve({ data: buildDetail() }));
 
     renderPage('?tab=guida');
 
@@ -292,13 +269,11 @@ describe('LeaseDetailPage', () => {
     expect(screen.queryByTestId('lease-guide')).not.toBeInTheDocument();
     unmount();
 
-    // An address of the old page (`?tab=cronologia`) leads to the tab that holds what it showed.
     const { unmount: unmountOld } = renderPage('?tab=cronologia');
     expect(await screen.findAllByTestId('lease-party')).toHaveLength(2);
     expect(screen.getByTestId('lease-timeline')).toHaveAttribute('open');
     unmountOld();
 
-    // The jobs asked of the suppliers had a tab here: it was taken away, an address that still names it opens the contract data.
     renderPage('?tab=interventi');
     expect(await screen.findByTestId('lease-tab-dati')).toHaveAttribute('aria-selected', 'true');
     expect(screen.queryByTestId('lease-guide')).not.toBeInTheDocument();
@@ -328,7 +303,6 @@ describe('LeaseDetailPage', () => {
     ]);
     expect(screen.queryByTestId('lease-tab-interventi')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-requests')).not.toBeInTheDocument();
-    // The menu «⋯» offers the ways to somewhere else; «Richiedi intervento» is not one of them any more.
     fireEvent.keyDown(screen.getByTestId('page-header-more'), { key: 'Enter' });
     expect(await screen.findByTestId('lease-menu-documents')).toBeInTheDocument();
     expect(screen.queryByTestId('lease-menu-request-job')).not.toBeInTheDocument();
@@ -346,7 +320,6 @@ describe('LeaseDetailPage', () => {
   });
 
   it('render_ConcordatoDraftForThePartner_WaitsForItsContractWithoutDatesOrRentOfTheDraft', async () => {
-    // A draft saved with only its property for ConcordatoFacile: the API keeps 1 January 3000 and a rent of 0 until they are typed.
     mockLease(() =>
       Promise.resolve({
         data: buildDetail({
@@ -365,11 +338,9 @@ describe('LeaseDetailPage', () => {
 
     const notice = await screen.findByTestId('lease-partner-draft');
     expect(notice).toHaveTextContent(i18n.t('leases.partnerDraft.title'));
-    // The service is off (the flags default): the guided form is not available yet, so the button waits and the way to the documents stays.
     expect(screen.getByTestId('lease-partner-proceed')).toBeDisabled();
     expect(within(notice).getByText(i18n.t('leases.partnerDraft.soon'))).toBeInTheDocument();
     expect(screen.getByTestId('lease-partner-upload')).toHaveAttribute('href', '/app/long-rent/documents/upload?leaseId=lease-1');
-    // CF-FLOW: nothing to give anyone, and no name of the supplier (nor «partner») in the block.
     expect(screen.queryByDisplayValue('lease-1')).not.toBeInTheDocument();
     expect(notice.textContent).not.toMatch(/partner|concordato\s*facile/i);
     expect(screen.getByTestId('lease-facts')).toHaveTextContent('Canone da definire');
@@ -377,8 +348,6 @@ describe('LeaseDetailPage', () => {
     expect(screen.queryByText(/0,00\s€/)).not.toBeInTheDocument();
   });
 
-  // CF-FIX: the switch of the service. CF-FLOW: the sheet of the draft is the centre — the privacy notice, the way to the payment or
-  // straight into the form, and once the form is sent the status of the practice.
   it('render_ConcordatoDraftForThePartner_NoAccess_TheBoxOfThePrivacyGatesTheButton_ThenItAcceptsAndGoesToThePayment', async () => {
     mockLeaseWithService(partnerDraft(), { access: () => accessOf({ privacyAccepted: false }) });
     mockPost(() => Promise.resolve({ data: accessOf({ privacyAccepted: true }) }));
@@ -391,7 +360,6 @@ describe('LeaseDetailPage', () => {
     expect(proceed).toHaveTextContent(i18n.t('leases.partnerDraft.proceed'));
     expect(proceed).toBeDisabled();
     expect(screen.getByText(i18n.t('leases.partnerDraft.ready'))).toBeInTheDocument();
-    // Nothing for the person to communicate, and the status is not read where there is no access.
     expect(screen.queryByDisplayValue('lease-1')).not.toBeInTheDocument();
     expect(get.mock.calls.some(([url]) => String(url).endsWith('/concordatofacile/status'))).toBe(false);
 
@@ -399,7 +367,6 @@ describe('LeaseDetailPage', () => {
     expect(proceed).toBeEnabled();
     fireEvent.click(proceed);
 
-    // The acceptance is recorded, then the person goes to the page of payment: no link of the form is made without the access.
     expect(await screen.findByTestId('payment-page-stub')).toBeInTheDocument();
     expect(gestures()).toHaveLength(1);
     expect(gestures()[0][0]).toBe('/leases/lease-1/concordatofacile/privacy-acceptance');
@@ -415,7 +382,6 @@ describe('LeaseDetailPage', () => {
     renderPageWithFlags('?tab=dati', { concordatoFacile: true });
 
     const proceed = await mainButton();
-    // The privacy notice was accepted: no box. The form was never opened: the status is not read.
     expect(screen.queryByTestId('lease-partner-privacy')).not.toBeInTheDocument();
     expect(get.mock.calls.some(([url]) => String(url).endsWith('/concordatofacile/status'))).toBe(false);
     expect(screen.getByTestId('lease-partner-upload')).toHaveAttribute('href', '/app/long-rent/documents/upload?leaseId=lease-1');
@@ -442,22 +408,16 @@ describe('LeaseDetailPage', () => {
     const status = await screen.findByTestId('lease-partner-status');
     expect(within(status).getByTestId('cf-status-badge')).toHaveAttribute('data-status', 'InProgress');
     expect(status).toHaveTextContent(/Aggiornato il 24\/10\/2026/);
-    // The number of the practice, discreet, for whoever has to find it (CF-END).
     expect(screen.getByTestId('lease-partner-practice')).toHaveTextContent('Pratica P-0123456789abcdef');
     expect(screen.getByText(i18n.t('guidedContract.sent'))).toBeInTheDocument();
-    // The municipality the person chose in the form is not the one of the house: said, as the status always did.
     expect(screen.getByTestId('lease-partner-comune')).toHaveTextContent(i18n.t('guidedContract.comuneDiffers'));
-    // A second visit to the form after the sending would make a second practice: nothing in the block opens it.
     expect(screen.queryByTestId('lease-partner-proceed')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-partner-privacy')).not.toBeInTheDocument();
     expect(screen.getByTestId('lease-partner-upload')).toBeInTheDocument();
     expect(gestures()).toHaveLength(0);
-    // The practice is with the supplier, not waiting for the person: nothing sends them to their mailbox.
     expect(screen.queryByTestId('lease-partner-hint')).not.toBeInTheDocument();
   });
 
-  // The two statuses in which the practice waits for the person (a request e-mailed to them, or stopped for want of an answer) say so:
-  // the sheet was the only place where they would look and it told them nothing to do. The words are the product's, not the supplier's.
   it.each(['AwaitingUser', 'Suspended'] as const)('render_ConcordatoDraftForThePartner_Practice%s_WaitsForThePerson_SaysToLookInTheMailbox', async (practiceStatus) => {
     mockLeaseWithService(partnerDraft(), {
       access: () => accessOf({ ...ACTIVE, ...OPENED }),
@@ -504,7 +464,6 @@ describe('LeaseDetailPage', () => {
     expect(proceed).toHaveTextContent(i18n.t('guidedContract.fillAgain'));
     expect(proceed).not.toHaveTextContent(i18n.t('guidedContract.resume'));
     expect(screen.queryByTestId('lease-partner-status')).not.toBeInTheDocument();
-    // CF-END: what became of the practice is said, with its number, before the button that starts again.
     const closed = screen.getByTestId('lease-partner-closed');
     expect(closed).toHaveTextContent('Pratica P-0123456789abcdef');
     expect(closed).toHaveTextContent('La pratica è stata ritirata.');
@@ -527,7 +486,6 @@ describe('LeaseDetailPage', () => {
     const closed = screen.getByTestId('lease-partner-closed');
     expect(closed).toHaveTextContent(sentence);
     expect(closed).toHaveTextContent('Pratica P-0123456789abcdef');
-    // No name of the supplier, no «partner»: the words are the product's.
     expect(screen.getByTestId('lease-partner-draft').textContent).not.toMatch(/partner|concordato\s*facile/i);
   });
 
@@ -553,7 +511,7 @@ describe('LeaseDetailPage', () => {
     let accepted = true;
     mockLeaseWithService(partnerDraft(), { access: () => accessOf({ ...ACTIVE, privacyAccepted: accepted }) });
     mockPost(() => {
-      accepted = false; // the server does not have the notice: the access, read again, says so
+      accepted = false;
       return Promise.reject(httpError(409, { code: 'concordatofacile_privacy_not_accepted' }));
     });
 
@@ -575,7 +533,6 @@ describe('LeaseDetailPage', () => {
     expect(await screen.findByTestId('lease-partner-sentence')).toHaveTextContent(i18n.t('guidedContract.concluded'));
     expect(within(screen.getByTestId('lease-partner-status')).getByTestId('cf-status-badge')).toHaveAttribute('data-status', 'Registered');
     await waitFor(() => expect(post.mock.calls.filter(([url]) => url === SYNC_URL)).toHaveLength(1));
-    // No way into the wizard of the draft, and no gesture of the person: only the sync, asked by the sheet itself.
     expect(screen.queryByTestId('lease-continue-draft')).not.toBeInTheDocument();
     expect(gestures()).toHaveLength(0);
     expect(screen.getByTestId('lease-partner-upload')).toBeInTheDocument();
@@ -608,7 +565,6 @@ describe('LeaseDetailPage', () => {
   });
 
   it('render_ServiceDraftWithItsDataRead_ShowsTheCardOfThePractice_NotTheWayIntoTheWizard', async () => {
-    // The server read the documents into the draft: it has dates and a rent and no longer looks like a draft with only its property.
     mockLeaseWithService(readDraft(), {
       access: () => accessOf({ ...ACTIVE, ...OPENED }),
       status: CONCLUDED_PRACTICE,
@@ -620,7 +576,6 @@ describe('LeaseDetailPage', () => {
     expect(await screen.findByTestId('lease-partner-status')).toBeInTheDocument();
     expect(screen.getByTestId('lease-partner-draft')).toBeInTheDocument();
     expect(screen.queryByTestId('lease-continue-draft')).not.toBeInTheDocument();
-    // The step «Completa la bozza» is not laid over it either: the card is its one voice.
     expect(screen.queryByTestId('lease-now')).not.toBeInTheDocument();
   });
 
@@ -634,14 +589,11 @@ describe('LeaseDetailPage', () => {
     renderPageWithFlags('?tab=dati', { concordatoFacile: true });
 
     const panel = await screen.findByTestId('cf-import-panel');
-    // The practice stays in view when the contract arrives; one highlighted block, never two.
     expect(await within(panel).findByTestId('lease-partner-status')).toBeInTheDocument();
     expect(within(panel).getByTestId('lease-partner-practice')).toHaveTextContent('Pratica P-0123456789abcdef');
     await waitFor(() => expect(within(panel).getByTestId('cf-import-description')).toHaveTextContent(i18n.t(key)));
     expect(screen.queryByTestId('lease-partner-draft')).not.toBeInTheDocument();
     expect(panel.textContent).not.toMatch(/partner|concordato\s*facile/i);
-    // Waiting for the practice, the button is only the way to do it by hand (quiet) and there is nothing to check yet; with data missing the
-    // button is the thing to do (main) and the invitation to check what was read and complete the rest stays.
     expect(within(panel).getByTestId('cf-import-open')).toHaveClass(state === 'WaitingForSignature' ? 'border-input' : 'bg-primary');
     expect(within(panel).queryByTestId('lease-reading-done') !== null).toBe(state === 'ContractNeedsData');
   });
@@ -657,7 +609,7 @@ describe('LeaseDetailPage', () => {
       return Promise.reject(httpError(404));
     });
     mockPost(undefined, () => {
-      registered = true; // the server read the documents, imported the contract and declared the registration
+      registered = true;
       return Promise.resolve({ data: { state: 'Completed', leaseStatus: 'Registered' } });
     });
 
@@ -666,7 +618,6 @@ describe('LeaseDetailPage', () => {
     await waitFor(() => expect(screen.getByTestId('lease-status-toggle')).toHaveTextContent('Registrato'));
     expect(screen.queryByTestId('lease-partner-draft')).not.toBeInTheDocument();
     expect(screen.queryByTestId('cf-import-panel')).not.toBeInTheDocument();
-    // Registered, the sheet follows nothing any more: the sync is not asked again.
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(post.mock.calls.filter(([url]) => url === SYNC_URL)).toHaveLength(1);
   });
@@ -694,7 +645,6 @@ describe('LeaseDetailPage', () => {
   });
 
   it('render_ConcordatoLeaseNotMadeForThePartner_ServiceOn_OffersNoWayIntoTheService', async () => {
-    // CF-DOC-FU4: a canone concordato that is not the draft made for the partner (made in CasaZen, imported, signed) has no entrance to it.
     mockLeaseWithService({ contractType: 'Concordato' });
 
     renderPageWithFlags('?tab=dati', { concordatoFacile: true });
@@ -703,7 +653,6 @@ describe('LeaseDetailPage', () => {
     expect(screen.queryByTestId('cf-entry-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-partner-draft')).not.toBeInTheDocument();
     expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
-    // CF-DONE: nor is the server asked to move it on with a practice it has none of.
     expect(post).not.toHaveBeenCalled();
   });
 

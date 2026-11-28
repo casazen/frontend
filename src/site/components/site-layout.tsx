@@ -12,9 +12,7 @@ import { inviteHref } from '../site-links';
 interface SiteLayoutProps {
   current: SitePageId;
   legal: SiteLegal;
-  /** Year of the copyright line, fixed by the build so the static HTML and the browser render the same text. */
   year: number;
-  /** The "Accedi" link of the header: not on the production site (`src/config/login-entry.ts`). */
   showLogin: boolean;
   children: ReactNode;
 }
@@ -27,7 +25,6 @@ const NAV: { id: SitePageId; key: string }[] = [
   { id: 'about', key: 'site.nav.about' },
 ];
 
-/** The audiences, under the "Solutions" menu of the header. */
 const SOLUTIONS: { id: SitePageId; key: string }[] = [
   { id: 'shortRent', key: 'site.nav.shortRent' },
   { id: 'longRent', key: 'site.nav.longRent' },
@@ -36,16 +33,13 @@ const SOLUTIONS: { id: SitePageId; key: string }[] = [
 
 const FOOTER_LINK = 'text-ink-200 hover:text-white hover:underline underline-offset-4';
 
-/** Header, main area and footer of every page of the public site (SEO-VETRINA). Plain links: no client-side router. */
 export function SiteLayout({ current, legal, year, showLogin, children }: SiteLayoutProps) {
   const { t, i18n } = useTranslation();
-  // The home and rental pages offer a guided first task and the invitation in their own content.
   const offersTour = current === 'home' || current === 'shortRent' || current === 'longRent';
   const inviteLink = offersTour ? null : inviteHref(legal.email, t('site.invite.subject'));
 
   const switchLanguage = () => {
     const next = i18n.language === 'en' ? 'it' : 'en';
-    // Same key as the app: the language chosen here is the one the app opens with, and the reverse.
     localStorage.setItem(LOCALE_STORAGE_KEY, next);
     document.documentElement.lang = next;
     void i18n.changeLanguage(next);
@@ -60,8 +54,6 @@ export function SiteLayout({ current, legal, year, showLogin, children }: SiteLa
           </a>
           <nav aria-label={t('site.nav.main')} className="order-3 w-full md:order-none md:w-auto md:flex-1">
             <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium sm:gap-x-6 sm:text-[0.95rem]">
-              {/* Four entries, like the headers of the tools the hosts already know: the audiences go under one menu. The
-                  menu is a native <details>: it works in the prerendered HTML, before any script runs. */}
               <li className="relative">
                 <details className="group">
                   <summary
@@ -107,7 +99,6 @@ export function SiteLayout({ current, legal, year, showLogin, children }: SiteLa
                   {t('site.nav.guides')}
                 </a>
               </li>
-              {/* The search of homes is a page of the app (not prerendered): a plain link, like the guides. */}
               <li>
                 <a href={SEARCH_PATH} className="border-b-2 border-transparent pb-1 text-ink-500 hover:text-ink-800">
                   {t('site.nav.search')}

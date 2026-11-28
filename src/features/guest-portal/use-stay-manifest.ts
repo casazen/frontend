@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 
-/** The browser can pin this stay. The manifest is assembled in the page so there is no request for a manifest carrying the token. */
 export function useStayManifest(token: string, name: string | undefined, themeColor: string) {
   useEffect(() => {
     if (!name || !crypto.subtle) return;

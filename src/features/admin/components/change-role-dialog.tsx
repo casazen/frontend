@@ -36,8 +36,6 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
   const { data, isLoading, isFetching, isError, error, refetch } = useUserRoles(user?.id ?? '', open && !!user);
   const { mutate: updateRoles, isPending } = useUpdateUserRoles();
 
-  // Seed the checkboxes from the fetched roles once per user/open, without fighting further user clicks. Adjusting
-  // state while rendering (not in a useEffect) — see https://react.dev/learn/you-might-not-need-an-effect.
   if (!open) {
     if (initializedFor !== null) setInitializedFor(null);
   } else if (data && !isFetching && initializedFor !== user?.id) {
@@ -67,7 +65,6 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
     );
   }
 
-  // Until the fresh roles of this user are seeded, a save would send a stale (cached) role set.
   const seeding = !isError && initializedFor !== user?.id;
   const ready = !isLoading && !isError && !seeding;
 

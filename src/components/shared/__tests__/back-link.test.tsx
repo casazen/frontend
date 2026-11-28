@@ -29,7 +29,6 @@ describe('BackLink (UI-05)', () => {
 
     const link = screen.getByRole('link', { name: 'Torna a Prenotazioni' });
     expect(link).toHaveAttribute('href', '/app/short-rent/bookings');
-    // What a sighted user reads is part of the accessible name (label in name).
     expect(link).toHaveTextContent('Prenotazioni');
   });
 
@@ -44,7 +43,6 @@ describe('BackLink (UI-05)', () => {
     renderLink();
 
     const link = screen.getByTestId('back-link');
-    // The breadcrumb takes its place from `md`.
     expect(link).toHaveClass('md:hidden');
     expect(link).toHaveClass('min-h-11');
     expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');

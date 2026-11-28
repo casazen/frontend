@@ -12,17 +12,13 @@ import type { LeaseSummary, Property, PropertyDocumentDto } from '@/types';
 import { LongRentPropertiesPage } from '../long-rent-properties-page';
 import { LongRentPropertyDetailPage } from '../long-rent-property-detail-page';
 
-// The first-steps guide has its own tests and reads other endpoints.
 vi.mock('@/features/onboarding/components/long-rent-guide', () => ({ LongRentGuide: () => null }));
-// The accounting section has its own API and tests; this file checks which property panel is mounted.
 vi.mock('@/features/condominium/condominium-management', () => ({
   CondominiumManagement: ({ propertyId }: { propertyId: string }) => <section data-testid="condominium-management" data-property-id={propertyId} />,
 }));
 vi.mock('@/queries/use-properties');
 vi.mock('@/queries/use-leases');
-// What the server adds (the APE, the cadastral data, "then free"): its own endpoint, tested on the server; here the page works without it.
 vi.mock('@/queries/use-long-rent-properties');
-// The list asks who may write and read (the page is always inside the workspace) and whose saved views these are.
 const access = vi.hoisted(() => ({ readLeases: true, createLease: true }));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({
@@ -31,9 +27,7 @@ vi.mock('@/hooks/use-workspace', () => ({
   }),
 }));
 vi.mock('@/hooks/use-list-views-scope', () => ({ useListViewsScope: () => null }));
-// The row of the scheduled change of mode reads its own endpoint (tests: mode-entry-points.test.tsx).
 vi.mock('@/features/properties/mode/components/scheduled-change-notice', () => ({ ScheduledChangeNotice: () => null }));
-// Covered by its own tests (long-rent-service-requests.test.tsx): here only the APE and the property core.
 vi.mock('@/features/service-requests/components/long-rent-service-requests', () => ({
   LongRentServiceRequests: ({ propertyId }: { propertyId: string }) => <div data-testid={`long-rent-requests-${propertyId}`} />,
 }));
@@ -187,7 +181,6 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
 
     expect(screen.getByTestId('long-rent-ape-status')).toHaveTextContent(i18n.t('longRentProperties.detail.apeMissing'));
     expect(screen.getByRole('button', { name: i18n.t('shared.documentUpload.uploadDocument') })).toBeInTheDocument();
-    // A free property: the highlighted block offers the lease to make, whatever the tab.
     expect(screen.getByRole('link', { name: i18n.t('longRentProperties.list.actions.createLease') })).toHaveAttribute(
       'href',
       '/app/long-rent/leases/new?propertyId=prop-1',
@@ -199,7 +192,6 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
 
     const view = renderAt('/app/long-rent/properties/prop-1');
 
-    // The first tab is the contracts: nothing of the others is on the page until its tab is opened.
     const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
     expect(tabs).toEqual([
       i18n.t('longRentProperties.detail.tabs.contracts'),
@@ -225,7 +217,6 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
     expect(screen.getByTestId('long-rent-property-maintenance-empty')).toBeInTheDocument();
     cleanup();
 
-    // Its supplier requests are for the property (SU-07, D2).
     renderAt('/app/long-rent/properties/prop-1?tab=requests');
     expect(screen.getByTestId('long-rent-requests-prop-1')).toBeInTheDocument();
   });
@@ -256,7 +247,6 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
 
   it('LongRentPropertyDetailPage_WithoutThePermissionToReadLeases_StillOpensThePropertyExpenses', () => {
     access.readLeases = false;
-    // TanStack keeps data on disabled queries. A downgrade must also hide previously cached tenant details.
     const cachedLease = {
       id: 'old-lease',
       propertyId: 'prop-1',
@@ -272,7 +262,6 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
     );
     mockDetail(query<PropertyDocumentDto[]>({ data: [] }));
 
-    // Not even by the address: a `?tab=contracts` opens the first tab that is there.
     renderAt('/app/long-rent/properties/prop-1?tab=contracts');
 
     expect(screen.queryByText('Nome Riservato')).not.toBeInTheDocument();
@@ -342,7 +331,6 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
     it('LongRentPropertyDetailPage_Header_HasNoPrimaryActionTheNextStepIsInTheBlock', () => {
       renderInTheShell();
 
-      // One focal point: the lease to make is the button of the highlighted block, not of the header.
       expect(screen.queryByTestId('page-header-primary')).not.toBeInTheDocument();
       const block = screen.getByTestId('long-rent-property-next-step');
       expect(within(block).getByRole('link', { name: i18n.t('longRentProperties.list.actions.createLease') })).toHaveAttribute(
@@ -354,7 +342,6 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
 
     it('LongRentPropertyDetailPage_Header_PutsTheEditInTheMenuOfTheThreeDots', async () => {
       renderInTheShell();
-      // Not on the page: a page has one primary action and the rest is in the menu.
       expect(screen.queryByRole('link', { name: i18n.t('longRentProperties.detail.edit') })).not.toBeInTheDocument();
 
       fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });

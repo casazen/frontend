@@ -12,7 +12,6 @@ import { useOrgProperties } from '@/queries/use-public-org';
 import type { PublicPropertyDto } from '@/types';
 import { useFavorites } from './use-favorites';
 
-/** One saved home: its photo, name, place and price from, a link to its page and the way to forget it. */
 function SavedHome({
   site,
   property,
@@ -66,13 +65,6 @@ function SavedHome({
   );
 }
 
-/**
- * The heart of the header with the number of homes saved, and the list of them in a sheet (DB-02b): from the right on a tablet and
- * a desktop, from the bottom on a phone. Each saved home links to its page and has a way to forget it; the list says it is kept on
- * this device ("non serve un account"). It is there only on a site with several homes (with one there is nothing to choose between)
- * and only once the homes are known; a saved home that the site no longer lists is not shown and not counted (it is kept: a home that
- * is paused for a while comes back in the list).
- */
 export function FavoritesMenu({ site }: { site: string }) {
   const { t } = useTranslation();
   const portal = usePortalRootProps();

@@ -8,11 +8,9 @@ export interface AccessCodeStatusItem {
   name: string;
   city: string | null;
   accessCodeSet: boolean;
-  /** When the code was last set or changed (UTC); `null` while there is none. */
   updatedAt: string | null;
 }
 
-/** One page of the properties the caller reaches (`pageSize` is at most 100 on the server). */
 export interface AccessCodeStatusPage {
   items: AccessCodeStatusItem[];
   totalCount: number;
@@ -20,7 +18,6 @@ export interface AccessCodeStatusPage {
   pageSize: number;
 }
 
-/** Body of `POST api/properties/{id}/access-code`: the only place the code travels, and only in this direction. */
 export interface SetAccessCodeRequest {
   code: string;
 }

@@ -29,7 +29,6 @@ export function PropertyEditPage() {
     return <LoadingScreen message={t('property.edit.loading')} className="h-auto flex-1" />;
   }
 
-  // A long-term property is edited in the long-rent section only.
   if (property?.rentalMode === 'Long') return <Navigate to={longRentPropertyEditPath(property.id)} replace />;
 
   if (!property) {

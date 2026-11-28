@@ -54,11 +54,6 @@ function JobRow({ job }: { job: SupplierClientJob }) {
   );
 }
 
-/**
- * One customer in the drawer of the list (SP-16b): what they did together, how to reach them (only once a job of theirs was taken, as the
- * API sends it: nothing here is made up or kept), their latest requests, each one click from its page, and the way to all their requests.
- * The row already holds the figures; the latest requests and the contact come from the detail, with their own loading and error.
- */
 export function ClientDetail({ client }: { client: SupplierClient }) {
   const { t, i18n } = useTranslation();
   const { flags } = useFeatureFlags();
@@ -134,7 +129,6 @@ export function ClientDetail({ client }: { client: SupplierClient }) {
             {t('supplier.clients.requests')}
           </Link>
         </Button>
-        {/* The earnings of this customer, while online payments are on (the page is behind the flag, SP-16b-2). */}
         {showEarnings ? (
           <Button asChild variant="outline" className="min-h-11">
             <Link to={clientEarningsPath(client.id)} data-testid="supplier-client-earnings-link">

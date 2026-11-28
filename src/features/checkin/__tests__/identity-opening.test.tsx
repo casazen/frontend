@@ -30,7 +30,6 @@ configure({ asyncUtilTimeout: 5_000 });
 
 const TOKEN = 'tok-opening';
 
-/** The version of the text of the consent the registry serves: what the opening names and what the consent posts back. */
 const CONSENT_VERSION = 'checkin-biometric-2026-11';
 
 const servedTexts = (version: string = CONSENT_VERSION): CheckInLegalTextsResponse => ({
@@ -38,7 +37,6 @@ const servedTexts = (version: string = CONSENT_VERSION): CheckInLegalTextsRespon
   texts: [{ kind: 'biometric-consent', version, language: 'it', isDraft: false, contentHtml: '<h3>Verifica la tua identità con il viso</h3><p>Il tuo selfie non viene mai salvato.</p>' }],
 });
 
-/** A state of the legacy path: none of the members of the self-hosted flow (an older API sends none either). */
 const state = (overrides: Partial<IdentityVerificationState> = {}): IdentityVerificationState => ({
   step: 'consent',
   result: null,
@@ -54,11 +52,9 @@ const state = (overrides: Partial<IdentityVerificationState> = {}): IdentityVeri
   ...overrides,
 });
 
-/** A state of the self-hosted flow, as the API sends it before the guest has chosen. */
 const selfHosted = (overrides: Partial<IdentityVerificationState> = {}): IdentityVerificationState =>
   state({ selfHosted: true, opened: false, noticeVersion: null, choice: null, formatId: null, guidedRetryAvailable: false, closed: false, outcome: null, ...overrides });
 
-/** A verification that ended with a person: every member the API sends for it. */
 const closedWithAPerson = (overrides: Partial<IdentityVerificationState> = {}): IdentityVerificationState =>
   selfHosted({ step: 'operator', result: 'operator', operatorRequested: true, biometricOffered: false, opened: true, noticeVersion: CONSENT_VERSION, choice: 'assisted', closed: true, outcome: 'operator', ...overrides });
 
@@ -68,7 +64,6 @@ function httpError(status?: number, data?: unknown, code?: string): AxiosError {
   return new AxiosError('Request failed', code ?? AxiosError.ERR_BAD_REQUEST, config, {}, response);
 }
 
-/** The step as the page holds it: the state of the check lives in the hook, and the step can be left and come back to (what the buttons of the page do). */
 function Harness({ initial }: { initial: IdentityVerificationState }) {
   const identity = useIdentityVerification(TOKEN, initial);
   const [onTheStep, setOnTheStep] = useState(true);
@@ -100,7 +95,6 @@ const waitForTheConsentText = () => waitFor(() => expect(screen.getByTestId('che
 const photoFile = () => new File(['document'], 'document.jpg', { type: 'image/jpeg' });
 const pickDocument = () => fireEvent.change(screen.getByTestId('checkin-identity-document-file'), { target: { files: [photoFile()] } });
 
-/** A camera that works: a stream with one track, and a video that has a picture. */
 function stubCamera() {
   const stop = vi.fn();
   const stream = { getTracks: () => [{ stop }] } as unknown as MediaStream;
@@ -138,9 +132,7 @@ describe('identity-opening: the step is opened with the text the guest reads (E7
 
     await waitFor(() => expect(publicCheckinApi.openIdentity).toHaveBeenCalledTimes(1));
     expect(publicCheckinApi.openIdentity).toHaveBeenCalledWith(TOKEN, CONSENT_VERSION);
-    // The text on the screen is the one that was named: the page has no version of its own.
     expect(screen.getByTestId('checkin-consent-text')).toHaveAttribute('data-version', CONSENT_VERSION);
-    // The guest is never kept waiting for it, and nothing of the guest is kept by the page.
     expect(screen.getByTestId('checkin-biometric-decline')).toBeEnabled();
     expect(localStorage.length).toBe(0);
     expect(sessionStorage.length).toBe(0);
@@ -166,7 +158,6 @@ describe('identity-opening: the step is opened with the text the guest reads (E7
     const { renderAgain } = renderStep();
     await waitFor(() => expect(publicCheckinApi.openIdentity).toHaveBeenCalledTimes(1));
 
-    // The same page rendered again, a new language (the texts are asked again), and the step left and come back to: still the one call of this page load.
     renderAgain();
     await act(async () => {
       await i18n.changeLanguage('en');
@@ -186,7 +177,6 @@ describe('identity-opening: the step is opened with the text the guest reads (E7
     await waitForTheConsentText();
 
     expect(publicCheckinApi.openIdentity).not.toHaveBeenCalled();
-    // The legacy answers: the button that agrees, in the primary look, and the one that refuses beside it. No pair of choices, no way to a person under the steps.
     expect(screen.queryByTestId('checkin-identity-choices')).not.toBeInTheDocument();
     expect(screen.getByTestId('checkin-biometric-accept')).toHaveTextContent(i18n.t('checkin.biometric.consent.accept'));
     expect(screen.getByTestId('checkin-biometric-accept').className).toContain('bg-primary');
@@ -200,7 +190,6 @@ describe('identity-opening: the step is opened with the text the guest reads (E7
 
     await waitFor(() => expect(publicCheckinApi.openIdentity).toHaveBeenCalledTimes(1));
     await waitForTheConsentText();
-    // The answer to the consent opens the step too: no sentence of failure for a call the guest did not make, and both ways stay open.
     expect(screen.queryByTestId('checkin-identity-problem')).not.toBeInTheDocument();
     expect(screen.getByTestId('checkin-biometric-accept')).toBeEnabled();
     expect(screen.getByTestId('checkin-biometric-decline')).toBeEnabled();
@@ -223,7 +212,6 @@ describe('identity-opening: the step is opened with the text the guest reads (E7
     await waitFor(() => expect(publicCheckinApi.openIdentity).toHaveBeenCalledTimes(2));
     expect(vi.mocked(publicCheckinApi.openIdentity).mock.calls.map(([, version]) => version)).toEqual(['checkin-biometric-2026-10', 'checkin-biometric-2026-11']);
     expect(publicCheckinApi.getLegalTexts).toHaveBeenCalledTimes(2);
-    // The guest reads and agrees to the text in force.
     await waitFor(() => expect(screen.getByTestId('checkin-consent-text')).toHaveAttribute('data-version', 'checkin-biometric-2026-11'));
     await waitForTheConsentText();
     fireEvent.click(screen.getByTestId('checkin-biometric-accept'));
@@ -242,11 +230,9 @@ describe('identity-opening: the step is opened with the text the guest reads (E7
     });
     renderStep();
 
-    // Once more, and no more: the texts are read again once, the opening is tried again once.
     await waitFor(() => expect(publicCheckinApi.openIdentity).toHaveBeenCalledTimes(2));
     expect(publicCheckinApi.getLegalTexts).toHaveBeenCalledTimes(2);
     expect(await screen.findByTestId('checkin-consent-unavailable')).toBeInTheDocument();
-    // The text that nobody can say is in force is not offered to agree to; the way to a person is.
     expect(screen.queryByTestId('checkin-consent-text')).not.toBeInTheDocument();
     expect(screen.getByTestId('checkin-biometric-accept')).toBeDisabled();
     expect(screen.getByTestId('checkin-biometric-decline')).toBeEnabled();
@@ -267,14 +253,11 @@ describe('identity-opening: the step is opened with the text the guest reads (E7
     vi.mocked(publicCheckinApi.openIdentity).mockRejectedValueOnce(httpError(422, { code: 'notice_version_unknown' }));
     renderStep();
 
-    // The second read of the texts fails: an error leaves the older answer in memory, and that is the version the server has just refused. The page says the texts cannot be read (with a way to try again), it does not
-    // say they are not available, and it does not open again with the older answer.
     expect(await screen.findByTestId('checkin-consent-error')).toBeInTheDocument();
     expect(screen.queryByTestId('checkin-consent-unavailable')).not.toBeInTheDocument();
     expect(screen.getByTestId('checkin-biometric-accept')).toBeDisabled();
     expect(screen.getByTestId('checkin-biometric-decline')).toBeEnabled();
 
-    // The guest tries again and the text in force settles: the opening is made with it, and the face check is offered (no «text not available» after a «Riprova» that worked).
     vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts('checkin-biometric-2026-11'));
     fireEvent.click(screen.getByTestId('checkin-consent-retry'));
 
@@ -295,7 +278,6 @@ describe('identity-opening: the step is opened with the text the guest reads (E7
     expect(await screen.findByTestId('checkin-consent-unavailable')).toBeInTheDocument();
     expect(publicCheckinApi.openIdentity).toHaveBeenCalledTimes(2);
 
-    // The registry serves another text and the page reads it (the window comes back to the front): it is a text the server has not refused, so it gets an opening of its own, and it is what turns the refusal off.
     vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts('checkin-biometric-2026-12'));
     await act(async () => {
       await client.refetchQueries({ queryKey: ['checkin', TOKEN, 'legal-texts'] });
@@ -320,12 +302,10 @@ describe('identity-opening: two ways to be verified, of equal weight (E70/F03/US
     expect(assisted).toHaveTextContent('Verifica con una persona');
     expect(screen.getByTestId('checkin-identity-choices')).toContainElement(automatic);
     expect(screen.getByTestId('checkin-identity-choices')).toContainElement(assisted);
-    // Equal weight: the same size, the same look, the same width, neither of them the primary one. Each says in a line what it means, and the line is tied to the button.
     expect(automatic.className).toBe(assisted.className);
     expect(automatic.className).not.toContain('bg-primary');
     expect(automatic).toHaveAccessibleDescription(i18n.t('checkin.identity.choice.automatic.hint'));
     expect(assisted).toHaveAccessibleDescription(i18n.t('checkin.identity.choice.assisted.hint'));
-    // Both are live as soon as the text is: agreeing is possible only with a text on the screen, a person always.
     expect(automatic).toBeEnabled();
     expect(assisted).toBeEnabled();
   });
@@ -411,7 +391,6 @@ describe('identity-opening: the way to a person on every step (E70/F03/US01/T01,
     expect(screen.getByTestId('checkin-identity-assisted-path')).toBeEnabled();
     expect(screen.getByTestId('checkin-identity-assisted-path')).toHaveTextContent(i18n.t('checkin.identity.choice.assisted.switch'));
 
-    // A self-hosted verification goes from the document to the recording of the presence, not to the selfie.
     pickDocument();
     await waitFor(() => expect(stage()).toBe('presence'));
     expect(screen.getByTestId('checkin-identity-assisted-path')).toBeVisible();
@@ -454,7 +433,6 @@ describe('identity-opening: the way to a person on every step (E70/F03/US01/T01,
     fireEvent.click(screen.getByTestId('checkin-identity-assisted-path'));
     await waitFor(() => expect(screen.getByTestId('checkin-identity-assisted-path')).toBeDisabled());
     expect(screen.getByTestId('checkin-identity-document-pick')).toBeDisabled();
-    // A second tap does not start a second request.
     fireEvent.click(screen.getByTestId('checkin-identity-assisted-path'));
     expect(publicCheckinApi.requestOperator).toHaveBeenCalledTimes(1);
 
@@ -518,7 +496,6 @@ describe('identity-opening: a closed verification shows where it ended and offer
 
     await waitFor(() => expect(stage()).toBe('operator'));
     expect(screen.getByTestId('identity-operator-text')).toHaveTextContent(i18n.t('checkin.identity.result.operator.text'));
-    // The step is over, not failed: no sentence of error and nothing to take again.
     expect(screen.queryByTestId('checkin-identity-problem')).not.toBeInTheDocument();
     expect(screen.queryByTestId('checkin-identity-document')).not.toBeInTheDocument();
     expect(document.querySelector('input[type="file"]')).toBeNull();
@@ -537,7 +514,6 @@ describe('identity-opening: a closed verification shows where it ended and offer
       answered = await result.current.sendSelfie(new Blob(['selfie'], { type: 'image/jpeg' }));
     });
 
-    // The call is answered (the capture lets its picture go), the step shows the pass and no problem, and the page may go on.
     expect(answered).toBe(true);
     expect(result.current.progress?.stage).toBe('done');
     expect(result.current.problem).toBeNull();
@@ -567,7 +543,6 @@ describe('identity-opening: a closed verification shows where it ended and offer
 });
 
 describe('identity-opening: a step this page has no screen for shows the way to a person (E70/F03/US01/T01, AC5)', () => {
-  // The presence has a screen on a self-hosted verification (E72/F02/US01/T01); on a state that does not say `selfHosted` it has none.
   it('IdentityStep_ThePresenceOfAStateThatIsNotSelfHosted_ShowsTheAssistedPathMessageInsteadOfABlankScreen', async () => {
     vi.mocked(publicCheckinApi.requestOperator).mockResolvedValue({ result: 'operator', operatorPathOpen: true, state: closedWithAPerson() });
     renderStep(state({ step: 'presence', consentRecorded: true, documentChecked: true }));
@@ -577,7 +552,6 @@ describe('identity-opening: a step this page has no screen for shows the way to 
     expect(screen.getByTestId('checkin-identity-unsupported')).toHaveTextContent(i18n.t('checkin.identity.unsupported.text'));
     expect(screen.queryByTestId('checkin-selfie-capture')).not.toBeInTheDocument();
     expect(screen.queryByTestId('checkin-identity-document')).not.toBeInTheDocument();
-    // The step cannot be left any other way: the page does not go on, and the one button asks for a person.
     expect(screen.getByTestId('harness-concluded')).toHaveTextContent('false');
 
     fireEvent.click(screen.getByTestId('checkin-identity-unsupported-ask'));
@@ -592,7 +566,6 @@ describe('identity-opening: a step this page has no screen for shows the way to 
 
     expect(stage()).toBe('unsupported');
     expect(screen.getByTestId('checkin-identity-unsupported-ask')).toBeEnabled();
-    // Nothing is asked of the server by the screen itself: a person is asked for only when the guest says so.
     expect(publicCheckinApi.requestOperator).not.toHaveBeenCalled();
   });
 

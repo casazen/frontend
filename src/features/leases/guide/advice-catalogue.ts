@@ -46,13 +46,11 @@ export type SourceId =
   | 'law431'
   | 'law392';
 
-/** A source: the label (`leaseGuide.source.<id>`) and, when the project cites an official page for it, its address. */
 export interface AdviceSource {
   id: SourceId;
   url?: string;
 }
 
-/** Official pages and laws the rules of the area are read from (`.claude/context/regulations`, backend). A law has no address: it is named. */
 export const SOURCES: Readonly<Record<SourceId, AdviceSource>> = {
   adeCedolare: { id: 'adeCedolare', url: 'https://www.agenziaentrate.gov.it/portale/aree-tematiche/casa/affitto/cedolare-secca' },
   adeCedolareScheda: {
@@ -75,7 +73,6 @@ export const SOURCES: Readonly<Record<SourceId, AdviceSource>> = {
 };
 
 export interface AdviceEntry {
-  /** Stable forever (a link, a test or an analysis may point at it); also the name of its block of texts. */
   id: string;
   types: readonly LeaseContractType[];
   phases: readonly GuidePhase[];
@@ -97,7 +94,6 @@ const IN_FORCE: readonly GuidePhase[] = ['active', 'expiring'];
 const ENDING: readonly GuidePhase[] = ['expiring', 'concluded'];
 const OPEN: readonly GuidePhase[] = ['draft', 'signing', 'toRegister', 'active', 'expiring'];
 
-/** A registration this recent is still to be told to the tenant; an older one is not worth saying again. */
 const RECENT_REGISTRATION_DAYS = 90;
 
 /** The lease is over or is going to be: by a notice, by an early end, because the transitory one ends by itself, or because it is over. */
@@ -113,9 +109,7 @@ const operation = (id: LeaseOperationId): AdviceAction => ({ kind: 'operation', 
 const official = (source: SourceId): AdviceAction => ({ kind: 'official', source });
 
 export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
-  // ---- the moment the follow-up of a registered canone concordato is to be claimed -------------------------------------------------------
   {
-    // The block of «Contratto registrato: ora fai valere le agevolazioni» (CF-END), the one place that says it: it has its own texts.
     id: 'concordatoBenefits',
     types: ['Concordato'],
     phases: IN_FORCE,
@@ -125,7 +119,6 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     render: 'benefits',
   },
 
-  // ---- registration: the deadline and what it costs ---------------------------------------------------------------------------------------
   {
     id: 'lateRegistration',
     types: ALL,
@@ -192,7 +185,6 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     sources: [],
   },
 
-  // ---- the tax regime: cedolare secca or ordinary --------------------------------------------------------------------------------------
   {
     id: 'regimeChoose',
     types: ALL,
@@ -266,7 +258,6 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     sources: ['adeAnnualita'],
   },
 
-  // ---- canone concordato: the range of the agreement, the comune, the attestation, the IMU ----------------------------------------------
   {
     id: 'concordatoRentOutOfRange',
     types: ['Concordato'],
@@ -330,7 +321,6 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     sources: ['dm2017'],
   },
 
-  // ---- the first months: deposit, delivery, people who are not from the EU ------------------------------------------------------------
   {
     id: 'depositOverMax',
     types: ALL,
@@ -378,7 +368,6 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     sources: [],
   },
 
-  // ---- how long it lasts and what happens at the end ------------------------------------------------------------------------------------
   {
     id: 'liberoDuration',
     types: ['Libero'],
@@ -457,7 +446,6 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     sources: ['law431'],
   },
   {
-    // The need is the tenant's, or the operations have not arrived: the date the confirmation is due by is on the sheet.
     id: 'transitorioConfirmNeed',
     types: ['Transitorio'],
     phases: IN_FORCE,
@@ -467,7 +455,6 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     sources: ['dm2017'],
   },
   {
-    // The need is the landlord's: CasaZen prepares the letter (the window of the operations, LR-OPS-1b).
     id: 'transitorioConfirmNeedLandlord',
     types: ['Transitorio'],
     phases: IN_FORCE,

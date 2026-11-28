@@ -10,10 +10,6 @@ import { useGuestsList } from './guests-list';
 
 const PAGE_SIZE = 20;
 
-/**
- * The guests of the host (UI-14: the unified list, in `server` mode). The search and the page are in the address
- * (`?q=rossi&page=2`), the list writes them there and this page reads them to ask the API, which searches and pages.
- */
 export function GuestsPage() {
   const { t } = useTranslation();
   const list = useGuestsList();
@@ -24,7 +20,6 @@ export function GuestsPage() {
   const { data, isLoading, isError, error, refetch, isPlaceholderData } = useQuery({
     queryKey: ['guests', { search, page: state.page }],
     queryFn: () => guestsApi.getAll({ search: search || undefined, page: state.page, pageSize: PAGE_SIZE }),
-    // The rows of the last search stay on the screen, a little dimmed, until those of the next one arrive.
     placeholderData: keepPreviousData,
   });
 

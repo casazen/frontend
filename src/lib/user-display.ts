@@ -1,4 +1,3 @@
-/** Display name for admin lists and dialogs — prefers name, then email, never raw id when email exists. */
 export function formatUserDisplayName(user: {
   id: string;
   email?: string | null;

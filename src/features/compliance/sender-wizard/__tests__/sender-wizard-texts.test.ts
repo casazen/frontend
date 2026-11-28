@@ -2,11 +2,6 @@ import { describe, expect, it } from 'vitest';
 import en from '@/i18n/locales/en.json';
 import it_ from '@/i18n/locales/it.json';
 
-/**
- * What the confirmation of a change of the sender tells the host (E03/F01/US02/T02, ADR-029: a double send is a violation). The texts say the exact effect, the one the backend says
- * in its own confirmation (`SenderSwitchConfirmationRequired`): the sender in effect goes off, and the channel manager's own daily sending is switched off by the host in its panel,
- * or the data would go out twice. Nothing promises automatic sending before its state is «Attivo»: after the change the sender can still be «Non verificato» or «Non attivo».
- */
 const LOCALES = [
   {
     language: 'it',
@@ -53,7 +48,6 @@ describe('the words of the change of the sender', () => {
   });
 });
 
-// The texts of the wizard are in alphabetical order at every level, in both languages (the rule of the locale files).
 describe('the keys of compliance.sender', () => {
   const alphabetical = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0);
 

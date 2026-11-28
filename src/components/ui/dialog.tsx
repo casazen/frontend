@@ -11,7 +11,6 @@ const DialogTrigger = DialogPrimitive.Trigger;
 const DialogPortal = DialogPrimitive.Portal;
 const DialogClose = DialogPrimitive.Close;
 
-/** Accessible (screen-reader only) label of the close button. */
 function DialogCloseLabel() {
   const { t } = useTranslation();
   return <span className="sr-only">{t("shared.close")}</span>;
@@ -24,7 +23,6 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      // 60% and not 80%: the page stays readable behind the layer, as in the flows the product takes after (UX round 2026-11).
       "fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
@@ -33,14 +31,8 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
-/**
- * The motion of a dialog in the middle of the screen (`styles/motion.css`): it rises a little on a spring and fades in, and it
- * leaves faster than it came. It moves `transform`, which adds to the `translate` property that centers it. (The slide that
- * came with the classes of shadcn is gone: it started from the corner.)
- */
 const CENTERED_MOTION = "cz-dialog";
 
-/** The same, but only from `sm` up: under it the dialog is a sheet and moves as one (`styles/sheet-bottom.css`). */
 const CENTERED_MOTION_FROM_SM = "cz-dialog-from-sm";
 
 /**
@@ -74,7 +66,6 @@ export interface DialogContentProps extends React.ComponentPropsWithoutRef<typeo
    * (The sheet assumes the padding of the dialog, `p-6`: a dialog that changes it does not want to be a sheet.)
    */
   sheetOnPhone?: boolean;
-  /** The grip at the top of the sheet of a phone, which can also be pulled down to close the sheet. Default: on. */
   handle?: boolean;
 }
 
@@ -84,9 +75,6 @@ const DialogContent = React.forwardRef<
 >(({ className, children, sheetOnPhone = true, handle = true, onCloseAutoFocus, ...props }, ref) => {
   const closeRef = React.useRef<HTMLButtonElement>(null);
 
-  // What had the focus when the dialog opened (before Radix moves it inside): the button that opened it. Radix hands the focus
-  // back on its own only to a `DialogTrigger`, and most dialogs of the app are opened by a button that sets state, so on close
-  // the focus fell to the page: a keyboard user started again from the top.
   const opener = React.useRef<HTMLElement | null>(null);
   const remember = React.useCallback((element: HTMLElement | null) => {
     opener.current = element;
@@ -96,9 +84,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Close
       ref={closeRef}
       className={cn(
-        // The icon is 16 px; the invisible `before` box makes the target 44 px for a finger.
         "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity before:absolute before:-inset-3.5 before:content-[''] hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground",
-        // In the bar of the sheet the button is a 44 px disc.
         sheetOnPhone &&
           "max-sm:right-2 max-sm:top-0 max-sm:flex max-sm:h-11 max-sm:w-11 max-sm:items-center max-sm:justify-center max-sm:rounded-full max-sm:bg-muted max-sm:before:hidden"
       )}
@@ -123,8 +109,6 @@ const DialogContent = React.forwardRef<
         onCloseAutoFocus={(event) => {
           onCloseAutoFocus?.(event);
           if (event.defaultPrevented) return;
-          // After Radix has given the focus to the trigger, when there is one. When there is none, the focus is on the
-          // page: it goes back to the button that opened the dialog, if that is still there.
           const back = opener.current;
           setTimeout(() => {
             if (back?.isConnected && (!document.activeElement || document.activeElement === document.body)) back.focus();
@@ -154,7 +138,6 @@ const DialogContent = React.forwardRef<
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  // Left aligned (it was centered on a phone) and clear of the close button of the sheet.
   <div className={cn("flex flex-col space-y-1.5 text-left max-sm:pr-10", className)} {...props} />
 );
 DialogHeader.displayName = "DialogHeader";

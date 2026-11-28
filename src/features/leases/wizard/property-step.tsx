@@ -12,22 +12,13 @@ import type { LeaseNeed } from '@/types';
 import { PropertyRequirements } from './property-requirements';
 
 interface PropertyStepProps {
-  /** The property chosen, or an empty text. */
   value: string;
   onChange: (propertyId: string) => void;
-  /** The format error of the field (a key of the translations). */
   error?: string;
-  /** What the server says is missing in the step, once the draft exists; `undefined` before. */
   needs?: LeaseNeed[];
-  /** The contract is already signed elsewhere: the APE and the cadastral data are a notice, not a stop. */
   imported: boolean;
 }
 
-/**
- * Step ① «Immobile» (LR-06a): the property of the contract, among the ones let for long stays, and what the contract needs from it.
- * A property named in the address that is let for short stays is not in the list: it is read on its own, offered, and told as such
- * (a notice, not a stop: the passage to long stays is the host's choice, LR-D15).
- */
 export function PropertyStep({ value, onChange, error, needs, imported }: PropertyStepProps) {
   const { t } = useTranslation();
   const { data, isLoading, isError, error: loadError, refetch, isFetching } = useProperties({ mode: 'long' });

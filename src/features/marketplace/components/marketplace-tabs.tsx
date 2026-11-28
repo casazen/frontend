@@ -3,14 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { RouteTabs, type RouteTabItem } from '@/components/ui/route-tabs';
 import { MARKETPLACE_MINE_PATH, MARKETPLACE_PATH } from '../lib/marketplace-paths';
 
-/**
- * The tabs of the marketplace: each is a page of its own. A search, a category and the page of a supplier belong to Scopri, which shows
- * the categories itself (the tab «Categorie» was folded into it).
- */
 export type MarketplaceSection = 'discover' | 'mine';
 
 interface MarketplaceTabsProps {
-  /** The tab the page is. */
   section: MarketplaceSection;
 }
 

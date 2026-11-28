@@ -25,18 +25,14 @@ import { OwnerStatements } from '@/pages/owner-portal/OwnerStatements';
  */
 export const ownerPortalRoutes: RouteObject[] = [
   {
-    // On an agency's own domain `buildHostSiteRoutes` puts the sign-in page of that domain in its place (`OwnerHostLoginPage`): this one only exists for the CasaZen domain.
     path: ownerPortalPaths.signIn,
     element: <LoginPage />,
   },
   {
-    // Link of the e-mail that invites a property owner (E10/F03/US05/T01, NF-109): under Auth0 (it leads to the sign-up or the sign-in) but outside the
-    // protected route, which would put the secret of the link into a return address. The page takes the secret out of the address at once.
     path: OWNER_INVITATION_PATH,
     element: <OwnerInvitationPage />,
   },
   {
-    // Link of the e-mail that invites a CONTACT of an owner (E07/F07/US01/T03, NF-111): the same care, its own page and its own secret.
     path: OWNER_CONTACT_INVITATION_PATH,
     element: <OwnerContactPage />,
   },
@@ -52,15 +48,11 @@ export const ownerPortalRoutes: RouteObject[] = [
       { path: 'immobili/:propertyId', element: <OwnerProperties /> },
       { path: 'calendario/:propertyId?', element: <OwnerCalendar /> },
       { path: 'contabilita', element: <OwnerStatements /> },
-      // One published statement with its lines: the id of its version only (no amount and no name in the address).
       { path: 'contabilita/:statementId', element: <OwnerStatementDetail /> },
-      // The old address of the statements: the accounting page holds them now.
       { path: 'rendiconti', element: <Navigate to={ownerPortalPaths.accounting} replace /> },
       { path: 'documenti', element: <OwnerDocuments /> },
-      // The documents CasaZen issued in the name of the owner (E17/F03/US01/T03): a page behind the flags of the issuance and of the agency plan, which says it is not open while they are off.
       { path: 'documenti-emessi', element: <OwnerIssuedDocuments /> },
       { path: 'messaggi', element: <OwnerInbox /> },
-      // The link of the e-mail that tells the owner the agency wrote: the id of the conversation only.
       { path: 'messaggi/:conversationId', element: <OwnerConversation /> },
       { path: 'contatti', element: <OwnerContacts /> },
     ],

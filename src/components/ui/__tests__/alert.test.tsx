@@ -121,7 +121,6 @@ describe('Alert colors', () => {
     const soft = fallbackColor(box.className, `${variant}-soft`);
     const iconColor = fallbackColor(box.querySelector('svg')?.getAttribute('class') ?? '', `${variant}-foreground`);
 
-    // The text is the page foreground on the soft background; the icon is graphical but read as text-level (AA).
     expect(contrastRatio(themeColor('foreground'), soft)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
     expect(contrastRatio(iconColor, soft)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
   });
@@ -129,7 +128,6 @@ describe('Alert colors', () => {
   it('Alert_Edge_IsAnInsetRingNotABorder', () => {
     render(<Alert variant="success">Testo</Alert>);
 
-    // `border-*` colors are overridden by a global rule today; an inset ring always draws.
     const box = screen.getByRole('status');
     expect(box).toHaveClass('ring-1', 'ring-inset');
     expect(Array.from(box.classList).filter((c) => /^border(-|$)/.test(c))).toEqual([]);

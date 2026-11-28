@@ -19,7 +19,6 @@ test('email → lease → upload → persisted lease documents after reload, nev
   page.on('request', (request) => { if (/^\/api\/properties\/[^/]+\/documents/.test(new URL(request.url()).pathname)) propertyDocumentCalls.push(request.url()); });
   await page.goto(demoUrl(`/app/long-rent/documents/upload?leaseId=${leaseId}`, 'long-term'));
   await expect(page.getByRole('heading', { name: 'Carica i documenti in CasaZen' })).toBeVisible();
-  // CF-FIX-FU4: a link from outside asks which contract it is before anything can be uploaded; the confirmation survives the reload below.
   await expect(page.getByTestId('cf-documents-confirm')).toContainText('Casa di prova');
   await page.getByRole('button', { name: 'Conferma', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Casa di prova' })).toBeVisible(); expect(uploaded).toBe(false);

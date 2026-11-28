@@ -30,11 +30,6 @@ function formatDateTime(value: string | null | undefined, locale: string): strin
   return Number.isNaN(date.getTime()) ? undefined : date.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-/**
- * Honest state of the custom domain (BK-17, A3-25): waiting for DNS, being activated, verified or failed, why, when it
- * was last checked, whether the automatic check still runs and, while the platform cannot activate domains at all, that
- * nothing the host does will change it.
- */
 export function DomainStatusPanel({ config, verifying, onVerify }: DomainStatusPanelProps) {
   const { t, i18n } = useTranslation();
   const status = config.status;

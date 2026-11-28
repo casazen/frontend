@@ -26,9 +26,7 @@ import { NOT_REDESIGNED_ROUTE_HANDLE } from '@/lib/ui-version';
  */
 interface EmbedWidgetRoute {
   widget: EmbedWidget;
-  /** The path under the base of the widgets of an org. */
   path: string;
-  /** The widget itself, as the content of the shell. */
   load: () => Promise<{ element: ReactElement }>;
 }
 
@@ -71,9 +69,7 @@ export function buildEmbedRoutes(mode: EmbedHostMode): RouteObject[] {
 
   return [
     {
-      // The page of a guest-facing frame keeps its look until it is redesigned (like the booking site): the redesign of the console never reaches it.
       handle: NOT_REDESIGNED_ROUTE_HANDLE,
-      // What the frame shows while the shell is being loaded.
       HydrateFallback: EmbedSkeleton,
       lazy: async () => {
         const { EmbedShell } = await import('@/features/embed/embed-shell');
@@ -81,8 +77,6 @@ export function buildEmbedRoutes(mode: EmbedHostMode): RouteObject[] {
       },
       children: [
         ...WIDGET_ROUTES.map(({ widget, path, load }) => ({ path: `${base}/${path}`, handle: embedWidgetHandle(widget), lazy: load })),
-        // No widget and nothing to render (`element: null` says so to the router, which warns about a leaf route that says nothing): the shell shows its
-        // own «not available» state (no link) and tells the page `not_found`.
         { path: EMBED_CATCH_ALL_PATH, element: null },
       ],
     },

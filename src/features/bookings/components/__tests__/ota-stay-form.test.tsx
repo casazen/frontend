@@ -101,7 +101,6 @@ describe('OtaStayForm (CO-21)', () => {
     vi.mocked(bookingsApi.createOtaStay).mockResolvedValue(stay);
     const { onCreated } = renderForm('Airbnb');
 
-    // The source comes from the feed: no channel to choose.
     expect(screen.queryByLabelText('Canale della prenotazione')).not.toBeInTheDocument();
     type('Nome ospite', '  Mario ');
     type('Cognome ospite', 'Rossi');
@@ -161,7 +160,6 @@ describe('OtaStayForm (CO-21)', () => {
     expect(onCreated).not.toHaveBeenCalled();
     expect(screen.getByLabelText('Nome ospite')).toHaveValue('Mario');
 
-    // A new attempt hides the error of the previous one.
     type('Email ospite', 'mario.rossi@example.com');
     expect(screen.queryByTestId('ota-stay-error')).not.toBeInTheDocument();
   });

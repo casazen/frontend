@@ -87,7 +87,6 @@ function Done({ slug, supplierName, result }: { slug: string; supplierName: stri
   );
 }
 
-/** The check of the e-mail of a booking that holds a slot: the link carries `?hold=`. */
 function HoldConfirmation({ link }: { link: ConfirmLink }) {
   const { t } = useTranslation();
   const { model } = useSupplierSite();
@@ -97,8 +96,6 @@ function HoldConfirmation({ link }: { link: ConfirmLink }) {
       {t('supplierSite.booking.confirm.bookAgain')}
     </Link>
   );
-  // A link that is no good may be one already used (the token leaves the address when the page opens, so a reload cannot use it again):
-  // whoever already checked the e-mail finds the request with its code.
   const invalidActions = (
     <>
       {bookAgain}
@@ -108,7 +105,6 @@ function HoldConfirmation({ link }: { link: ConfirmLink }) {
     </>
   );
 
-  // A link with nothing usable in it.
   if (!link.hold || !link.token) {
     return <Outcome testId="supplier-booking-link-invalid" tone="error" icon={<TriangleAlert />} title={t('supplierSite.booking.confirm.invalid.title')} text={t('supplierSite.booking.confirm.invalid.text')} actions={invalidActions} />;
   }
@@ -158,17 +154,10 @@ function HoldConfirmation({ link }: { link: ConfirmLink }) {
   return <Done slug={model.slug} supplierName={model.name} result={result} />;
 }
 
-/**
- * The page the link of the verification e-mail opens, `/fornitori/:slug/conferma?hold=…#token=…` (SP-12b) or `?inquiry=…#token=…` for a
- * request on measure (SP-12c). It takes the token out of the address as soon as it has read it (so it stays in no history entry, no
- * bookmark and no shared screenshot), checks the e-mail once and says what happened: the request is sent, it already was, the card still
- * has to be blocked, the link is no good or ran out.
- */
 export function BookingConfirmation() {
   const { pathname, search, hash } = useLocation();
   const [link] = useState(() => readConfirmLink(search, hash));
 
-  // The token leaves the address bar at once; the page keeps it in memory for the one call.
   useEffect(() => {
     if (link.token) window.history.replaceState(window.history.state, '', addressWithoutToken(pathname, link));
   }, [link, pathname]);

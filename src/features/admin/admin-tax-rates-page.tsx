@@ -29,7 +29,6 @@ const VERIFICATION_BADGE: Record<TouristTaxRateVerification, string> = {
   ThirdParty: 'border-red-300 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200',
 };
 
-/** Host name of the source, as link text (the full URL is in the title and the href). */
 function sourceLabel(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
@@ -91,7 +90,6 @@ export function AdminTaxRatesPage() {
     },
   });
 
-  // Rejects on API errors (already shown by onError) so the form stays open.
   const handleSubmit = async (data: CreateTouristTaxRateDto) => {
     if (editingRate) {
       await updateMutation.mutateAsync({ id: editingRate.id, data });
@@ -130,7 +128,6 @@ export function AdminTaxRatesPage() {
             {items.length > 0 && <RegisterSearch value={query} onChange={setQuery} label={t('taxRates.city') + ' / ' + t('taxRates.region')} />}
           </CardHeader>
           <CardContent>
-            {/* Loading State */}
             {isLoading && (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -138,7 +135,6 @@ export function AdminTaxRatesPage() {
               </div>
             )}
 
-            {/* Error State */}
             {isError && !isLoading && (
               <div className="py-12 text-center">
                 <p className="text-destructive mb-4">{t('taxRates.loadError')}</p>
@@ -153,7 +149,6 @@ export function AdminTaxRatesPage() {
               </div>
             )}
 
-            {/* Empty State */}
             {!isLoading && !isError && items.length === 0 && (
               <EmptyState
                 icon={Coins}
@@ -169,7 +164,6 @@ export function AdminTaxRatesPage() {
               />
             )}
 
-            {/* Table */}
             {!isLoading && !isError && items.length > 0 && (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -297,7 +291,6 @@ export function AdminTaxRatesPage() {
         </Card>
       </div>
 
-      {/* Create/Edit Form Dialog */}
       <TaxRateForm
         open={formOpen}
         onOpenChange={setFormOpen}
@@ -306,7 +299,6 @@ export function AdminTaxRatesPage() {
         existing={editingRate}
       />
 
-      {/* Delete Confirmation */}
       <ConfirmationDialog
         open={deletingRate !== null}
         onOpenChange={(open) => {

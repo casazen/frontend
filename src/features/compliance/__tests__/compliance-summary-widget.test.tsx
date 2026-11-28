@@ -18,8 +18,6 @@ vi.mock('@/api/compliance.api', () => ({
   completeCheckoutWizard: vi.fn(),
 }));
 
-// The property, the deadline and the state of a row come from these two reads: the tests of the cockpit do without them, but for the
-// list of the properties (the ones in order are behind one line), which a test can hand in.
 const reads = vi.hoisted(() => ({ properties: undefined as unknown }));
 vi.mock('@/queries/use-dashboard', () => ({ useDashboardToday: () => ({ data: undefined }) }));
 vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: reads.properties }) }));
@@ -42,7 +40,6 @@ const TURNOVER_BOOKING_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
 const empty = { count: 0, items: [] };
 
-/** The cockpit as `GET /api/compliance/summary` returns it (CO-04): action and target, no path. */
 const cockpit: ComplianceSummaryResult = {
   propertiesPending: {
     count: 1,
@@ -82,7 +79,6 @@ const cockpit: ComplianceSummaryResult = {
   },
 };
 
-/** Stands for every page of the app: shows where the router went. */
 function CurrentLocation() {
   const location = useLocation();
   return createElement('output', { 'data-testid': 'current-location' }, `${location.pathname}${location.search}`);
@@ -149,7 +145,6 @@ describe('ComplianceSummaryWidget (CO-11)', () => {
 
     renderWidget();
 
-    // The most pressing thing is the highlighted block, with the button that leads to it; the server lists one of the twelve.
     expect(await screen.findByTestId('compliance-tier-fine')).toHaveTextContent('Alloggiati Web da inviare: Mario Rossi');
     expect(screen.getByTestId('compliance-summary-more')).toHaveTextContent('e altri 11');
     expect(screen.queryByTestId('compliance-summary-all-clear')).not.toBeInTheDocument();
@@ -167,7 +162,6 @@ describe('ComplianceSummaryWidget (CO-11)', () => {
 
     renderWidget();
 
-    // CO-17: "check-out completato ma property non pronta" is a pending task, never "all clear".
     expect(await screen.findByTestId('compliance-summary-turnovers-link')).toBeInTheDocument();
     expect(screen.getByTestId('compliance-tier-chore')).toHaveTextContent('Paolo Gialli');
     expect(screen.queryByTestId('compliance-summary-all-clear')).not.toBeInTheDocument();
@@ -243,7 +237,6 @@ describe('ComplianceSummaryWidget levels', () => {
     const fine = await screen.findByTestId('compliance-tier-fine');
     const start = screen.getByTestId('compliance-tier-start');
     const chore = screen.getByTestId('compliance-tier-chore');
-    // In the page: the law, then the properties that cannot start, then the upkeep.
     expect(fine.compareDocumentPosition(start) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(start.compareDocumentPosition(chore) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
@@ -253,7 +246,6 @@ describe('ComplianceSummaryWidget levels', () => {
     expect(fine).not.toHaveTextContent('Villa Test');
     expect(start).toHaveTextContent('Villa Test');
     expect(chore).toHaveTextContent('Luigi Bianchi');
-    // The block on top is about the law, and says so.
     expect(screen.queryByTestId('compliance-summary-focus')).not.toBeInTheDocument();
     expect(fine).toHaveTextContent('Alloggiati Web non accettato: Carla Neri');
   });
@@ -263,7 +255,6 @@ describe('ComplianceSummaryWidget levels', () => {
     renderWidget();
 
     const fine = await screen.findByTestId('compliance-tier-fine');
-    // Six to send, one failed, one of the guest data: all there, with no "Vedi tutte" or "Mostra" button.
     expect(fine.querySelectorAll('[data-testid="compliance-summary-row"]')).toHaveLength(8);
     expect(screen.queryByRole('button', { name: /mostra/i })).not.toBeInTheDocument();
   });
@@ -275,7 +266,6 @@ describe('ComplianceSummaryWidget levels', () => {
     const fine = await screen.findByTestId('compliance-tier-fine');
     const buttons = Array.from(fine.querySelectorAll<HTMLAnchorElement>('[data-testid="compliance-summary-row"] a[data-testid$="-link"]'));
     expect(buttons.length).toBeGreaterThan(2);
-    // The solid one is the first of the page; every other row asks less (outline), in the other sections too.
     expect(buttons[0]).toHaveClass('bg-primary');
     for (const other of buttons.slice(1)) {
       expect(other).not.toHaveClass('bg-primary');
@@ -312,9 +302,7 @@ describe('ComplianceSummaryWidget levels', () => {
 
     const start = await screen.findByTestId('compliance-tier-start');
     expect(start.querySelectorAll('[data-testid="compliance-summary-row"]')).toHaveLength(3);
-    // A calm tone: no deadline and no red on what only keeps a property from starting.
     expect(start).not.toHaveTextContent(/scadut|entro/i);
-    // The explanation of the level: what happens until they are in order.
     expect(start).toHaveTextContent('non si possono prenotare dal tuo sito');
 
     fireEvent.click(screen.getByRole('button', { name: 'Mostra le altre 2' }));
@@ -362,7 +350,6 @@ describe('ComplianceSummaryWidget levels', () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({}));
     renderWidget();
 
-    // What it always said, with no light at all: the page keeps its block, and there is no new green line next to it.
     expect(await screen.findByTestId('compliance-summary-all-clear')).toHaveTextContent('Nessuna scadenza in elenco');
     expect(screen.queryByTestId('compliance-summary-line')).not.toBeInTheDocument();
     expect(screen.queryByTestId('compliance-tier-fine')).not.toBeInTheDocument();
@@ -381,7 +368,6 @@ function summaryWith(parts: Partial<ComplianceSummaryResult>): ComplianceSummary
   };
 }
 
-// E03/F03/US01/T01 (NF-52, CHK-12): "Sono in regola?". The API sends a light and a reason for each item; the page only shows them.
 describe('ComplianceSummaryWidget traffic light', () => {
   const stay = (action: ComplianceSummaryItem['action'], id: string, label: string, light: ComplianceSummaryItem['light'], reason: string): ComplianceSummaryItem => ({
     id,
@@ -413,9 +399,7 @@ describe('ComplianceSummaryWidget traffic light', () => {
     renderWidget();
 
     const rows = (await screen.findByTestId('compliance-tier-fine')).querySelectorAll<HTMLElement>('[data-testid="compliance-summary-row"]');
-    // The server listed them green first and yellow before red: the page puts the red one first and keeps the green one out of the list.
     expect(rows).toHaveLength(2);
-    // Why the section matters is one click away, closed (UX round 2026-11): it no longer takes the room of the rows each time.
     const why = screen.getByTestId('compliance-tier-fine-why');
     expect(why.tagName).toBe('DETAILS');
     expect(why).not.toHaveAttribute('open');
@@ -426,7 +410,6 @@ describe('ComplianceSummaryWidget traffic light', () => {
     expect(within(red).getByTestId('compliance-light').querySelector('svg')).toBeInTheDocument();
     expect(within(red).getByTestId('compliance-reason')).toHaveTextContent('È stato inviato, ma la ricevuta non è archiviata: caricala.');
     expect(within(red).getByRole('img', { name: 'Da fare: È stato inviato, ma la ricevuta non è archiviata: caricala.' })).toBeInTheDocument();
-    // AC-NF52-7: entrusted to the channel manager is yellow, with its own words.
     expect(within(yellow).getByTestId('compliance-light')).toHaveAttribute('data-light', 'yellow');
     expect(within(yellow).getByTestId('compliance-light')).toHaveTextContent('In corso');
     expect(within(yellow).getByTestId('compliance-reason')).toHaveTextContent('Se ne occupa il tuo channel manager: aspettiamo la ricevuta.');
@@ -444,7 +427,6 @@ describe('ComplianceSummaryWidget traffic light', () => {
     expect(line).toHaveTextContent('2 da sistemare');
     expect(line).toHaveTextContent('1 in corso');
     expect(line).toHaveAttribute('data-tone', 'danger');
-    // The title answers the question of the page; the line is above the list and the block.
     expect(screen.getByTestId('compliance-tier-fine').compareDocumentPosition(line) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
   });
 
@@ -474,7 +456,6 @@ describe('ComplianceSummaryWidget traffic light', () => {
     const section = screen.getByTestId('compliance-summary-green-section');
     expect(section).toHaveTextContent('Ricevuta di Alloggiati Web: Anna Verdi');
     expect(within(section).getByTestId('compliance-light')).toHaveAttribute('data-light', 'green');
-    // Nothing is asked of the host here: no button.
     expect(within(section).queryByRole('link', { name: /Carica la ricevuta/ })).not.toBeInTheDocument();
   });
 
@@ -483,7 +464,6 @@ describe('ComplianceSummaryWidget traffic light', () => {
     renderWidget();
 
     const lights = await screen.findAllByTestId('compliance-light');
-    // An older API (or the traffic light off) sends none: every row says so, and none of them is green.
     expect(lights.length).toBeGreaterThanOrEqual(6);
     for (const light of lights) {
       expect(light).toHaveAttribute('data-light', 'unknown');
@@ -532,7 +512,6 @@ describe('ComplianceSummaryWidget traffic light', () => {
   });
 
   it('widget_ItemOfAPageTheUserCannotOpen_ShowsTheLightAndNoDeadButton', async () => {
-    // `booking.read` and `booking.write` only: the property page asks `property.read`.
     permissions.granted = ['booking.read', 'booking.write'];
     vi.mocked(fetchComplianceSummary).mockResolvedValue(
       summaryWith({ connectionsToFix: { count: 1, items: [month('ActivateOctorateSend', '2026-08', 'Red', 'connection_inactive')] } }),
@@ -565,7 +544,6 @@ describe('ComplianceSummaryWidget traffic light', () => {
     const { container } = renderWidget();
     await screen.findByTestId('compliance-tier-fine');
 
-    // Every text came from the locale files: a key that is not there would show as its own name.
     expect(container.textContent).not.toMatch(/compliance\.(reason|light|item|row|summary|cockpit)\./);
     expect(container.textContent).not.toContain('dashboard.todo.');
     await expectNoAxeViolations(container);

@@ -6,22 +6,14 @@ import { formatCurrency } from '@/lib/utils';
 import type { TouristTaxCollection } from '@/types/checkin-wizard.types';
 import type { PublicTouristTax, PublicTouristTaxGuest, TouristTaxPaymentIntent } from '@/types/public-checkin.types';
 
-/**
- * The tourist tax paid online in the guest check-in and its state on the host's side (E25/F01/US02/T01, NF-119, decision O12). Everything here is pure: the page and the host's step
- * decide what to show from what the API says, and the browser works out no amount (no sum, no difference, no tax): every figure it shows comes from the answer, in the currency
- * of the answer.
- */
-
 /** Problem code of `POST …/tourist-tax/payment-intent` while a payment of the stay is under way: the page waits for it to be recorded instead of asking for another. */
 export const TOURIST_TAX_IN_PROGRESS_CODE = 'tourist_tax_payment_in_progress';
 
-/** Problem code of `POST …/tourist-tax/payment-intent` while the payment is not offered (the organization does not offer it, or its account or the platform key is not ready). */
 const TOURIST_TAX_NOT_AVAILABLE_CODE = 'tourist_tax_payment_not_available';
 
 /** How many times the guest page asks again, with backoff, for a payment the guest has made: after them it offers «Aggiorna lo stato» instead of asking for ever. */
 export const TOURIST_TAX_MAX_POLLS = 10;
 
-/** The words of the query string a payment method that redirects adds when it sends the guest back to the page (`return_url`): the secret of the intent is one of them. */
 const PAYMENT_RETURN_PARAMS = ['payment_intent', 'payment_intent_client_secret', 'redirect_status', 'setup_intent', 'setup_intent_client_secret'] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -32,7 +24,6 @@ function isAmount(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0;
 }
 
-/** An amount of the API that may be missing: a number, or null (never turned into 0). */
 function amountOrNull(value: unknown): number | null {
   return isAmount(value) ? value : null;
 }
@@ -64,7 +55,6 @@ export function readPublicTouristTax(data: unknown): PublicTouristTax | null {
   };
 }
 
-/** What the Payment Element needs, or `null` when the answer lacks the secret, the key or the amount: nothing is then charged. */
 export function readTouristTaxPaymentIntent(data: unknown): TouristTaxPaymentIntent | null {
   if (!isRecord(data)) return null;
   const { paymentIntentId, clientSecret, publishableKey, stripeAccountId, amount, currency } = data;
@@ -80,7 +70,6 @@ export function readTouristTaxPaymentIntent(data: unknown): TouristTaxPaymentInt
   };
 }
 
-/** The `code` of the problem a failed call answered (`tourist_tax_payment_in_progress`…), or `undefined`. */
 export function problemCodeOf(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
 }
@@ -125,28 +114,17 @@ export function guestTaxAvailability(read: { enabled: boolean; isPending: boolea
   return read.isPending ? 'loading' : 'off';
 }
 
-/** What the guest is told about the tax of the stay. */
 export type GuestTaxOutlook =
-  /** Something can be paid online now. */
   | 'payable'
-  /** Paid online, nothing is left. */
   | 'paid'
-  /** Paid online once; the rest of the tax is paid at the property. */
   | 'paidPartly'
-  /** Nothing more online: the tax is paid at the property. */
   | 'atProperty'
-  /** The host recorded that it was paid at the property. */
   | 'paidAtProperty'
-  /** The channel collects it: nothing to pay here. */
   | 'channelCollects'
-  /** The price of the booking included it. */
   | 'included'
-  /** Nothing is due for the stay. */
   | 'nothingDue'
-  /** The amount cannot be told yet: the host tells it. */
   | 'hostWillTell';
 
-/** The outlook of a tax the API read: from the state and the reason of the API, never from a figure the browser works out. */
 export function guestTaxOutlook(view: PublicTouristTax): GuestTaxOutlook {
   if (view.payable > 0) return 'payable';
   if (view.status === 'PaidAtProperty') return 'paidAtProperty';
@@ -158,20 +136,14 @@ export function guestTaxOutlook(view: PublicTouristTax): GuestTaxOutlook {
   return 'hostWillTell';
 }
 
-/** The outlooks a completed check-in still says something about: what can still be paid and what was paid (the others have nothing new to tell). */
 export function isShownOnCompletedCheckIn(outlook: GuestTaxOutlook): boolean {
   return outlook === 'payable' || outlook === 'paid' || outlook === 'paidPartly';
 }
 
-/**
- * The step cannot be left while the organization asks for the tax before the lock code and something can still be paid online: the server holds the code back until it is
- * recorded, so the page does not let the guest move on without it. It never blocks what is not payable (the host's «Pagata in struttura» lifts it too).
- */
 export function blocksNextStep(view: PublicTouristTax): boolean {
   return view.requiredBeforeAccessCode && view.payable > 0;
 }
 
-/** The language of the number formats for a language of the page (`it`, `en`, `de`, `fr`, `es`); Italian for any other. */
 export function moneyLocaleOf(language: string | null | undefined): string {
   switch (language?.trim().toLowerCase().split(/[-_]/)[0]) {
     case 'en':
@@ -187,34 +159,26 @@ export function moneyLocaleOf(language: string | null | undefined): string {
   }
 }
 
-/** The language of the Payment Element for the language of the page: the five the page offers, Italian for any other. */
 export function paymentElementLocaleOf(language: string | null | undefined): StripeElementLocale {
   const primary = language?.trim().toLowerCase().split(/[-_]/)[0];
   return primary === 'en' || primary === 'de' || primary === 'fr' || primary === 'es' ? primary : 'it';
 }
 
-/** A currency code of the API: three letters. Anything else (empty, a word) is no currency. */
 function currencyCodeOf(currency: string | null | undefined): string | null {
   const code = currency?.trim().toUpperCase();
   return code && /^[A-Z]{3}$/.test(code) ? code : null;
 }
 
-/** Whether the API said in what currency an amount is: without it the page shows the number with no symbol and says so. */
 export function hasTaxCurrency(currency: string | null | undefined): boolean {
   return currencyCodeOf(currency) !== null;
 }
 
-/**
- * An amount of the tax in the currency the API gave («9,00 CHF»). With no currency (the API did not say) the number alone, never an euro sign the code assumed: the caller says
- * that the currency is not known (`hasTaxCurrency`).
- */
 export function formatTaxMoney(amount: number, currency: string | null | undefined, locale: string): string {
   const code = currencyCodeOf(currency);
   if (code) return formatCurrency(amount, code, locale);
   return new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 }
 
-/** The address Stripe sends the guest back to after a method that redirects: the page itself, with no query and no secret. */
 export function paymentReturnUrlOf(location: { origin: string; pathname: string; search?: string }): string {
   const url = new URL(location.origin);
   url.pathname = location.pathname;
@@ -228,10 +192,6 @@ export function paymentReturnUrlOf(location: { origin: string; pathname: string;
   return url.href;
 }
 
-/**
- * The query string of a page a payment method that redirects sent the guest back to, without what Stripe adds (the secret of the intent among it): `null` when there is nothing to
- * take away. The page replaces its address with it, so the secret stays neither in the address bar nor in the history.
- */
 export function withoutPaymentReturn(params: URLSearchParams): URLSearchParams | null {
   if (!PAYMENT_RETURN_PARAMS.some((name) => params.has(name))) return null;
   const cleaned = new URLSearchParams(params);
@@ -239,20 +199,15 @@ export function withoutPaymentReturn(params: URLSearchParams): URLSearchParams |
   return cleaned;
 }
 
-/** What the host reads of the collection of the tax of a stay. */
 export type CollectionOutlook =
-  /** Nothing is paid and something is due: the host collects it (the guest may pay it online). */
   | 'toCollect'
-  /** The guest paid online (and what was refunded is said apart). */
   | 'paidOnline'
-  /** The guest paid online once and the rest is collected at the property. */
   | 'paidOnlinePartly'
   | 'paidAtProperty'
   | 'collectedByChannel'
   | 'includedInBooking'
   | 'notDue';
 
-/** The outlook of the collection the API sent: `null` for a state the app does not know (nothing is shown for it, never a guess). */
 export function collectionOutlook(collection: TouristTaxCollection): CollectionOutlook | null {
   switch (collection.status) {
     case 'PaidAtProperty':
@@ -272,16 +227,10 @@ export function collectionOutlook(collection: TouristTaxCollection): CollectionO
   }
 }
 
-/** Something of what the guest paid online was not given back (a comparison of the two figures of the API, never shown). */
 function keepsOnlinePayment(collection: TouristTaxCollection): boolean {
   return collection.collectedAmount > collection.refundedAmount;
 }
 
-/**
- * Whether the host may record «Pagata in struttura»: the tax is still to collect, nothing of what the guest paid online is left (or nothing was paid), the stay is active and the
- * channel does not collect it. The server decides again (422 `tourist_tax_collection_not_applicable`, 409 `tourist_tax_paid_online`, 409 `tourist_tax_payment_in_progress`); this
- * only keeps the button out of the cases it answers no to. The permission (`payment.write`) is asked apart.
- */
 export function canRecordPaidAtProperty(collection: TouristTaxCollection): boolean {
   return collection.status === 'ToCollect' && collection.reason !== 'StayNotActive' && !keepsOnlinePayment(collection);
 }

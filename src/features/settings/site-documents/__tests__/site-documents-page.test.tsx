@@ -76,7 +76,6 @@ function problemError(status: number, data: Record<string, unknown> = {}): Axios
   });
 }
 
-/** The user's contexts as the API returns them: held as the owner, or with `roleKey` (a member of the org, AM-00). */
 function mockContexts(contextKeys: AppContextKey[], roleKey?: string) {
   vi.mocked(useWorkspace).mockReturnValue({
     contexts: contextKeys.map((contextKey) => contextOf(contextKey, roleKey)),
@@ -125,7 +124,6 @@ describe('SiteDocumentsPage (BK-14, A3-21)', () => {
     expect(OrgsApi.getSiteDocuments).not.toHaveBeenCalled();
   });
 
-  // AM-00 (S1): a collaborator of the org has the rental context but not the owner's role key.
   it.each(MEMBER_ROLE_KEYS)(
     'SiteDocumentsPage_MemberWithRoleKey_%s_ShowsAdminRequiredWithoutCallingTheApi',
     (roleKey) => {
@@ -300,7 +298,6 @@ describe('SiteDocumentsPage (BK-14, A3-21)', () => {
 
     await waitFor(() => expect(OrgsApi.withdrawSiteDocument).toHaveBeenCalledWith('terms'));
     await waitFor(() => expect(screen.getByTestId('site-document-terms-status')).toHaveTextContent(/Ritirato/));
-    // The withdrawn text stays in the editor and can be published again.
     expect(screen.getByTestId('site-document-terms-content')).toHaveValue('Termini');
     expect(screen.getByTestId('site-document-terms-publish')).toBeEnabled();
     expect(screen.queryByTestId('site-document-terms-withdraw')).not.toBeInTheDocument();
@@ -330,7 +327,6 @@ describe('SiteDocumentsPage (BK-14, A3-21)', () => {
 
     const history = await screen.findByTestId('site-document-privacy-history');
     expect(within(history).getAllByRole('listitem')).toHaveLength(2);
-    // The current version has no "use as base": it is already in the editor.
     expect(within(history).queryByTestId('site-document-privacy-use-version-2')).not.toBeInTheDocument();
 
     fireEvent.click(within(history).getByTestId('site-document-privacy-use-version-1'));

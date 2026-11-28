@@ -10,24 +10,17 @@ import { buildInquiryPath } from '@/lib/supplier-site/booking-params';
 import { PRICE_KINDS, SERVICE_SORTS, viewOfServices } from '@/lib/supplier-site/service-list';
 import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 
-/**
- * All the services of the supplier, `/fornitori/:slug/servizi` (SP-09-FE-b): the category as chips, the kind of price and the order as
- * selects, all in the address (`?cat=&price=&sort=`) so they can be shared; the chips are links and work without script. The count is
- * announced; an empty answer says why and how to take the filters off. No filter for urgent services (left out on purpose).
- */
 export function SupplierServicesPage() {
   const { t } = useTranslation();
   const { model } = useSupplierSite();
   const [params, setParams] = useSearchParams();
 
-  // Without the list of services (the bookings flag is off) there is nothing to list.
   if (model.services === null) return <Navigate to={supplierSitePaths.home(model.slug)} replace />;
 
   const view = viewOfServices(model.services, { cat: params.get('cat'), price: params.get('price'), sort: params.get('sort') });
   const filtered = view.list.length !== model.services.length;
   const base = supplierSitePaths.services(model.slug);
 
-  /** The address with one choice changed (null takes it off); the others stay. */
   const withChoice = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
     for (const [key, value] of Object.entries(patch)) {

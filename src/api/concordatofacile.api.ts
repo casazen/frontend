@@ -10,12 +10,7 @@ import type {
   CfSyncResponse,
 } from '@/types/concordatofacile.types';
 
-/** ConcordatoFacile one-time payment and access (ADR-005). */
 export const ConcordatoFacileApi = {
-  /**
-   * Check access to the CF module for a lease (ADR-005-R8).
-   * Returns whether user has access (via payment, gift, or admin), gift availability, and timestamps.
-   */
   getAccess: (leaseId: string): Promise<CfAccessResponse> =>
     ApiClient.get<CfAccessResponse>(`/leases/${leaseId}/concordatofacile/access`),
 
@@ -52,11 +47,6 @@ export const ConcordatoFacileApi = {
   acceptPrivacy: (leaseId: string): Promise<CfAccessResponse> =>
     ApiClient.post<CfAccessResponse>(`/leases/${leaseId}/concordatofacile/privacy-acceptance`),
 
-  /**
-   * Get practice status for a lease (ADR-008-R11, ADR-008-R15).
-   * Returns cached practices with staleness indicator and polling schedule.
-   * Requires LeaseRead policy.
-   */
   getStatus: (leaseId: string): Promise<CfStatusResponse> =>
     ApiClient.get<CfStatusResponse>(`/leases/${leaseId}/concordatofacile/status`),
 

@@ -25,7 +25,6 @@ let mount: Mount;
 let assign: ReturnType<typeof vi.fn>;
 let emit: ReturnType<typeof vi.fn>;
 
-/** Loads `search.js` into a page that has a loader that only records the registration, and gives back the function it registered. */
 async function loadBar(): Promise<Mount> {
   vi.resetModules();
   const register = vi.fn();
@@ -36,9 +35,7 @@ async function loadBar(): Promise<Mount> {
   return register.mock.calls[0][1] as Mount;
 }
 
-/** The address of the page the bar is on (it is read when the form is sent), with `location.assign` caught. */
 function stubLocation(search = ''): void {
-  // Read from the real location, not from an earlier stub of it.
   vi.unstubAllGlobals();
   window.history.replaceState(null, '', `/page${search}`);
   assign = vi.fn();
@@ -76,7 +73,6 @@ const note = () => q('.czs-note');
 const cell = (day: string) => q(`[data-day="${day}"]`);
 const press = (target: Element, key: string) => target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
 
-/** Opens the calendar with a click (what Enter and Space do on a button) and picks the two days. */
 function choose(arrival: string, departure: string): void {
   opener().click();
   cell(arrival).click();
@@ -388,7 +384,6 @@ describe('the calendar of the bar (AC4)', () => {
 
   it('searchBar_Calendar_KeyboardOnly_OpensMovesPicksAndGivesTheFocusBack', () => {
     bar();
-    // Enter and Space on the button are its click: the opener is a real button.
     opener().focus();
     opener().click();
     expect(document.activeElement).toBe(cell('2026-12-01'));
@@ -458,7 +453,6 @@ describe('the calendar of the bar (AC4)', () => {
     guests().dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: guests() }));
 
     expect(q('[role="dialog"]').hidden).toBe(true);
-    // The focus stays where the guest put it: it is not taken back to the opener.
     expect(document.activeElement).toBe(guests());
   });
 
@@ -510,14 +504,12 @@ describe('the submit (AC1)', () => {
     expect(url.hash).toBe('#sezione');
     expect(Object.fromEntries(url.searchParams)).toEqual({
       foo: '1',
-      // The target sets its own campaign: the page's is not copied over it.
       utm_campaign: 'fixed',
       checkin: '2026-12-05',
       checkout: '2026-12-09',
       guests: '4',
       lang: 'it',
       where: 'locarno',
-      // Where the guest came from follows them; what is not a plain token, and everything that is not a `utm_*`, does not.
       utm_source: 'newsletter',
     });
     expect(problem().textContent).toBe('');
@@ -553,7 +545,6 @@ describe('the submit (AC1)', () => {
     expect(url.searchParams.getAll('checkin')).toEqual(['2026-12-05']);
     expect(url.searchParams.getAll('guests')).toEqual(['2']);
     expect(url.searchParams.getAll('lang')).toEqual(['it']);
-    // A place the bar did not choose is not touched: the target may pin one.
     expect(url.searchParams.getAll('where')).toEqual(['old']);
   });
 
@@ -607,7 +598,6 @@ describe('the submit (AC1)', () => {
   });
 
   it('searchBar_Submit_AReportThatFailsNeverKeepsTheGuestFromSearching', () => {
-    // A data layer the page broke, a listener that throws: the report is the page's business, the search is the guest's.
     emit.mockImplementation(() => {
       throw new Error('the data layer is not a list');
     });
@@ -642,7 +632,6 @@ describe('the submit (AC1)', () => {
     withBrowserTimeZone('Pacific/Kiritimati');
 
     it('searchBar_Submit_WritesTheLocalDaysChosenNotTheDayBefore', () => {
-      // 10:00 UTC of 1 December is already 2 December in Kiritimati (UTC+14): the first day of the calendar is the 2nd.
       vi.setSystemTime(new Date('2026-12-01T10:00:00Z'));
       bar();
 
@@ -654,7 +643,6 @@ describe('the submit (AC1)', () => {
       send().click();
 
       const url = new URL(assign.mock.calls[0][0] as string);
-      // A local midnight is 14 hours earlier in UTC: written with `toISOString()` these would be the 4th and the 8th.
       expect(url.searchParams.get('checkin')).toBe('2026-12-05');
       expect(url.searchParams.get('checkout')).toBe('2026-12-09');
       expect(emit.mock.calls[0][1]).toMatchObject({ start_date: '2026-12-05', end_date: '2026-12-09' });
@@ -698,7 +686,6 @@ describe('what blocks the submit (AC2)', () => {
   it('searchBar_Submit_AnArrivalThatHasBecomePastIsBlocked', () => {
     bar();
     choose('2026-12-02', '2026-12-04');
-    // The page stayed open: it is the 5th now.
     vi.setSystemTime(new Date('2026-12-05T12:00:00Z'));
 
     send().click();
@@ -709,7 +696,6 @@ describe('what blocks the submit (AC2)', () => {
   });
 
   it('searchBar_Calendar_APastDayCannotBeChosen', () => {
-    // It is the 10th: the days of the month before it are shown, and are over.
     vi.setSystemTime(new Date('2026-12-10T12:00:00Z'));
     bar();
     opener().click();
@@ -730,7 +716,6 @@ describe('what blocks the submit (AC2)', () => {
     cell('2026-12-05').click();
     cell('2026-12-05').click();
 
-    // Each of them started the stay again; there is still no departure.
     expect(opener().textContent).toBe('5 dic – …');
     send().click();
     expect(problem().textContent).toBe(IT.needDates);
@@ -962,7 +947,6 @@ describe('what goes out, and what never does (AC5)', () => {
     for (const [name, value] of url.searchParams) {
       expect(value, name).toMatch(/^[\w.~-]+$/);
     }
-    // The event carries no more than the stay and the place.
     expect(Object.keys(emit.mock.calls[0][1] as object).sort()).toEqual(['end_date', 'number_of_passengers', 'search_term', 'start_date']);
   });
 
@@ -995,7 +979,6 @@ describe('what goes out, and what never does (AC5)', () => {
     expect(beaconSpy).not.toHaveBeenCalled();
     expect(imageSpy).not.toHaveBeenCalled();
     expect(socketSpy).not.toHaveBeenCalled();
-    // Nothing that loads anything is created: no image, frame, script, link, object, audio or video.
     expect(created.filter((tag) => ['img', 'iframe', 'script', 'link', 'object', 'embed', 'audio', 'video', 'source', 'picture'].includes(tag))).toEqual([]);
     expect(document.querySelectorAll('iframe, img, script')).toHaveLength(0);
     Reflect.deleteProperty(navigator, 'sendBeacon');
@@ -1093,7 +1076,6 @@ describe('the report of the search and the preview (AC7)', () => {
 
 describe('the look (AC5, AC6)', () => {
   it('searchCss_EveryRuleIsScopedByThePrefixOfTheBar', () => {
-    // Every selector of every rule, also inside the media query, starts with the root of the bar.
     const rules = SEARCH_CSS.replace(/@media[^{]*\{/g, '').split('}').filter((rule) => rule.trim() !== '');
     expect(rules.length).toBeGreaterThan(20);
     for (const rule of rules) {
@@ -1107,14 +1089,12 @@ describe('the look (AC5, AC6)', () => {
     for (const property of ['margin', 'padding', 'border', 'background', 'box-shadow', 'text-transform', 'letter-spacing', 'font-size', 'line-height', 'color', 'text-shadow', 'transition']) {
       expect(SEARCH_CSS, property).toContain(`${property}:`);
     }
-    // The states a theme styles: hover, focus and active are declared for the buttons and the controls.
     expect(SEARCH_CSS).toContain('.czs-btn:hover');
     expect(SEARCH_CSS).toContain('.czs-control:focus');
     expect(SEARCH_CSS).toContain('.czs-step:active');
   });
 
   it('searchCss_TheControlsDeclareTheSizeOfATouchTargetAndAVisibleFocus', () => {
-    // Targets of at least 44 px, and a visible focus.
     expect(SEARCH_CSS).toMatch(/\.czs-btn\{[^}]*min-height:44px/);
     expect(SEARCH_CSS).toMatch(/\.czs-control\{[^}]*min-height:44px/);
     expect(SEARCH_CSS).toMatch(/\.czs-day\{[^}]*height:44px/);
@@ -1296,7 +1276,6 @@ describe('the look (AC5, AC6)', () => {
     });
 
     it('theTextOnThePrimaryHasAContrastOfAtLeast4Point5AlsoNearTheCrossoverOfBlackAndWhite', () => {
-      // The hardest colors are the grays around luminance 0.18: every step of gray from 0x60 to 0x90 is tried, and a few colors of the same luminance.
       for (let gray = 0x60; gray <= 0x90; gray += 1) {
         const hex = `#${gray.toString(16).padStart(2, '0').repeat(3)}`;
         expect(contrastRatio(hex, onColor(hex)), hex).toBeGreaterThanOrEqual(4.5);
@@ -1352,7 +1331,6 @@ describe('through the loader (AC7)', () => {
   const BAR_BASE = 'https://prenota.quokka360.com';
   let stopLoader: () => void;
 
-  /** Loads the loader and `search.js` as a page does: the loader asks for the file, the file registers itself, the browser says it loaded. */
   async function pageWithTheLoader(attributes: Record<string, string>): Promise<HTMLElement> {
     const listeners: EventListenerOrEventListenerObject[] = [];
     const observers: MutationObserver[] = [];
@@ -1446,7 +1424,6 @@ describe('through the loader (AC7)', () => {
   });
 
   it('searchBar_Search_APreviewAskedAfterTheLoaderMountedTheBar_NeverLeavesThePage', async () => {
-    // The element carries the attribute, so the loader draws the bar by itself; the console asks for the preview afterwards.
     const element = await pageWithTheLoader({ target: '/prenota/' });
     (window as EmbedWindow & { CasaZenEmbed: { mount: (element: Element, options?: Options) => void } }).CasaZenEmbed.mount(element, { widget: 'search', preview: true });
     choose('2026-12-05', '2026-12-09');

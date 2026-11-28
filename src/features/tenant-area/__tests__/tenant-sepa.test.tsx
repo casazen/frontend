@@ -23,7 +23,6 @@ describe('tenant SEPA consent and amounts', () => {
     vi.mocked(ApiClient.post).mockResolvedValue({ clientSecret: 'seti_secret', publishableKey: 'pk_test', stripeAccountId: '' });
     vi.mocked(ApiClient.put).mockResolvedValue({ ...settings, authorized: true });
     show(<TenantSepaSettings leaseId="lease-1" />);
-    // Setting the debit up is not the page's main action (the payment is): an outline button, never a second filled one.
     expect(await screen.findByRole('button', { name: 'Autorizza mandato con Stripe' })).toHaveClass('border-input');
     fireEvent.click(await screen.findByRole('button', { name: 'Autorizza mandato con Stripe' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Stripe consent' }));

@@ -9,7 +9,6 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { PropertyThumb } from '../components/property-thumb';
 import { propertyModePath } from '../mode/paths';
 import { formatPropertyLocation } from '../property-location';
-// The drawer registers its kind when its module is loaded: the list is what opens it.
 import './long-rent-property-drawer';
 import { apeOfRow, cadastralOfRow, leaseOfRow, modeChangeOfRow, tenantOfRow } from './long-rent-property-format';
 import type { LongRentPropertyRow } from './long-rent-property-rows';
@@ -22,22 +21,13 @@ import {
   newLeaseForPropertyPath,
 } from './paths';
 
-/** The states in the order the landlord has to look at them: what is free (and can be let) first. */
 const STATUS_RANK: Record<LongRentPropertyStatus, number> = { Free: 0, Rented: 1 };
 
 export interface LongRentPropertiesListOptions {
-  /** `property.write` (long-rent): editing a property is for who may write it. */
   canWrite: boolean;
-  /** `lease.create`: a lease is made by who may create leases. */
   canCreateLease: boolean;
-  /** `lease.read`: a lease is opened by who may read it. */
   canReadLease: boolean;
-  /** The leases are known. Without them nothing is said of who lives where, so there are no quick filters on it. */
   leasesKnown: boolean;
-  /**
-   * "Richiedi intervento" (LR-07b): asks the page to open the request to a supplier for this property. The request is for who may
-   * write the property (`canWrite`), as everywhere else; without this the entry is not in the menu.
-   */
   onRequest?: (propertyId: string) => void;
 }
 
@@ -201,15 +191,12 @@ export function useLongRentPropertiesList({ canWrite, canCreateLease, canReadLea
           canWrite
             ? { id: 'edit', label: t('longRentProperties.list.actions.edit'), icon: Pencil, href: longRentPropertyEditPath(row.property.id), testId: 'long-rent-property-edit' }
             : null,
-          // When the property has a lease, that is its button above; a new lease (another tenant) is here.
           canCreateLease && leaseOfRow(row)
             ? { id: 'new-lease', label: t('longRentProperties.list.actions.createLease'), icon: FileSignature, href: newLeaseForPropertyPath(row.property.id), testId: 'long-rent-property-new-lease' }
             : null,
-          // A job for a supplier (LR-08b): the window of the request opens on this property, without leaving the list.
           canWrite && onRequest
             ? { id: 'request', label: t('longRentProperties.list.actions.request'), icon: Wrench, onSelect: () => onRequest(row.property.id), testId: 'long-rent-property-request' }
             : null,
-          // The same entry as the menu of the page of the property: the wizard that moves it to Affitti brevi.
           canWrite ? 'separator' : null,
           canWrite
             ? { id: 'mode', label: t('propertyMode.entry.change'), icon: ArrowRightLeft, href: propertyModePath('long-rent', row.property.id), testId: 'long-rent-property-mode' }
@@ -235,7 +222,6 @@ export function useLongRentPropertiesList({ canWrite, canCreateLease, canReadLea
           foot: tenant?.note ? <p className="text-sm text-foreground/70">{tenant.note}</p> : undefined,
         };
       },
-      // The name of the property opens its drawer; the page of the property is the first entry of "⋯" and the foot of the drawer.
       detail: { drawerKind: LONG_RENT_PROPERTY_DRAWER_KIND },
       rowHref: (row) => longRentPropertyPath(row.property.id),
       cardsUntil: 'xl',

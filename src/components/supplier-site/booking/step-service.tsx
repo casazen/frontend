@@ -13,17 +13,14 @@ interface StepServiceProps {
   services: PublicSupplierService[];
   chosen: string | null;
   onChoose: (slug: string) => void;
-  /** The chosen service in full (its supplements), as the server sends it. */
   detail: { service: PublicSupplierServiceDetail | undefined; isLoading: boolean; isError: boolean; onRetry: () => void };
   selection: ServiceSelection | null;
   onQuantity: (quantity: number) => void;
   onSurface: (surface: number) => void;
   onOption: (code: string, quantity: number) => void;
-  /** The person went on without choosing, or the service it chose is gone. */
   problem: 'required' | null;
 }
 
-/** Step 1, "Servizio": which service, and the options that change its price. */
 export function StepService({ supplierSlug, services, chosen, onChoose, detail, selection, onQuantity, onSurface, onOption, problem }: StepServiceProps) {
   const { t, i18n } = useTranslation();
   const bookable = services.filter(isBookable);

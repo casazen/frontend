@@ -11,7 +11,6 @@ import { AREA_HOME_PATH, BILLING_SETUP_PATH } from './billing-wizard-ids';
 import { flagOf, missingItemsOf, sectionOf } from './billing-wizard-model';
 
 interface BillingWizardDoneProps {
-  /** Where the confirmation leads first, with what the button says: the plan «Inizia con CasaZen» while it exists, else the fiscal page. */
   home: { to: string; label: string };
 }
 

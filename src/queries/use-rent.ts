@@ -7,7 +7,6 @@ import type { ConfigureRentScheduleInput, MarkRentPaidInput, RentLedger } from '
 import { LEASES_KEY } from './use-leases';
 
 export const RENT_KEY = 'lease-rent';
-/** The rent register of the long-term area (LR-04b): a change to any rent invalidates it, and it is read again when its page opens. */
 export const RENT_REGISTER_KEY = 'long-rent-rents';
 export const PUBLIC_RENT_KEY = 'public-rent-payment';
 
@@ -35,12 +34,10 @@ function useRentMutation<TVariables, TResult>(
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [RENT_KEY, leaseId] });
       void queryClient.invalidateQueries({ queryKey: [RENT_REGISTER_KEY] });
-      // The row of the lease in the list holds its late rents and its next step (a plan to activate, a rent to chase).
       void queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       toast.success(i18n.t(successKey));
     },
     onError: (error) => {
-      // The ledger may have changed (paid online meanwhile, payment in flight): show the real state.
       void queryClient.invalidateQueries({ queryKey: [RENT_KEY, leaseId] });
       void queryClient.invalidateQueries({ queryKey: [RENT_REGISTER_KEY] });
       void queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
@@ -78,7 +75,6 @@ export function useSendRentPaymentRequest(leaseId: string) {
   );
 }
 
-/** Explicit send of one budget or settlement. The mutation runs only when the landlord confirms. */
 export function useSendCondominiumNotice(leaseId: string) {
   return useRentMutation(
     leaseId,
@@ -88,7 +84,6 @@ export function useSendCondominiumNotice(leaseId: string) {
   );
 }
 
-/** The tenant's payment page: the installment of the link (404 when the link is wrong or replaced). */
 export function usePublicRentPayment(installmentId: string, token: string, awaitingStripe = false) {
   return useQuery({
     queryKey: [PUBLIC_RENT_KEY, installmentId, token],

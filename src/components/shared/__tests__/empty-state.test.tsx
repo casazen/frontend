@@ -69,7 +69,6 @@ describe('EmptyState actions', () => {
 
     const link = screen.getByRole('link', { name: 'Leggi la guida' });
     expect(link).toHaveAttribute('href', 'https://example.com/guida');
-    // jsdom cannot leave the page: the click is cancelled here, what matters is that the router did not take it.
     link.addEventListener('click', (event) => event.preventDefault());
     fireEvent.click(link);
     expect(screen.getByTestId('where')).toHaveTextContent('/start');
@@ -163,7 +162,6 @@ describe('EmptyState help and sample data', () => {
   it('EmptyState_NoHelpNoSample_HasNoExtraRow', () => {
     const { container } = renderState({ action: { label: 'Aggiungi', onClick: vi.fn() } });
 
-    // icon box, title, description, actions: nothing else.
     expect(container.querySelector('h3')?.parentElement?.children).toHaveLength(4);
   });
 });

@@ -16,10 +16,6 @@ import { FirstRunWizard } from '../first-run-wizard';
 import { supportConfig } from '@/config/support.config';
 import { GuideButton } from '../guide-panel';
 
-/**
- * The guide: the panel of the header, which is the user manual (search, the tasks of the page that is open, the chapters), and the welcome of the
- * first access («Inizia con CasaZen» as the first wizard).
- */
 vi.mock('@/api/onboarding.api', () => ({
   onboardingApi: { getStatus: vi.fn(), getPath: vi.fn(), getPlan: vi.fn() },
 }));

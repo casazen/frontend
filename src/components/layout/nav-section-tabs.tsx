@@ -73,7 +73,6 @@ function SectionTabs({ className }: NavSectionTabsProps) {
   );
 }
 
-/** The strip of a section that has a page with a counter: it asks for the numbers, which only a query client can give. */
 function CountedSectionTabs({ section, className }: { section: RouteManifestEntry[]; className?: string }) {
   const counts = useNavCounts(section.slice(1));
   return <SectionTabStrip section={section} counts={counts} className={className} />;

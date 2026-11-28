@@ -38,7 +38,6 @@ function renderDashboard(otaPartnerApi: boolean) {
   );
 }
 
-// FD-20 / D10 (A2-09): the dashboard called OTA endpoints that do not exist; the widget is behind otaPartnerApi.
 describe('DashboardPage OTA widget', () => {
   beforeEach(() => {
     vi.mocked(otaApi.getAll).mockReset();

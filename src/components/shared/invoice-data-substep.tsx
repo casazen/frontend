@@ -18,7 +18,6 @@ import {
 import { useInvoiceData, useSaveInvoiceData } from '@/queries/use-invoice-data';
 import { INVOICE_DATA_SOURCES, type InvoiceDataField, type InvoiceDataTextField } from '@/types';
 
-/** What a change of a field says about the form: the kind is one of the two kinds, every other field is text. */
 function changeOf(field: InvoiceDataField, value: string): Partial<InvoiceDataFormValues> {
   if (field === 'recipientKind') return { recipientKind: value === 'Company' ? 'Company' : 'Guest' };
 
@@ -29,9 +28,7 @@ function changeOf(field: InvoiceDataField, value: string): Partial<InvoiceDataFo
 
 export interface InvoiceDataSubstepProps {
   bookingId: string;
-  /** The data is right and, if the host changed it, saved: the place the sub-step was opened from shows again. */
   onDone: () => void;
-  /** The host gives up: nothing is saved and the place the sub-step was opened from shows again. */
   onCancel: () => void;
 }
 
@@ -64,12 +61,10 @@ export function InvoiceDataSubstep({ bookingId, onDone, onCancel }: InvoiceDataS
   const heading = useRef<HTMLHeadingElement>(null);
   const [focusRequest, setFocusRequest] = useState(0);
 
-  // The panel opens on its title, so a screen reader says where the person is and the keyboard goes on to the fields.
   useEffect(() => {
     heading.current?.focus();
   }, []);
 
-  // After a failed «Done» the focus goes to the first field in error (NF-11).
   useEffect(() => {
     if (focusRequest === 0) return;
     panel.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();

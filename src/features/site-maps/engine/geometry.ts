@@ -1,7 +1,3 @@
-/**
- * 2D geometry of the schematic map engine (DB-19a): Catmull-Rom curves, compact SVG path writers and the small polygon
- * toolbox (clipping, point in polygon, Voronoi cells) the generators are built from. Pure functions on `[x, y]` pairs.
- */
 import { PI, clamp, num } from './numeric';
 
 export type Pt = [number, number];
@@ -9,7 +5,6 @@ export type Poly = Pt[];
 
 type Bezier = [Pt, Pt, Pt, Pt];
 
-/** Centripetal Catmull-Rom as cubic Bézier segments [p1, c1, c2, p2]. */
 export function crBezier(pts: readonly Pt[], closed: boolean): Bezier[] {
   const n = pts.length;
   const segs: Bezier[] = [];
@@ -43,7 +38,6 @@ export function crBezier(pts: readonly Pt[], closed: boolean): Bezier[] {
   return segs;
 }
 
-/** Smooth SVG path (Bézier) through the points. */
 export function smoothD(pts: readonly Pt[], closed = false, d = 1): string {
   const segs = crBezier(pts, closed);
   if (!segs.length) return '';
@@ -54,7 +48,6 @@ export function smoothD(pts: readonly Pt[], closed = false, d = 1): string {
   return closed ? `${s}Z` : s;
 }
 
-/** Samples the smooth curve about every `step` (same unit as the points). */
 export function sampleCurve(pts: readonly Pt[], closed: boolean, step: number): Pt[] {
   const segs = crBezier(pts, closed);
   const out: Pt[] = [];
@@ -77,20 +70,17 @@ export function sampleCurve(pts: readonly Pt[], closed: boolean, step: number): 
   return out;
 }
 
-/** Compact number for paths: no leading zero («.5», «-.5»). */
 const cn = (v: number, d = 1): string => {
   const s = num(v, d);
   return s.startsWith('0.') ? s.slice(1) : s.startsWith('-0.') ? `-${s.slice(2)}` : s;
 };
 
-/** Joins numbers with the fewest separators (the minus sign separates by itself). */
 const joinNums = (arr: string[]): string => {
   let out = '';
   for (const s of arr) out += out && s[0] !== '-' ? ` ${s}` : s;
   return out;
 };
 
-/** «M x y l dx dy …» in relative coordinates: every point is rounded before the difference, so there is no drift. */
 function relD(pts: readonly Pt[], d: number, close: boolean): string {
   const k = 10 ** d;
   const r = (v: number): number => Math.round(v * k) / k;
@@ -107,26 +97,21 @@ function relD(pts: readonly Pt[], d: number, close: boolean): string {
   return `M${cn(r(pts[0][0]), d)} ${cn(r(pts[0][1]), d)}l${joinNums(nums)}${close ? 'z' : ''}`;
 }
 
-/** A polygon as a closed sub-path (`d` decimals). */
 export const polyD = (poly: readonly Pt[], d = 1): string => (poly.length < 3 ? '' : relD(poly, d, true));
-/** A polyline as an open sub-path (`d` decimals). */
 export const lineD = (pts: readonly Pt[], d = 1): string => (pts.length < 2 ? '' : relD(pts, d, false));
 
-/** Signed area (positive or negative by winding). */
 export const polyArea = (poly: readonly Pt[]): number => {
   let s = 0;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) s += (poly[j][0] + poly[i][0]) * (poly[j][1] - poly[i][1]);
   return s / 2;
 };
 
-/** Compactness of a polygon (1 is a circle): used to discard slivers. */
 export function compactness(poly: readonly Pt[]): number {
   let per = 0;
   for (let i = 0; i < poly.length; i++) per += Math.hypot(poly[(i + 1) % poly.length][0] - poly[i][0], poly[(i + 1) % poly.length][1] - poly[i][1]);
   return per ? (4 * PI * Math.abs(polyArea(poly))) / (per * per) : 0;
 }
 
-/** Keeps the points with nx·x + ny·y ≤ c (Sutherland-Hodgman, one half-plane). */
 export function clipHalf(poly: readonly Pt[], nx: number, ny: number, c: number): Poly {
   const out: Poly = [];
   const n = poly.length;
@@ -152,7 +137,6 @@ export function clipRect(poly: readonly Pt[], x0: number, y0: number, x1: number
   return p;
 }
 
-/** Point in polygon (even-odd). */
 export function pip(poly: readonly Pt[], x: number, y: number): boolean {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
@@ -173,7 +157,6 @@ export function centroid(poly: readonly Pt[]): Pt {
   return [x / poly.length, y / poly.length];
 }
 
-/** Area-weighted centroid of a polygon. */
 export function polyCentroid(poly: readonly Pt[]): Pt {
   let a = 0;
   let cx = 0;
@@ -187,7 +170,6 @@ export function polyCentroid(poly: readonly Pt[]): Pt {
   return Math.abs(a) < 1e-9 ? centroid(poly) : [cx / (3 * a), cy / (3 * a)];
 }
 
-/** Shrinks a convex polygon by `d` (the lanes between blocks). */
 export function insetConvex(poly: readonly Pt[], d: number): Poly | null {
   const cen = centroid(poly);
   let out: Poly = poly.slice();
@@ -208,7 +190,6 @@ export function insetConvex(poly: readonly Pt[], d: number): Poly | null {
   return out.length > 2 ? out : null;
 }
 
-/** Distance from a point to a polyline. */
 export function distToLine(pts: readonly Pt[], x: number, y: number): number {
   let best = Infinity;
   for (let i = 0; i < pts.length - 1; i++) {
@@ -223,7 +204,6 @@ export function distToLine(pts: readonly Pt[], x: number, y: number): number {
   return best;
 }
 
-/** Ellipse (convex polygon) with n vertices, rotated by `rot` radians. */
 export function ellipsePoly(cx: number, cy: number, rx: number, ry: number, rot = 0, n = 28): Poly {
   const out: Poly = [];
   const c = Math.cos(rot);
@@ -237,7 +217,6 @@ export function ellipsePoly(cx: number, cy: number, rx: number, ry: number, rot 
   return out;
 }
 
-/** Voronoi cells (half-plane cuts) inside a convex region. */
 export function voronoiCells(sites: readonly Pt[], region: readonly Pt[]): (Poly | null)[] {
   const n = sites.length;
   const cells: (Poly | null)[] = new Array<Poly | null>(n).fill(null);

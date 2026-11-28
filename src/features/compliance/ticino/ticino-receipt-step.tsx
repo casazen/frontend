@@ -7,10 +7,8 @@ import { Label } from '@/components/ui/label';
 import type { SwissReceiptType, TicinoNotificationDay } from '@/types/swissCompliance.types';
 import { groupRowsOf, PARENTAL_AUTHORIZATION_NEEDED, warnedStaysOf } from './ticino-day-model';
 
-/** The largest document the archive takes (`SwissComplianceReceipts.MaxFileBytes` of the backend, 10 MB): a bigger one is said so before it is sent. */
 const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
 
-/** What the host files: the page the portal gives back (PDF or image), its CSV, or a scan of the authorization or of the sheet. */
 const ACCEPTED_DOCUMENTS = 'application/pdf,image/*,text/csv,.csv';
 
 interface DocumentUploadProps {
@@ -18,16 +16,10 @@ interface DocumentUploadProps {
   fileLabel: string;
   buttonLabel: string;
   hint?: string;
-  /** A request of the layer is on its way: nothing is sent meanwhile. */
   busy: boolean;
-  /** Files the document; `true` when it was filed (the choice of the file is then forgotten). */
   onUpload: (file: File) => Promise<boolean>;
 }
 
-/**
- * A file field with its button, for a document of the archive (not a form: the layer is one, and a dialog or a second form inside it would send the first). The file
- * the person chose stays chosen while they look at another step; it is forgotten once it is filed.
- */
 function DocumentUpload({ testId, fileLabel, buttonLabel, hint, busy, onUpload }: DocumentUploadProps) {
   const { t } = useTranslation();
   const inputId = useId();
@@ -84,15 +76,9 @@ interface TicinoReceiptStepProps {
   /** The person may file documents of the police communication of the property (`alloggiati.submit`, what the endpoint asks). */
   canSubmit: boolean;
   busy: boolean;
-  /** Files a document of a kind for the day, with the reference it is kept under. */
   onRecord: (type: SwissReceiptType, reference: string, file: File) => Promise<boolean>;
 }
 
-/**
- * Step 5 «Aggiungi la ricevuta» (optional): the page the portal gives back for the file, which the host keeps here for five years (the day is closed without it), and the
- * two documents the Ticino rules keep five years: the written authorization of the parents of minors who travel without an adult, and the sheet of a group of six or more.
- * Filing the receipt also declares the day, with the receipt attached, so the team is told.
- */
 export function TicinoReceiptStep({ day, canSubmit, busy, onRecord }: TicinoReceiptStepProps) {
   const { t } = useTranslation();
   const parentalStays = warnedStaysOf(day, PARENTAL_AUTHORIZATION_NEEDED);

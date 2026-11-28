@@ -13,18 +13,10 @@ import { PORTAL_SOURCES, type BillingWizardValues } from '../billing-wizard-sche
 import { DocumentExample } from './document-example';
 
 interface SummaryStepProps {
-  /** The setup as the server has it now: what is missing is what the server says, never what the form seems to hold. */
   setup: BillingSetup | undefined;
-  /** The answers of the whole wizard. */
   values: BillingWizardValues;
-  /** The steps this person has: an item opens its step only when the step is one of them. */
   steps: readonly BillingStepId[];
-  /** The tax rule in force, for the example. */
   preview: Pick<UseQueryResult<FiscalIssuerPreview>, 'data' | 'isPending' | 'isError'>;
-  /**
-   * The settings of the send to the accountant as the server has them now, `null` while they cannot be read: the row of the step «Commercialista» says what is SAVED (the monthly send only
-   * happens if it is), and never writes the address of a third party on the page.
-   */
   accountant?: AccountantPackageSettings | null;
 }
 
@@ -81,7 +73,6 @@ export function SummaryStep({ setup, values, steps, preview, accountant }: Summa
     }),
     stepId: BILLING_STEPS.issuing,
   });
-  // The owners who issue the documents of their stays (E17/F03/US01/T01): a row only where the step exists. It is answered when the setup says no owner misses a profile, and the count is the server's.
   if (has(BILLING_STEPS.ownerIssuers)) {
     const owners = ownerIssuersMissing(setup);
     items.push({
@@ -91,7 +82,6 @@ export function SummaryStep({ setup, values, steps, preview, accountant }: Summa
       stepId: BILLING_STEPS.ownerIssuers,
     });
   }
-  // The optional step of the accountant: a row only where the step exists. «Nessun invio automatico» is an answer too (the step may be left as it is); a setting that cannot be read is not.
   if (has(BILLING_STEPS.accountant)) {
     items.push({
       id: 'accountant',
@@ -100,7 +90,6 @@ export function SummaryStep({ setup, values, steps, preview, accountant }: Summa
       stepId: BILLING_STEPS.accountant,
     });
   }
-  // A row has a link to its step only where the person has the step.
   const rows = items.map((item) => ({ ...item, stepId: item.stepId && has(item.stepId as BillingStepId) ? item.stepId : undefined }));
 
   return (

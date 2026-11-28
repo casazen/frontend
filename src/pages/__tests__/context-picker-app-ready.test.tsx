@@ -34,8 +34,6 @@ function renderPicker(contexts: ContextBootstrapDto[], isReady = true, setActive
   );
 }
 
-// A user with several areas lands here after the login, on a screen without a shell: the e2e logins (e2e/auth.setup.ts)
-// wait for the same test id as on the header of the shells (UI-00).
 describe('the area picker carries the app-ready test id (UI-00)', () => {
   afterEach(() => {
     cleanup();
@@ -71,8 +69,6 @@ describe('the area picker carries the app-ready test id (UI-00)', () => {
   });
 });
 
-// The backend names both the staff console and the customer's administration «Amministrazione»: the picker showed two equal
-// buttons. It names the areas as the area selector does, in the same order.
 describe('the area picker names the areas as the area selector does', () => {
   afterEach(() => {
     cleanup();

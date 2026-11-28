@@ -17,7 +17,6 @@ import {
   leaseTermText,
 } from '../lib/lease-list-format';
 
-/** The last events of the lease, the most recent first; "Mostra altri" shows the rest. */
 const EVENTS_SHOWN = 5;
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
@@ -29,11 +28,6 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-/**
- * The inside of the drawer of a lease in the list (LR-02): the state told in words (what it means and what it takes to move on,
- * from the dictionary of states), the lease at a glance and its latest events. The summary is the row of the list, so it is
- * there at once; only the history asks the API (`GET /leases/{id}`). The way to the whole lease is the foot of the drawer.
- */
 export function LeaseListDetail({ lease }: { lease: LeaseSummary }) {
   const { t, i18n } = useTranslation();
   const { data, isLoading, isError, refetch, isFetching } = useLease(lease.id);

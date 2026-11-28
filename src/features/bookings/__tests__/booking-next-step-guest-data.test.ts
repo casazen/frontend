@@ -3,7 +3,6 @@ import type { Booking } from '@/types';
 import { nextStepOf } from '../lib/booking-next-step';
 import { checkInWizardPath } from '../lib/stay-actions';
 
-/** A confirmed stay that has not started: the arrival is on the 10th of January 2099. */
 const stay = {
   status: 'Confirmed',
   source: 'Direct',

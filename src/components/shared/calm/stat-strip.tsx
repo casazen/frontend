@@ -5,40 +5,24 @@ import { ChevronRight, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TONE_STYLES, type CalmTone } from './calm-tone';
 
-/**
- * The most numbers a strip shows. The redesign conventions (§7bis) say three; the task of the calm blocks allows a fourth for
- * the areas that need it (the home of Affitti brevi has four). More is a report, and a report has its own page.
- */
 const MAX_TILES = 4;
 
 export interface StatTileProps extends Omit<React.HTMLAttributes<HTMLElement>, 'children' | 'onClick'> {
-  /** What the number counts, already translated ("Incassati a ottobre"). */
   label: string;
-  /** The number, already formatted for the person ("1.200 €", "87%", 12). */
   value: string | number;
-  /** `neutral` (default) is plain; the others color the number and put the icon of the tone before the label. */
   tone?: CalmTone;
-  /** Icon identifying the metric. A semantic tone takes precedence when it signals a risk. */
   icon?: LucideIcon;
-  /** How it moves, already formatted with its sign and what it is compared to ("+6% su settembre"). */
   delta?: string;
-  /** The tile is a link to the page that explains the number. (A tile that is not a link has no click: it is not a control.) */
   href?: string;
-  /** Handed to the page that opens (`useLocation().state`). */
   state?: unknown;
 }
 
-/**
- * One number with its name. Not a card: no box, no shadow, so a row of them stays quiet. With an `href` the whole tile is the
- * link (a big target), and a chevron says so.
- */
 export function StatTile({ label, value, tone = 'neutral', icon, delta, href, state, className, ...props }: StatTileProps) {
   const style = TONE_STYLES[tone];
   const ToneIcon = tone === 'neutral' ? icon : style.Icon;
 
   const content = (
     <>
-      {/* `self-start`: in a row of the strip as tall as the longest name, a shorter name stays at the top, as the first line of the others. */}
       <span className={cn('flex items-center gap-1.5 self-start text-sm text-foreground/70', href !== undefined && 'group-hover/tile:underline')}>
         {ToneIcon ? <ToneIcon aria-hidden="true" className={cn('size-5 shrink-0', style.accent)} /> : null}
         <span className="min-w-0 break-words">{label}</span>
@@ -91,12 +75,7 @@ function tilesOf(children: React.ReactNode, path = ''): Entry[] {
 }
 
 export interface StatStripProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** The name of the group for a screen reader. Default: "In breve". */
   label?: string;
-  /**
-   * Three or four `StatTile`s, directly or in a fragment or a list. A child that is not a `StatTile` (a list of names, as in the
-   * Home of Affitti brevi) is taller than a number: it takes the room of the line from a laptop on, beside the tiles.
-   */
   children: React.ReactNode;
 }
 
@@ -105,25 +84,9 @@ export interface StatStripProps extends React.HTMLAttributes<HTMLDivElement> {
 // not move the number of that tile alone, and the numbers of a line start at the same height. The rows have no gap, and the
 // delta is the last one: a tile without it has nothing to fill. On a phone, a column or a carousel, there is nothing to line up.
 const TILE_ROWS = 'sm:row-span-3 sm:grid sm:grid-rows-subgrid sm:*:row-span-3 sm:*:grid sm:*:grid-rows-subgrid';
-// A child that is not a tile (the list of the next arrivals of the Home) is taller than a number and is not made of those rows.
-// Beside it the tiles line up from a laptop on, where the strip is one line: it takes four rows, the fourth is the one that takes
-// the room it asks for (`1fr`), and the three rows of the tiles stay as tall as their own text. In two columns the strip is left
-// as it was: the tiles are wide enough there to have their names on one line, and the `1fr` rows of two lines would all be as
-// tall as the one that needs it.
 const TILE_ROWS_BESIDE_A_LIST = 'lg:row-span-3 lg:grid lg:grid-rows-subgrid lg:*:row-span-3 lg:*:grid lg:*:grid-rows-subgrid';
 const LIST_ROWS = 'lg:row-span-4';
 
-/**
- * Three or four numbers in one quiet row, without charts: one column on a phone, two on a tablet (three, for three: no number
- * is left alone on a line), all in a row from a laptop. The tiles line up, the names over the names and the numbers over the
- * numbers (see `TILE_ROWS`). More than four is a mistake of the page, and in development it says so in the console.
- *
- *     <StatStrip>
- *       <StatTile label="Incassati a ottobre" value="3.600 €" delta="+6% su settembre" />
- *       <StatTile label="In ritardo" value="1.200 €" tone="danger" href="/app/long-rent/rents?filter=late" />
- *       <StatTile label="Ancora da incassare" value="4.800 €" />
- *     </StatStrip>
- */
 export function StatStrip({ label, children, className, ...props }: StatStripProps) {
   const { t } = useTranslation();
   const tiles = tilesOf(children);
@@ -144,9 +107,7 @@ export function StatStrip({ label, children, className, ...props }: StatStripPro
         role="list"
         className={cn(
           'grid grid-cols-1 gap-x-5',
-          // Three tiles across from a tablet, not two and one alone; two for the others.
           count === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2',
-          // Three or four across from a laptop: the sidebar takes its room there, and each number keeps about 170 px.
           count >= 4 && 'lg:grid-cols-4',
           besideAList && 'lg:auto-rows-[auto_auto_auto_1fr]',
         )}

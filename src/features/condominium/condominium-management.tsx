@@ -8,7 +8,6 @@ import { Book } from "./components/condominium-book";
 import { selectClass } from "./condominium-format";
 import { useCondominiumManagementState } from "./use-condominium-management-state";
 
-/** The property owns the book even while vacant or without a rent schedule. */
 export function CondominiumManagement({ propertyId }: { propertyId?: string }) {
   const { t } = useTranslation();
   const {

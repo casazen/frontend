@@ -5,15 +5,10 @@ import { AlertCircle, Check, ChevronDown, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { StepMark } from './wizard-model';
 
-/**
- * One step of the list. The server decides the state of each step (`flow`); the mark is never only a color (a check, an exclamation
- * mark, a lock, the number) and the state is also written under the name.
- */
 export interface StepperEntry {
   step: number;
   label: string;
   mark: StepMark;
-  /** Where the step is; none while the step is not open or the contract does not exist yet. */
   to?: To;
 }
 
@@ -25,7 +20,6 @@ const MARK_BOX: Record<StepMark, string> = {
   locked: 'bg-muted text-muted-foreground',
 };
 
-/** The segment of a step in the bar of a phone: done is filled, the one the person is on is filled and taller, the others are pale. */
 const MARK_SEGMENT: Record<StepMark, string> = {
   current: 'h-2.5 bg-primary',
   done: 'h-1.5 bg-primary/70',
@@ -67,11 +61,6 @@ function StepItem({ entry, number, current }: { entry: StepperEntry; number: num
   );
 }
 
-/**
- * The steps of the wizard (LR-06a, LR-WIZ-1): a list at the side of a computer, each with its state in words (done, you are here, to do),
- * and on a phone a thin bar with one segment for each step and a button, «Tutti i passi», that opens the list. The place of the person
- * («Passo 3 di 7») is in the head of the screen. The steps are the ones that apply to this contract, numbered in order.
- */
 export function LeaseWizardStepper({ entries, current }: { entries: StepperEntry[]; current: number }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -85,7 +74,6 @@ export function LeaseWizardStepper({ entries, current }: { entries: StepperEntry
 
   return (
     <nav aria-label={t('leaseWizard.stepper.label')} data-testid="lease-wizard-stepper" className="min-w-0">
-      {/* Phone: the bar and the button that opens the list. Hidden with CSS from `lg`, so assistive technology reads one version. */}
       <div className="space-y-1 lg:hidden">
         <div className="flex items-center gap-3">
           <div aria-hidden="true" className="flex min-w-0 flex-1 items-center gap-1" data-testid="lease-wizard-bar">

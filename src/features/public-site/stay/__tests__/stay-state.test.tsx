@@ -36,7 +36,6 @@ describe('readStay', () => {
   it('readStay_MorePeopleThanTheHomeTakesAndAPetItDoesNot_AreReportedAndKept', () => {
     const { stay, problems } = readStay(search('guests=7&pets=true'), { today: TODAY, maxGuests: 4, petsAllowed: false });
 
-    // The pet is not dropped: a guest who said it travels with one must be told the home takes none, not booked in without it.
     expect(stay).toMatchObject({ adults: 7, pets: true });
     expect(problems).toEqual(['overCapacity', 'petsNotAllowed']);
   });
@@ -87,7 +86,6 @@ describe('siteLink (E27/F01/US02, NF-123)', () => {
       search('checkin=2026-11-10&checkout=2026-11-13&guests=2&utm_source=agency-site&utm_medium=link&utm_campaign=estate-2026&lang=en'),
     );
 
-    // The stay first and the source after it; only the three values the booking keeps, not the language or anything else of the address.
     expect(link).toBe(
       '/book/demo/property/casa/checkout?checkin=2026-11-10&checkout=2026-11-13&guests=2&utm_source=agency-site&utm_medium=link&utm_campaign=estate-2026',
     );
@@ -149,7 +147,6 @@ describe('useStayState', () => {
     expect(result.current.state.linkTo('/book/demo/property/p1/checkout')).toBe(
       '/book/demo/property/p1/checkout?checkin=2026-11-10&checkout=2026-11-13&guests=2&utm_source=agency-site&utm_medium=link&utm_campaign=estate-2026',
     );
-    // It travels in the address and nowhere else: nothing of it on the device.
     expect(window.localStorage.length).toBe(0);
     expect(window.sessionStorage.length).toBe(0);
   });

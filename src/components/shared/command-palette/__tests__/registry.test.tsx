@@ -11,7 +11,6 @@ describe('registerCommands (UI-06)', () => {
   const undo: Array<() => void> = [];
   afterEach(() => {
     cleanup();
-    // The registry lives as long as the module: what a test added goes away with it.
     undo.splice(0).forEach((remove) => remove());
   });
 
@@ -58,7 +57,6 @@ describe('registerCommands (UI-06)', () => {
 
     expect(hook.result.current).toEqual([second]);
 
-    // The feature that registered the first one leaves: it must not take the second one with it.
     act(() => removeFirst());
     expect(hook.result.current).toEqual([second]);
   });

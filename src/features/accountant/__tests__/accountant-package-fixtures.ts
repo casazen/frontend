@@ -1,14 +1,11 @@
 import type { AgencySummary } from '@/types';
 
-/** The two issuers of the pilot agency: the Swiss one invoices in francs, the Italian one in euros. */
 const QUOKKA = { name: 'Quokka SA', countryCode: 'CH', taxId: 'CHE-123.456.789' };
 const COMO = { name: 'Casa Como Srl', countryCode: 'IT', taxId: 'IT01234567890' };
 
-/** The owners of the two currencies: a Swiss one invoiced in francs and an Italian one invoiced in euros. */
 const SWISS_OWNER = 'ab000000-0000-4000-8000-0000000000c1';
 const ITALIAN_OWNER = 'ab000000-0000-4000-8000-0000000000e1';
 
-/** A summary with nothing in it: August 2026, every list empty, every figure zero, the owner accounting read. */
 export function emptySummary(overrides: Partial<AgencySummary> = {}): AgencySummary {
   return {
     period: '2026-08',
@@ -101,7 +98,6 @@ export function mixedSummary(overrides: Partial<AgencySummary> = {}): AgencySumm
       italy: { owed: 80, paid: 50, toRemit: 30, staysWithoutAmount: 0 },
       switzerland: [{ canton: 'TI', currency: 'CHF', documents: 3, collected: 36 }],
     },
-    // The figures of the Home and of the channel costs carry no currency; the last row of the costs is the total of the server, which adds the houses up whatever their currency.
     stays: { occupiedNights: 41, availableNights: 62, occupancyRate: 0.6613, revenue: 2500.5, stays: 6, revenueNights: 41, adr: 61, revPar: 40.33 },
     portalCosts: [
       { source: 'bookingCom', kind: 'channelCommission', stays: 4, gross: 1700, cost: 255, net: 1445, costRate: 0.15 },

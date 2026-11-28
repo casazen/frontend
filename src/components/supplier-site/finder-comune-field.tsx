@@ -6,13 +6,10 @@ import { comuneLabel } from '@/lib/comune-label';
 import { useComuneDatasetStatus, useComuneSearch } from '@/queries/use-comuni';
 import type { Comune } from '@/types/comune.types';
 
-/** Pause in typing before the search is sent: one request per word, not per key. */
 const SEARCH_DEBOUNCE_MS = 250;
 
 interface FinderComuneFieldProps {
-  /** Id of the input: the label of the field points at it. */
   id: string;
-  /** The comune shown: the name and the province are all the field needs of it. */
   value: Pick<Comune, 'name' | 'provinceCode'> | null;
   onChange: (comune: Comune | null) => void;
 }
@@ -55,7 +52,6 @@ export function FinderComuneField({ id, value, onChange }: FinderComuneFieldProp
       event.preventDefault();
       setHighlighted(active <= 0 ? items.length - 1 : active - 1);
     } else if (event.key === 'Enter' && listVisible) {
-      // Enter picks the highlighted comune; it never sends the finder while the list is open.
       event.preventDefault();
       if (active >= 0) choose(items[active]);
     } else if (event.key === 'Escape' && typing) {
@@ -76,7 +72,6 @@ export function FinderComuneField({ id, value, onChange }: FinderComuneFieldProp
     <div
       ref={containerRef}
       onBlur={(event) => {
-        // Leaving the field drops what was typed without a choice; the comune already picked stays.
         if (!containerRef.current?.contains(event.relatedTarget as Node | null)) {
           setTyping(false);
           setText('');
@@ -113,7 +108,6 @@ export function FinderComuneField({ id, value, onChange }: FinderComuneFieldProp
               id={`${listboxId}-${index}`}
               role="option"
               aria-selected={index === active}
-              // mousedown, not click: the input must not lose focus (and drop the list) before the choice is made.
               onMouseDown={(event) => {
                 event.preventDefault();
                 choose(comune);

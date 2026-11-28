@@ -19,12 +19,9 @@ import { ALREADY_SUBSCRIBED_CODE, BILLING_PLAN_UNAVAILABLE_CODE, getErrorCode } 
 import { BillingProfileForm } from './billing-profile-form';
 
 interface CheckoutDialogProps {
-  /** Plan being bought; the dialog is open while it is set. */
   plan: BillingPlan | null;
-  /** Saved billing profile, to prefill country and VAT id. */
   subscription: BillingSubscription | undefined;
   onClose: () => void;
-  /** 409 `already_subscribed`: the page offers the billing portal instead. */
   onAlreadySubscribed: () => void;
 }
 
@@ -40,7 +37,6 @@ export function CheckoutDialog({ plan, subscription, onClose, onAlreadySubscribe
   const queryClient = useQueryClient();
   const checkout = useStartCheckout();
   const [error, setError] = useState<string | null>(null);
-  // After a successful call the browser is leaving for Stripe: the form stays disabled.
   const busy = checkout.isPending || checkout.isSuccess;
 
   const handleOpenChange = (open: boolean) => {

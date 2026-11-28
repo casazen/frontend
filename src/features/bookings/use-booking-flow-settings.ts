@@ -7,10 +7,6 @@ import type { UpdateBookingFlowSettingsRequest } from '@/types/booking-flow.type
 
 export const BOOKING_FLOW_QUERY_KEY = ['org-settings', 'booking-flow'] as const;
 
-/**
- * The steps of the stays of the caller's organization (casazen/backend#978): the page «Flusso» and the step of a booking read them. Kept for a few minutes: they change
- * rarely, and the page that changes them writes the answer of the server here.
- */
 export function useBookingFlowSettings(enabled = true) {
   return useQuery({
     queryKey: BOOKING_FLOW_QUERY_KEY,
@@ -21,7 +17,6 @@ export function useBookingFlowSettings(enabled = true) {
   });
 }
 
-/** Saves the settings; the answer is the settings in force and replaces what the screens show. What the server refused is told by the page, from the error. */
 export function useUpdateBookingFlowSettings() {
   const queryClient = useQueryClient();
 

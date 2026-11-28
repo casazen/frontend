@@ -28,7 +28,6 @@ vi.mock('@/api/fiscal-documents.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/fiscal-documents.api')>();
   return { ...actual, getDocumentSdi: vi.fn() };
 });
-// The administrator of the account (the role that opens the page), and a predicate for the permission of the organization's administrator that each test sets: no hasPermission that says yes to everything.
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({
     contexts: [{ contextKey: 'account', roleKey: 'org_admin' }],
@@ -65,7 +64,6 @@ function renderPage() {
   return client;
 }
 
-/** The row of a TD17 once the list is on the page. */
 async function rowOf(id: string): Promise<HTMLElement> {
   const rows = await screen.findAllByTestId('self-billing-row');
   const row = rows.find((candidate) => candidate.getAttribute('data-id') === id);
@@ -73,14 +71,12 @@ async function rowOf(id: string): Promise<HTMLElement> {
   return row;
 }
 
-/** Opens the confirmation of «Chiudi come non più dovuta» from a button and gives the dialog back, with its confirm button (off until a reason is chosen). */
 async function openClosing(button: HTMLElement) {
   fireEvent.click(button);
   const dialog = await screen.findByRole('dialog', { name: i18n.t('selfBilling.close.title') });
   return { dialog, confirm: within(dialog).getByRole('button', { name: i18n.t('selfBilling.close.confirm') }) };
 }
 
-/** Chooses a reason in the dialog and waits for the confirm button to be on. */
 async function chooseReason(dialog: HTMLElement, confirm: HTMLElement, code: string = PORTAL_CREDIT_NOTE) {
   fireEvent.click(within(dialog).getByTestId(`self-billing-close-reason-${code}`));
   await waitFor(() => expect(confirm).toBeEnabled());
@@ -109,7 +105,6 @@ describe('«Chiudi come non più dovuta» is offered only to who may, with the f
     renderPage();
 
     const row = await rowOf(REPLACEMENT_ID);
-    // The kept draft is still told, with its reason: only the way out is not drawn, and the sentence does not invite to an action that is not there.
     expect(within(row).getByTestId('self-billing-row-kept')).toHaveTextContent(i18n.t('selfBilling.kept.ledger_gives_no_td17'));
     expect(within(row).getByTestId('self-billing-row-kept')).not.toHaveTextContent(i18n.t('selfBilling.kept.exit'));
     expect(screen.queryByTestId('self-billing-row-close')).toBeNull();
@@ -126,7 +121,6 @@ describe('«Chiudi come non più dovuta» is offered only to who may, with the f
     const supported = replacement({ id: 'c0000000-0000-4000-8000-000000000003', number: 'AF-2026/2' });
     const delivered = item({ id: 'e0000000-0000-4000-8000-000000000004', status: 'Issued', number: 'AF-2026/3', issueDate: '2026-11-10', sdiStatus: 'delivered' });
     const alreadyClosed = closed({ id: 'f0000000-0000-4000-8000-000000000005', number: 'AF-2026/4' });
-    // A replacement the month still supports (keptReason null) is issued, never closed; an ordinary draft, an issued invoice and a closed draft are not offered it either.
     list.mockResolvedValue([original(), kept(), supported, item(), delivered, rejected({ id: 'a1000000-0000-4000-8000-000000000006', number: 'AF-2026/5' }), alreadyClosed]);
     close.mockImplementation(async () => {
       list.mockResolvedValue([original(), closed(), supported, item(), delivered, alreadyClosed]);
@@ -137,13 +131,11 @@ describe('«Chiudi come non più dovuta» is offered only to who may, with the f
     const row = await rowOf(REPLACEMENT_ID);
     expect(screen.getAllByTestId('self-billing-row-close')).toHaveLength(1);
     expect(within(row).getByTestId('self-billing-row-close')).toBeEnabled();
-    // The sentence of the kept draft says why it is kept and, for who may, names the way out and that the number is never given again.
     expect(within(row).getByTestId('self-billing-row-kept')).toHaveTextContent(i18n.t('selfBilling.kept.ledger_gives_no_td17'));
     expect(within(row).getByTestId('self-billing-row-kept')).toHaveTextContent(i18n.t('selfBilling.kept.exit'));
     expect(close).not.toHaveBeenCalled();
 
     const { dialog, confirm } = await openClosing(within(row).getByTestId('self-billing-row-close'));
-    // The reason is mandatory: nothing can be confirmed before one is chosen.
     expect(confirm).toBeDisabled();
     fireEvent.click(confirm);
     expect(close).not.toHaveBeenCalled();
@@ -156,7 +148,6 @@ describe('«Chiudi come non più dovuta» is offered only to who may, with the f
     expect(close).toHaveBeenCalledWith(REPLACEMENT_ID, { reason: 'duplicate_or_error', note: 'Doppione della bozza di ottobre' });
     await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
     expect(toast.success).toHaveBeenCalledWith(i18n.t('selfBilling.close.done', { number: NUMBER }));
-    // The list is read again and shows the closed draft where it was; the dialog is gone and nothing else was asked.
     await waitFor(() => expect(within(screen.getByTestId('self-billing-list')).queryAllByTestId('self-billing-row-close')).toHaveLength(0));
     expect(within(await rowOf(REPLACEMENT_ID)).getByTestId('self-billing-row-closed')).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
@@ -167,7 +158,6 @@ describe('«Chiudi come non più dovuta» is offered only to who may, with the f
     renderPage();
     fireEvent.click(within(await rowOf(REPLACEMENT_ID)).getByTestId('self-billing-row-open'));
     expect(await screen.findByTestId('self-billing-close')).toBeEnabled();
-    // It cannot be issued or discarded: the way out is the closing, and the sentence of the detail says so.
     expect(screen.queryByTestId('self-billing-issue')).toBeNull();
     expect(screen.queryByTestId('self-billing-discard')).toBeNull();
     expect(screen.getByTestId('self-billing-kept')).toHaveTextContent(i18n.t('selfBilling.kept.exit'));
@@ -187,16 +177,13 @@ describe('the dialog says what the closing does and asks for the reason and the 
     renderPage();
     const { dialog } = await openClosing(within(await rowOf(REPLACEMENT_ID)).getByTestId('self-billing-row-close'));
 
-    // The consequences, in words: closed for good (it cannot be undone), the number stays reserved, the register of the unused numbers.
     const consequences = within(dialog).getByTestId('confirmation-consequences');
     expect(consequences.querySelectorAll('li')).toHaveLength(3);
     expect(consequences).toHaveTextContent(i18n.t('selfBilling.close.consequenceClosed'));
     expect(consequences).toHaveTextContent(i18n.t('selfBilling.close.consequenceReserved'));
     expect(consequences).toHaveTextContent(i18n.t('selfBilling.close.consequenceRegister'));
     expect(dialog).toHaveTextContent(i18n.t('selfBilling.close.description', { number: NUMBER }));
-    // It is taller than the other confirmations: on a short window it scrolls inside, and the confirmation is never out of reach.
     expect(dialog).toHaveClass('sm:max-h-[90dvh]', 'sm:overflow-y-auto');
-    // Three reasons in words, none of them chosen, and a note of 500 characters with its count.
     const reasons = within(dialog).getByTestId('self-billing-close-reasons');
     expect(within(reasons).getAllByRole('radio')).toHaveLength(3);
     for (const radio of within(reasons).getAllByRole('radio')) expect(radio).not.toBeChecked();
@@ -229,7 +216,6 @@ describe('the dialog says what the closing does and asks for the reason and the 
     await chooseReason(dialog, confirm);
     const radio = within(dialog).getByTestId(`self-billing-close-reason-${PORTAL_CREDIT_NOTE}`);
 
-    // The default action of Enter on a field is to submit its form: it is cancelled, and the keys that move the choice are not.
     expect(fireEvent.keyDown(radio, { key: 'Enter' })).toBe(false);
     expect(fireEvent.keyDown(radio, { key: 'ArrowDown' })).toBe(true);
     expect(close).not.toHaveBeenCalled();
@@ -249,7 +235,6 @@ describe('the dialog says what the closing does and asks for the reason and the 
     await waitFor(() => expect(close).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(within(row).getByTestId('self-billing-row-close')).toBeDisabled());
     expect(confirm).toBeDisabled();
-    // The form is not edited while it is on its way, and a second press asks nothing more.
     expect(within(dialog).getByTestId('self-billing-close-note')).toBeDisabled();
     fireEvent.click(confirm);
     expect(close).toHaveBeenCalledTimes(1);
@@ -277,7 +262,6 @@ describe('a refusal or a failure is told in the dialog, never as success (data r
     expect(problem).toHaveAttribute('data-problem', kind);
     expect(problem).toHaveTextContent(i18n.t(`selfBilling.close.problem.${kind}`, { max: CLOSE_NOTE_MAX }));
     expect(toast.success).not.toHaveBeenCalled();
-    // What the person can put right does not keep the confirmation off, and the sentence goes away as soon as the form is touched.
     expect(within(dialog).getByRole('button', { name: i18n.t('selfBilling.close.confirm') })).toBeEnabled();
     fireEvent.change(within(dialog).getByTestId('self-billing-close-note'), { target: { value: 'Più corta' } });
     expect(within(dialog).queryByTestId('self-billing-close-problem')).toBeNull();
@@ -300,7 +284,6 @@ describe('a refusal or a failure is told in the dialog, never as success (data r
     expect(confirm).toBeDisabled();
     expect(within(dialog).getByTestId('self-billing-close-problem')).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: i18n.t('shared.cancel') })).toBeEnabled();
-    // The list is read again behind the dialog (a refusal of a state that changed is not left stale).
     await waitFor(() => expect(list.mock.calls.length).toBeGreaterThanOrEqual(2));
     expect(close).toHaveBeenCalledTimes(1);
     expect(toast.success).not.toHaveBeenCalled();
@@ -318,7 +301,6 @@ describe('a refusal or a failure is told in the dialog, never as success (data r
     expect(problem).toHaveAttribute('data-problem', 'failed');
     expect(problem).toHaveTextContent(i18n.t('selfBilling.close.problem.failed'));
     expect(toast.success).not.toHaveBeenCalled();
-    // A call that failed can be asked again, and the button says so (a lost answer is safe to repeat: the same call answers the same closed draft).
     const retry = within(dialog).getByRole('button', { name: i18n.t('shared.errorState.retry') });
     await waitFor(() => expect(retry).toBeEnabled());
     list.mockResolvedValue([original(), closed()]);
@@ -333,7 +315,6 @@ describe('a refusal or a failure is told in the dialog, never as success (data r
 
 describe('the closed draft is history: the reason, the day, the name and the note, and no action (data rule)', () => {
   it('SelfBillingClose_AClosedDraft_ShowsTheReasonTheDayInRomeTheNameAndTheNote_TheNumberReserved_AndNoAction', async () => {
-    // Closed at 00:30 of the 1st of December in Rome (23:30 UTC of the 30th of November): the day of the closing is the Rome one, as in the register of the accountant.
     list.mockResolvedValue([original(), closed({ closedAt: '2026-11-30T23:30:00Z' })]);
     renderPage();
 
@@ -344,7 +325,6 @@ describe('the closed draft is history: the reason, the day, the name and the not
     expect(within(block).getByTestId('self-billing-row-closed-at')).toHaveTextContent(/\b1 dic 2026/);
     expect(within(block).getByTestId('self-billing-row-closed-by')).toHaveTextContent('Mario Rossi');
     expect(within(block).getByTestId('self-billing-row-closed-note')).toHaveTextContent('Nota di credito del portale n. 55 del 12 novembre');
-    // «Chiusa, non più dovuta», and not a draft that waits to be issued: no «da emettere», no review, no correction, no closing, nothing to discard.
     expect(within(row).getByTestId('self-billing-status')).toHaveAttribute('data-status', 'ClosedNotDue');
     expect(within(row).getByTestId('self-billing-status')).toHaveTextContent(i18n.t('selfBilling.status.ClosedNotDue'));
     expect(within(row).queryByTestId('self-billing-row-due')).toBeNull();
@@ -365,12 +345,10 @@ describe('the closed draft is history: the reason, the day, the name and the not
     expect(within(block).queryByTestId('self-billing-row-closed-note')).toBeNull();
     expect(within(block).getByTestId('self-billing-row-closed-reason')).toHaveTextContent(i18n.t('selfBilling.close.reason.portal_credit_note'));
     expect(within(block).getByTestId('self-billing-row-closed-intro')).toHaveTextContent(NUMBER);
-    // The row says nothing of a raw value: no «null», no «undefined», no unresolved placeholder, no id of a user (`auth0|…`) nor of a document.
     const rowText = row.textContent ?? '';
     expect(rowText).not.toMatch(RAW_VALUE);
     expect(rowText).not.toContain(REPLACEMENT_ID);
 
-    // The same in the detail.
     fireEvent.click(within(row).getByTestId('self-billing-row-open'));
     const detailBlock = await screen.findByTestId('self-billing-closed');
     expect(within(detailBlock).queryByTestId('self-billing-closed-by')).toBeNull();
@@ -418,7 +396,6 @@ describe('the closed draft is history: the reason, the day, the name and the not
     expect(badge).not.toHaveTextContent(i18n.t('selfBilling.status.Replaced'));
     cleanup();
 
-    // The detail is open on the rejected invoice when another administrator corrects it and closes its replacement: it is read again as the original, and says the same.
     list.mockResolvedValue([rejected()]);
     read.mockResolvedValue(detail(rejected()));
     const client = renderPage();
@@ -439,7 +416,6 @@ describe('the closed draft is history: the reason, the day, the name and the not
     expect(detailBadge).toHaveTextContent(i18n.t('selfBilling.status.RejectedClosed'));
     expect(detailBadge).not.toHaveTextContent(i18n.t('selfBilling.status.Replaced'));
     for (const testId of ACTIONS_OF_A_DETAIL) expect(screen.queryByTestId(testId)).toBeNull();
-    // The way to the replacement is still there, and it leads to the closed draft.
     fireEvent.click(within(replaced).getByTestId('self-billing-replacement-open'));
     expect(await screen.findByTestId('self-billing-closed')).toBeInTheDocument();
     expect(read).toHaveBeenCalledWith(REPLACEMENT_ID);
@@ -447,10 +423,8 @@ describe('the closed draft is history: the reason, the day, the name and the not
 });
 
 describe('the report of «Prepara le bozze» never contradicts the list below it (data rule)', () => {
-  /** The draft the run of the month kept: it holds the number of the rejected TD17 and nothing gives it a TD17 now. */
   const held = (): SelfBillingKept => ({ documentId: REPLACEMENT_ID, holderKind: 'Agency', holderOwnerId: null, portalName: 'Portale Uno BV', number: NUMBER, reason: 'ledger_gives_no_td17' });
 
-  /** Presses «Prepara le bozze» once the page is ready and gives the report back. */
   async function prepareDrafts() {
     await screen.findAllByTestId('self-billing-row');
     const button = screen.getByTestId('self-billing-prepare');
@@ -475,7 +449,6 @@ describe('the report of «Prepara le bozze» never contradicts the list below it
     expect(heldRows[0]).toHaveTextContent(i18n.t('selfBilling.kept.exit'));
     expect(report.className).toContain('color-warning');
 
-    // The person closes it from the list: the list reads the closed draft, and the report no longer holds it.
     const row = await rowOf(REPLACEMENT_ID);
     await waitFor(() => expect(within(row).getByTestId('self-billing-row-close')).toBeEnabled());
     const { dialog, confirm } = await openClosing(within(row).getByTestId('self-billing-row-close'));
@@ -504,7 +477,6 @@ describe('the report of «Prepara le bozze» never contradicts the list below it
     await chooseReason(dialog, confirm);
     fireEvent.click(confirm);
 
-    // Nothing was closed: the list still holds the kept draft, so the report still does.
     await within(dialog).findByTestId('self-billing-close-problem');
     expect(within(report).getByTestId('self-billing-report-kept')).toHaveTextContent(NUMBER);
     expect(screen.getByTestId('self-billing-report').className).toContain('color-warning');

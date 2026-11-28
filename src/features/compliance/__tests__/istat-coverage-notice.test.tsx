@@ -116,7 +116,6 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-// E21/F01/US02/T01 (NF-44, NF-52, CHK-05 point 3). The rule that costs trust if it is wrong: a region the staff did not verify is «da verificare», never «covered».
 describe('IstatCoverageNotice: a region that is not verified is never shown as covered (data)', () => {
   const NOT_VERIFIED: Array<[string, Partial<PropertyIstatCoverage>]> = [
     ['ARowNobodyVerified', { coverage: 'Unknown', nextStep: 'AskSupport', verifiedAt: null }],
@@ -138,7 +137,6 @@ describe('IstatCoverageNotice: a region that is not verified is never shown as c
     expect(notice).not.toHaveTextContent(text('istatCoverage.title.covered'));
     expect(notice).not.toHaveTextContent(text('istatCoverage.title.notCovered'));
     expect(notice).not.toHaveTextContent(text('istatCoverage.detail.covered'));
-    // The only action is the request to support: no link to the step of the panel, none to a portal as if it were the way.
     expect(screen.queryByTestId('istat-coverage-panel-step')).not.toBeInTheDocument();
     expect(screen.queryByTestId('istat-coverage-portal')).not.toBeInTheDocument();
     expect(await screen.findByTestId('assist-request-button')).toBeInTheDocument();
@@ -149,7 +147,6 @@ describe('IstatCoverageNotice: a region that is not verified is never shown as c
     renderNotice();
 
     const notice = await screen.findByTestId('istat-coverage-notice');
-    // What the list says is shown, and it is said to be from the list: the deadline is never presented as checked.
     expect(within(notice).getByTestId('istat-coverage-region')).toHaveTextContent(text('istatCoverage.region.named', { region: 'Lombardia', system: 'Ross1000' }));
     expect(within(notice).getByTestId('istat-coverage-unverified')).toHaveTextContent(text('istatCoverage.unverified'));
     expect(within(notice).getByTestId('istat-coverage-detail')).toHaveTextContent(text('istatCoverage.detail.toVerify'));
@@ -178,11 +175,9 @@ describe('IstatCoverageNotice: the three next steps, one action each', () => {
     expect(within(notice).getByTestId('istat-coverage-region')).toHaveTextContent(text('istatCoverage.region.named', { region: 'Lombardia', system: 'Ross1000' }));
     expect(within(notice).getByTestId('istat-coverage-deadline')).toHaveTextContent(text('istatCoverage.deadline.monthly', { day: 5 }));
     expect(within(notice).getByTestId('istat-coverage-panel-step')).toHaveAttribute('href', PANEL_STEP_ADDRESS);
-    // Verified values are not said to be from the list, and the other two actions are not there.
     expect(within(notice).queryByTestId('istat-coverage-unverified')).not.toBeInTheDocument();
     expect(within(notice).queryByTestId('istat-coverage-portal')).not.toBeInTheDocument();
     expect(within(notice).queryByTestId('assist-request-button')).not.toBeInTheDocument();
-    // The supplier of the channel manager is never named.
     expect(notice.textContent ?? '').not.toMatch(/octorate/i);
   });
 
@@ -247,7 +242,6 @@ describe('IstatCoverageNotice: the three next steps, one action each', () => {
 
     await waitFor(() => expect(onboardingApi.requestAssist).toHaveBeenCalledTimes(1));
     expect(onboardingApi.requestAssist).toHaveBeenCalledWith({ part: 'compliance', context: 'panelIstat', propertyId: PROPERTY_ID });
-    // Where the request stands replaces the button: a second request is not offered while one is open.
     expect(await screen.findByTestId('assist-request-status')).toHaveAttribute('data-status', 'Requested');
     expect(screen.queryByTestId('assist-request-button')).not.toBeInTheDocument();
   });
@@ -311,7 +305,6 @@ describe('IstatCoverageNotice: it accounts for who sends the ISTAT of the proper
     expect(notice).toHaveTextContent(text('istatCoverage.title.otherSender'));
     expect(notice).not.toHaveTextContent(text('istatCoverage.title.covered'));
     expect(notice).not.toHaveTextContent(text('istatCoverage.detail.covered'));
-    // No step of the panel and no request to support (both are about linking the channel manager): the guide of the portal is what there is.
     expect(screen.queryByTestId('istat-coverage-panel-step')).not.toBeInTheDocument();
     expect(screen.queryByTestId('assist-request-button')).not.toBeInTheDocument();
     expect(within(notice).getByTestId('istat-coverage-portal')).toHaveAttribute('href', 'https://portale.example.com/guida');
@@ -347,7 +340,6 @@ describe('IstatCoverageNotice: flag, property and failed reads', () => {
     session.flags = { octorateOnboarding: false };
     const { container } = renderNotice(true);
 
-    // The endpoint answers 404 while the flag is off: the notice is not drawn and the request is not made.
     await act(async () => undefined);
     expect(container).toBeEmptyDOMElement();
     expect(istatApi.getCoverage).not.toHaveBeenCalled();
@@ -383,7 +375,6 @@ describe('IstatCoverageNotice: flag, property and failed reads', () => {
     expect(await screen.findByTestId('istat-coverage-notice')).toHaveAttribute('data-coverage', 'covered');
   });
 
-  // The query keeps the older answer when a read fails: the notice must not go on saying «covered» on it.
   it('IstatCoverageNotice_ReadFailsAfterAGoodOne_SaysNothingFromTheOlderAnswer', async () => {
     const { client } = renderNotice();
     expect(await screen.findByTestId('istat-coverage-notice')).toHaveAttribute('data-coverage', 'covered');
@@ -414,7 +405,6 @@ describe('IstatCoverageNotice: flag, property and failed reads', () => {
 
 describe('IstatCoverageNotice: on the page of the property', () => {
   it('IstatCoverageNotice_WithTheProof_OpensTheUploadOfTheMonthThatIsOverOnTheIstatProofOfTheProperty', async () => {
-    // Only the clock: the timers stay real, so the page and the queries settle as they do.
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-11-15T10:00:00Z'));
     // Who may submit the Alloggiati is who may upload to the archive.
@@ -424,7 +414,6 @@ describe('IstatCoverageNotice: on the page of the property', () => {
     const link = await screen.findByTestId('istat-coverage-proof-link');
     expect(link).toHaveAttribute('href', `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}&period=2026-10`);
     expect(link).toHaveTextContent(text('istatCoverage.proof.action', { month: 'ottobre 2026' }));
-    // The proof is offered in every state of the coverage: also when the region is to verify.
     expect(screen.getByTestId('istat-coverage-proof')).toHaveTextContent(text('istatCoverage.proof.lead'));
   });
 
@@ -518,7 +507,6 @@ describe('ConnectionHealthPanel: the row of the ISTAT says «Attivo» only where
     expect(row).not.toHaveTextContent(text('connectionHealth.state.Active'));
     expect(row).not.toHaveTextContent(text('connectionHealth.sender.ChannelManager'));
     expect(within(panel).queryByTestId('connection-health-Istat-state')).not.toBeInTheDocument();
-    // The police row keeps what the connection says.
     expect(within(panel).getByTestId('connection-health-Alloggiati')).toHaveAttribute('data-state', 'Active');
   });
 

@@ -22,29 +22,16 @@ type Registered = 'yes' | 'no';
 
 interface ImportStepProps {
   leaseId: string;
-  /** The type typed in the conditions: a concordato brought in has no check of the rent band, and the step says so. */
   contractType: string;
-  /** Sends what is still waiting to be saved; false when something could not be saved. */
   flush: () => Promise<boolean>;
-  /** The signed contract the person gave to be read (NL-DOCS): it is imported as it is, and not asked for a second time. */
   uploaded?: { id: string; name: string } | null;
-  /** The day of the signature the contract states, when it does (`YYYY-MM-DD`). */
   stipulaRead?: string | null;
 }
 
-/** `lease_not_draft` is the answer to an import that already happened (another tab, a second try): the lease is Signed. */
 function isNotDraft(error: unknown): boolean {
   return isAxiosError(error) && getProblemCode(error.response?.data) === 'lease_not_draft';
 }
 
-/**
- * Step ⑦ «Contratto firmato» of a contract that was signed elsewhere (LR-06b, LR-13): the PDF, the day it was signed, and whether it is
- * already registered. The import cannot be taken back, so it is not done until the person confirms what follows from it, and it is sent
- * once. The registration is declared afterwards, with the declaration that already exists (step ⑧ opens it when the answer was yes).
- *
- * A receipt of the registration already uploaded to the draft answers the question: a receipt the Agenzia accepted means the contract is
- * registered, and its day and number fill the declaration; a discarded request means it is not. The person is not asked again.
- */
 export function ImportStep({ leaseId, contractType, flush, uploaded = null, stipulaRead = null }: ImportStepProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -52,7 +39,6 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
   const today = todayInRome();
   const [file, setFile] = useState<File | null>(null);
   const [replacing, setReplacing] = useState(false);
-  // The day read from the contract (or from the receipt) until the person types another.
   const [typedDate, setTypedDate] = useState<string | null>(null);
   const kept = uploaded !== null && !replacing ? uploaded : null;
   const [chosen, setChosen] = useState<Registered | null>(null);
@@ -61,7 +47,6 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
   const [failure, setFailure] = useState<unknown>(null);
   const sending = useRef(false);
 
-  // The receipt already among the documents of the draft, the latest one: it says whether the contract is registered.
   const documents = useLeaseDocuments(leaseId);
   const receiptDoc = [...(documents.data ?? [])].reverse().find((document) => document.kind === 'Registration') ?? null;
   const reading = useReceiptReading(leaseId, receiptDoc?.id ?? '');
@@ -92,7 +77,6 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
   const day = formatStayDate(stipulaDate, i18n.language);
 
   const focus = (id: string) => document.getElementById(id)?.focus();
-  // Another lease on the same days refused the import (409): the message has the days, the link opens that lease.
   const conflict = periodConflictOf(failure);
 
   const submit = async () => {

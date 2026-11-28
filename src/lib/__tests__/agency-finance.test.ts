@@ -18,7 +18,6 @@ describe('exactMoney: the figure of the server in its own currency, never rounde
   });
 
   it('ExactMoney_MoreThanTwoDecimals_AreKeptNotRoundedAway', () => {
-    // The formatter of a currency would write 12,35 (another figure): the money pages show what the server sent.
     expect(exactMoney(12.345, 'EUR', 'it-IT')).toMatch(/^12,345\s*€$/);
     expect(exactMoney(0.001, 'CHF', 'it-IT')).toMatch(/^0,001\s*CHF$/);
   });

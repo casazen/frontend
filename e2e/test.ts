@@ -67,8 +67,6 @@ export async function installDefaultDemoApiMocks(page: import('@playwright/test'
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
   });
 
-  // PL-15: an activated host. The activation checklist of the dashboard hides once every step is done, so the specs
-  // that do not test it see the dashboard as before.
   await page.route('**/api/onboarding/status**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
@@ -328,7 +326,6 @@ async function mockLegalDocuments(page: import('@playwright/test').Page): Promis
     effectiveAt: '2026-01-01T00:00:00Z',
     title: 'Test Document',
     summary: 'E2E test document.',
-    // D3: the public footer only renders privacy/terms when the backend sends an http(s) documentUrl.
     documentUrl: 'https://example.com/legal/document',
   };
 

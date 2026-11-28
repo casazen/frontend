@@ -7,20 +7,16 @@ import { channelManagerBlockedMessage, channelManagerConflict, portalName, type 
 
 const RANGE_DAY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
 
-/** The states of the availability the host may go on from: free, free but under the minimum stay, a portal's reservation to link. A taken or impossible stay stops the step. */
 const STATES_THE_HOST_MAY_GO_ON_FROM: ReadonlySet<StayAvailability['state']> = new Set(['ok', 'belowMinimum', 'linkableBlock']);
 
-/** "10 nov – 13 nov": a stay as the notice says it. */
 function stayRange(from: string, to: string, language: string): string {
   return `${formatStayDate(from, language, RANGE_DAY)} – ${formatStayDate(to, language, RANGE_DAY)}`;
 }
 
-/** The box of the answer: the state it speaks of is on it for the tests and for whoever reads the page. */
 function Notice({ state, ...props }: AlertProps & { state: StayAvailability['state'] }) {
   return <Alert data-testid="booking-availability" data-state={state} {...props} />;
 }
 
-/** One line of "what takes these dates": the stay of someone, a portal's reservation or a block of the host. */
 function ConflictLine({ conflict, language }: { conflict: StayAvailabilityConflict; language: string }) {
   const { t } = useTranslation();
   const range = stayRange(conflict.from, conflict.to, language);
@@ -38,7 +34,6 @@ function ConflictLine({ conflict, language }: { conflict: StayAvailabilityConfli
   if (conflict.type === 'ical') {
     return <>{t('booking.create.availability.conflict.ical', { portal: portalName(conflict.channel, t), range })}</>;
   }
-  // The channel manager says the nights cannot be booked: it names the channel only when the API does (never invented here).
   if (conflict.type === 'channelManager') {
     return title
       ? <>{t('booking.create.availability.conflict.channelManagerNamed', { channel: title, range })}</>
@@ -54,15 +49,10 @@ function ConflictLine({ conflict, language }: { conflict: StayAvailabilityConfli
 }
 
 interface StayAvailabilityNoticeProps {
-  /** The answer of the API, once it came. */
   availability: StayAvailability | undefined;
-  /** The request is on its way and there is no answer yet. */
   isLoading: boolean;
-  /** The block the host linked for these dates, if any. */
   link: LinkedBlock | null;
-  /** "Use these dates": the nearest free dates replace the ones asked. */
   onUseWindow: (window: StayAvailabilityWindow) => void;
-  /** "Link": the block of the portal is the one this booking completes. */
   onLink: (block: { blockId: string; channel: BookingChannel | null }) => void;
 }
 
@@ -91,7 +81,6 @@ export function StayAvailabilityNotice(props: StayAvailabilityNoticeProps) {
   );
 }
 
-/** The answer of the availability for the dates (without the line about a channel manager that could not be asked). */
 function AvailabilityState({ availability, isLoading, link, onUseWindow, onLink }: StayAvailabilityNoticeProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
@@ -118,7 +107,6 @@ function AvailabilityState({ availability, isLoading, link, onUseWindow, onLink 
     case 'occupied': {
       const window = availability.nearestFreeWindow;
       const channelManager = channelManagerConflict(availability);
-      // Taken only on the channel manager: CasaZen's own calendar is free, so there is no list of stays and no window to offer, only the reason.
       const channelManagerOnly = channelManager !== undefined && availability.conflicts.every((conflict) => conflict.type === 'channelManager');
       return (
         <Notice
@@ -139,7 +127,6 @@ function AvailabilityState({ availability, isLoading, link, onUseWindow, onLink 
             <>
               <ul className="list-disc space-y-0.5 pl-5">
                 {availability.conflicts.map((conflict, index) => (
-                  // The conflict of the channel manager has no id of its own (the empty one): the position tells it apart.
                   <li key={`${conflict.id}-${index}`}>
                     <ConflictLine conflict={conflict} language={language} />
                   </li>

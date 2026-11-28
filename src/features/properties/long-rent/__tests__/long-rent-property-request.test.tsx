@@ -23,7 +23,6 @@ vi.mock('@/hooks/use-workspace', () => ({
   }),
 }));
 vi.mock('@/hooks/use-list-views-scope', () => ({ useListViewsScope: () => null }));
-// The window of the request has its own tests: here it is a stand-in that says which property it was opened for and can finish.
 vi.mock('@/features/service-requests/components/service-request-form', () => ({
   ServiceRequestForm: ({ propertyId, context, onCreated }: { propertyId: string; context?: string; onCreated?: (request: ServiceRequest) => void }) => (
     <div data-testid="request-form" data-property={propertyId} data-context={context}>
@@ -76,12 +75,10 @@ describe('LongRentPropertiesPage: "Richiedi intervento" from the row (LR-07b)', 
     const menu = await openMenu();
     fireEvent.click(within(menu).getByRole('menuitem', { name: i18n.t('longRentProperties.list.actions.request') }));
 
-    // The window of the request, for this property and in the section of the long-term (never a booking).
     const form = screen.getByTestId('request-form');
     expect(form).toHaveAttribute('data-property', 'prop-1');
     expect(form).toHaveAttribute('data-context', 'long-rent');
 
-    // Once made, the page of the new request is the way on.
     fireEvent.click(within(form).getByRole('button', { name: 'made' }));
     expect(screen.getByTestId('request-page')).toBeInTheDocument();
   });

@@ -4,7 +4,6 @@ import type { ActivationBlocker, ComplianceActivationResult } from '@/types/comp
 import { GUEST_REGISTRATION_STEP_ID } from '@/types/guest-registration.types';
 import { baseDataStepFor, type WizardStepId } from '../property-wizard-model';
 
-/** A line of «Cosa manca»: a blocker of the server, or the whole safety sheet with how many of its points are open. */
 export type MissingLine = { kind: 'blocker'; blocker: ActivationBlocker } | { kind: 'safety'; count: number };
 
 /**
@@ -28,11 +27,6 @@ export function missingLines(blockers: readonly ActivationBlocker[]): MissingLin
   return lines;
 }
 
-/**
- * Where the wizard stands at its last step, **as the server says it** (`compliance/activation`): nothing is worked out from the
- * form. `loading`: not read yet · `blocked`: a blocking step is open, so nothing can be activated and the host finishes later ·
- * `ready`: nothing blocks, only the terms and the click are missing · `active`: the property is already active.
- */
 export type FinishStage = 'loading' | 'blocked' | 'ready' | 'active';
 
 export function finishStage(activation: ComplianceActivationResult | undefined): FinishStage {
@@ -57,10 +51,8 @@ export function finishActions(stage: FinishStage, showOnSite: boolean, storedSho
   return actions;
 }
 
-/** The parts of the last step that a missing item can send the host to. */
 export type FinishSection = 'calendars' | 'cin' | 'documents' | typeof GUEST_REGISTRATION_STEP_ID;
 
-/** Where a «Correggi» goes: another step of the wizard, or a part of the last step. */
 export type FixTarget = { kind: 'step'; step: WizardStepId } | { kind: 'section'; section: FinishSection };
 
 /**

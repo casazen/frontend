@@ -76,7 +76,6 @@ export function AttestationSection({ leaseId, viaService = false }: { leaseId: s
         ) : null}
       </div>
 
-      {/* Always mounted, not inside the branches above: a window that lives in a branch is lost when the branch changes. */}
       <LeaseDocumentUploadDialog
         leaseId={leaseId}
         kind="Attestation"

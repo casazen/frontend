@@ -5,7 +5,6 @@ import '../../src/i18n/config';
 import '../../src/styles/globals.css';
 import {OwnerMandateSection} from '../../src/features/owners/components/owner-mandate-form';
 import axios, {setApiAuthHandlers} from '../../src/lib/axios';
-// Production component, synthetic API responses only. This fixture never accesses an external account or document.
 const ownerId = 'a1000000-0000-4000-8000-000000000001';
 axios.defaults.adapter = async (config) => {
   const url = config.url ?? '';
@@ -16,7 +15,6 @@ axios.defaults.adapter = async (config) => {
   };
   return {data, status: 200, statusText: 'OK', headers: {}, config};
 };
-// The real request interceptor still checks auth before this local adapter. No token is sent outside this fixture.
 setApiAuthHandlers({getAccessToken: async () => 'synthetic-mandate-fixture-only'});
 createRoot(document.getElementById('root')).render(
   <QueryClientProvider client={new QueryClient({defaultOptions: {queries: {retry: false}}})}>

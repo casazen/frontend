@@ -5,21 +5,13 @@ import type { StayState } from '@/features/public-site/stay/stay-state';
 import { searchEvent, viewItemListEvent, type Ga4SearchEvent } from '@/lib/ga4-ecommerce';
 import type { PublicDestination, PublicStayCard } from '@/types/public-stays.types';
 
-/** The `item_list_id` of the homes the results of the booking widget list. */
 export const EMBED_RESULTS_LIST_ID = 'search_results';
 
-/** The `item_list_name`: a constant, like the id (it is the name of the list in the reports of the agency, not a text for the guest). */
 const EMBED_RESULTS_LIST_NAME = 'Search results';
 
 interface EmbedSearchEventsInput {
-  /** The homes the list shows, in the order it shows them (the ones that are free). */
   cards: readonly PublicStayCard[];
-  /**
-   * What is on the screen is the answer for the address: nothing is being asked, and it is not the previous answer that the page keeps in sight while the next
-   * one comes. While it is not, nothing is sent.
-   */
   settled: boolean;
-  /** The places of the site, to say the place of a search with its name and not with its id. */
   destinations: readonly PublicDestination[] | undefined;
 }
 
@@ -39,10 +31,8 @@ export function useEmbedSearchEvents({ cards, settled, destinations }: EmbedSear
   const { active, send } = useEmbedBridge();
   const live = embed !== null && active;
 
-  // What was told last: the homes (their ids) and the search. A ref, not a state: nothing is drawn from it.
   const listedKey = useRef<string | null>(null);
   const lastSearch = useRef<string | null>(null);
-  // A search the guest sent while the answer was on its way: told as soon as it is there.
   const waiting = useRef<Ga4SearchEvent | null>(null);
 
   const tell = useCallback(
@@ -64,7 +54,6 @@ export function useEmbedSearchEvents({ cards, settled, destinations }: EmbedSear
       waiting.current = null;
     }
     if (cards.length === 0) {
-      // Nothing to list: the same homes that come back after an empty answer are a new list.
       listedKey.current = null;
       return;
     }
@@ -73,7 +62,6 @@ export function useEmbedSearchEvents({ cards, settled, destinations }: EmbedSear
     send.event('view_item_list', { ...viewItemListEvent(cards, { listId: EMBED_RESULTS_LIST_ID, listName: EMBED_RESULTS_LIST_NAME }) });
   }, [live, settled, cards, resultKey, send, tell]);
 
-  /** The guest sent the bar with dates chosen: the place (by its name), the dates and the guests of the stay. */
   const reportSearch = useCallback(
     ({ stay, where }: { stay: StayState; where: string }) => {
       if (!live) return;

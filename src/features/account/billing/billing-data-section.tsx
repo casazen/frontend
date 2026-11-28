@@ -33,7 +33,6 @@ export function BillingDataSection({ subscription }: { subscription: BillingSubs
     <BillingDisclosure testId="account-billing-data" title={t('accountBilling.data.title')} summary={summary}>
       <p className="text-sm text-foreground/70">{t('billing.profile.description')}</p>
       <BillingProfileForm
-        // The form takes its values once: after a save the page reads the subscription again, and the form starts over from what was kept.
         key={`${subscription.billingCountry ?? ''}|${subscription.vatId ?? ''}`}
         idPrefix="billing-profile"
         defaultValues={{ billingCountry: subscription.billingCountry ?? '', vatId: subscription.vatId ?? '' }}

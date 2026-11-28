@@ -15,7 +15,6 @@ async function waitForSession(page: import('@playwright/test').Page): Promise<vo
           if (raw.includes('access_token')) return true;
         }
       }
-      // The shell of the signed-in app (UI-00): not the title of a page, which changes with the language and the redesign.
       if (document.querySelector('[data-testid="app-ready"]')) return true;
       return /auth0\|[a-zA-Z0-9]+/.test(document.body.innerText);
     },
@@ -42,7 +41,6 @@ async function completeOnboardingIfNeeded(
 
   const consents = page.getByTestId('onboarding-consents-step');
   if (await consents.isVisible({ timeout: 10_000 }).catch(() => false)) {
-    // Only mandatory host documents, never the optional marketing consent.
     for (const id of ['tos', 'privacy', 'dpa', 'subprocessors']) {
       await consents.locator(`#${id}`).check();
     }

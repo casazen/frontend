@@ -60,7 +60,6 @@ describe('usePageTitle (UI-05)', () => {
 
     unmount();
 
-    // A page without a title of its own (a wizard, a page with a custom head) must not inherit the one that left.
     expect(document.title).toBe('CasaZen');
   });
 

@@ -26,40 +26,29 @@ import {
 } from './lib/lease-list-format';
 import { describeLeaseStep, leaseSheetPath } from './lib/lease-next-step';
 
-/** The page of a lease: the row opens its drawer, and the drawer and the button of the row lead here. */
 const leasePath = (lease: LeaseSummary) => leaseSheetPath(lease.id);
 
-/** The stages in the order of the path: how the column «Stato» is sorted. */
 const STAGE_ORDER: readonly LeaseStage[] = ['Draft', 'DataPending', 'InReview', 'SentForSignature', 'Signed', 'Active', 'Expiring', 'Concluded'];
 
-/** The stages the filter offers: `DataPending` waits for the tenant's own data (phase 2) and the server never sends it. */
 const FILTER_STAGES: readonly LeaseStage[] = ['Draft', 'InReview', 'SentForSignature', 'Signed', 'Active', 'Expiring', 'Concluded'];
 
-/** The groups of the quick filters are those the overview counts and links to (`?chip=`): not registered yet, in force, about to end. */
 const PREPARING: readonly LeaseStage[] = ['Draft', 'DataPending', 'InReview', 'SentForSignature', 'Signed'];
 const SIGNING: readonly LeaseStage[] = ['SentForSignature', 'Signed'];
 const ACTIVE: readonly LeaseStage[] = ['Active', 'Expiring'];
 
 const stageIn = (lease: LeaseSummary, stages: readonly LeaseStage[]) => lease.stage !== undefined && stages.includes(lease.stage);
 
-/** What waits for the landlord: a step of theirs that is not the «all good» of the system (priority 9 and over). The server decides both. */
 const isToDo = (lease: LeaseSummary) => lease.nextStep?.actor === 'Landlord' && lease.nextStep.priority < 9;
 
 const isLate = (lease: LeaseSummary) => (lease.overdueRentCount ?? 0) > 0;
 
-/** The day the period in force ends (`YYYY-MM-DD`): the end of the first period until the lease renews. */
 const periodEnd = (lease: LeaseSummary) => parseStayDate(lease.currentTermEndDate ?? lease.endDate);
 
-/** Whether a day (`YYYY-MM-DD`) is inside a range of days with either end open; a lease without the day is out of any range. */
 function dayInRange(day: string, range: { from?: string; to?: string }): boolean {
   if (!day) return false;
   return (range.from === undefined || day >= range.from) && (range.to === undefined || day <= range.to);
 }
 
-/**
- * The most urgent first: the lower the priority of the step, the nearer its day. A number the sort compares, built from the two things the
- * server says (`priority`, 0 to 10, and the day it is due); a lease with no step goes last.
- */
 function urgencyOf(lease: LeaseSummary): number | null {
   const step = lease.nextStep;
   if (!step) return null;
@@ -68,12 +57,10 @@ function urgencyOf(lease: LeaseSummary): number | null {
   return step.priority * 100_000 + days;
 }
 
-/** «Libero 4+4», or the combined regime of an older lease that has no contract type. */
 function contractTypeLabel(lease: LeaseSummary, t: TFunction): string {
   return lease.contractType ? getLeaseContractTypeLabel(lease.contractType, t) : getFiscalRegimeLabel(lease.fiscalRegime, t);
 }
 
-/** The line under the rent: what is late (the one thing in red), or when the next one is due. */
 function rentNote(lease: LeaseSummary, t: TFunction, language: string): ReactNode {
   const overdue = leaseOverdueText(lease, t);
   if (overdue) {
@@ -88,7 +75,6 @@ function rentNote(lease: LeaseSummary, t: TFunction, language: string): ReactNod
   return next ? <span className="mt-0.5 block break-words text-sm text-foreground/70">{next}</span> : null;
 }
 
-/** The rent that is late, in red, on its own line; `null` when none is. */
 function lateRentNote(lease: LeaseSummary, t: TFunction): ReactNode {
   const overdue = leaseOverdueText(lease, t);
   return overdue ? (
@@ -99,7 +85,6 @@ function lateRentNote(lease: LeaseSummary, t: TFunction): ReactNode {
   ) : null;
 }
 
-/** The properties of the leases, once each, for the filter. */
 function propertyOptions(rows: readonly LeaseSummary[], t: TFunction): readonly ListOption[] {
   const seen = new Map<string, string>();
   for (const lease of rows) {
@@ -148,7 +133,6 @@ export function buildLeaseList(t: TFunction, language: string): ListDefinition<L
             <span className="mt-0.5 block break-words text-sm text-foreground/70">
               <span>{leasePropertyLine(lease, t)}</span> · <span>{leaseRentText(lease, t)}</span>
             </span>
-            {/* A rent that is late is told by the next step of the lease; without one (an answer that has none) it is told here. */}
             {!lease.nextStep ? lateRentNote(lease, t) : null}
           </span>
         ),
@@ -235,7 +219,6 @@ export function buildLeaseList(t: TFunction, language: string): ListDefinition<L
       { id: 'end', type: 'date', label: t('leaseList.filters.end'), test: (lease, range) => dayInRange(periodEnd(lease), range) },
     ],
     defaultSort: 'next:asc',
-    // The button does the step the lease waits for; a lease with none just opens.
     primaryAction: (lease) => {
       const view = stepOf(lease);
       return view ? { id: 'next', label: view.action, href: view.to } : { id: 'open', label: t('leaseList.open'), href: leasePath(lease) };
@@ -246,7 +229,6 @@ export function buildLeaseList(t: TFunction, language: string): ListDefinition<L
       render: (lease) => <LeaseListDetail lease={lease} />,
       pageHref: leasePath,
     },
-    // A rent that is late is the one thing in the list that cannot wait: a bar at the start of its row and the words in its cell.
     rowTone: (lease) => (isLate(lease) ? 'urgent' : undefined),
     card: (lease) => {
       const step = stepOf(lease);
@@ -273,7 +255,6 @@ export function buildLeaseList(t: TFunction, language: string): ListDefinition<L
           ) : undefined,
       };
     },
-    // With the sidebar open (from `lg`) a table of four columns and a button is not seen whole under 1280 px: cards until then.
     cardsUntil: 'xl',
     csv: { fileName: 'contratti' },
     countLabel: (count) => t('leaseList.count', { count }),
@@ -287,7 +268,6 @@ export function buildLeaseList(t: TFunction, language: string): ListDefinition<L
   });
 }
 
-/** The list of leases in the words of the person; it follows the language. */
 export function useLeasesList(): ListDefinition<LeaseSummary> {
   const { t, i18n } = useTranslation();
   return useMemo(() => buildLeaseList(t, i18n.language), [t, i18n.language]);

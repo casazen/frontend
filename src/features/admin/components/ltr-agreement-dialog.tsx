@@ -37,7 +37,6 @@ const SELECT_CLASS =
 
 type NumericRule = Exclude<keyof AgreementRules, 'coefficientCombination' | 'subFascia3QualifyingTypeDElements'>;
 
-/** Every numeric rule of the calculation, grouped as in the agreement (labels: `ltrReferenceData.rules.*`). */
 const RULE_GROUPS: { titleKey: string; fields: NumericRule[] }[] = [
   {
     titleKey: 'ltrReferenceData.rules.subFasceTitle',
@@ -97,10 +96,6 @@ interface Props {
   onClose: () => void;
 }
 
-/**
- * Detail and edit of a territorial agreement (LT-13): status, source, expiry, the rules of the calculation and the
- * bands. The verification date is never edited here: "Segna verificato" records it with its source.
- */
 export function LtrAgreementDialog({ agreementId, onClose }: Props) {
   const { t } = useTranslation();
   const detail = useQuery({
@@ -400,7 +395,6 @@ function BandEditRow({ agreementId, band, onDone }: { agreementId: string; band:
     onSuccess: (updated) => {
       queryClient.setQueryData(ltrAgreementKey(agreementId), updated);
       void queryClient.invalidateQueries({ queryKey: LTR_AGREEMENTS_KEY });
-      // Band changes are logged under the agreement's id (LT-13), so the agreement's own audit trail picks them up.
       void queryClient.invalidateQueries({ queryKey: ltrAuditKey(agreementId) });
       toast.success(t('ltrReferenceData.toast.saved'));
       onDone();

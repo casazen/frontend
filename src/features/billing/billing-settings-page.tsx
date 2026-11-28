@@ -23,7 +23,6 @@ import { BillingProfileForm } from './components/billing-profile-form';
 import { SubscriptionStatusBadge } from './components/subscription-status-badge';
 import { SubscriptionPaymentNotice } from './components/subscription-status-notice';
 
-/** Subscription, billing portal and billing profile of the org (spec-saas-billing AC11-AC13, PL-12) in the short-rent shell. */
 export function BillingSettingsPage() {
   return (
     <AppShell>
@@ -100,7 +99,6 @@ function ClassicBillingSettingsContent() {
   );
 }
 
-/** Short explanation of a paying subscription; the payment problems have their own notice. */
 const STATUS_HINT_KEY: Partial<Record<BillingSubscriptionStatus, string>> = {
   active: 'billing.settings.statusHint.active',
   trialing: 'billing.settings.statusHint.trialing',
@@ -108,14 +106,12 @@ const STATUS_HINT_KEY: Partial<Record<BillingSubscriptionStatus, string>> = {
 
 interface SubscriptionCardProps {
   subscription: BillingSubscription;
-  /** Plan actually granted (`/users/me`): Starter while no payment gives access to the paid one. */
   effectiveTier: PlanTier | null;
 }
 
 function SubscriptionCard({ subscription, effectiveTier }: SubscriptionCardProps) {
   const { t, i18n } = useTranslation();
   const { pathname } = useLocation();
-  // The portal links back to this page, in the shell the user is in (PL-16).
   const portal = useOpenBillingPortal(toBillingReturnPath(pathname));
   const { status } = subscription;
   const hintKey = STATUS_HINT_KEY[status];

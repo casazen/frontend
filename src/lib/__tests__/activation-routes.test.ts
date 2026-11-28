@@ -34,10 +34,8 @@ describe('activationStepRoute (PL-15)', () => {
   });
 
   it('activationStepRoute_UserWithoutThePermissionOfThePage_OffersNoPage', () => {
-    // Payments need property.write, the organization page the org administrator: the guard would send them away.
     expect(activationStepRoute(step('payments', 'todo', 'connect_not_started'), NONE)).toBeNull();
     expect(activationStepRoute(step('organization', 'todo', 'org_profile_incomplete'), NONE)).toBeNull();
-    // The wizard of the first access has no permission.
     expect(activationStepRoute(step('account', 'todo', 'onboarding_incomplete'), NONE)).toBe('/onboarding');
   });
 

@@ -4,14 +4,8 @@ import middleware, { config, isAppHost, isAuthRedirect, isSiteEnabled, SITE_PAGE
 import { isPublicSiteEnabled } from '../site/site-gate';
 import { SITE_ASSET_DIR, SITE_PAGES } from '../site/site-pages';
 
-/**
- * Routing Middleware of the public site (SEO-VETRINA): the static pages are served only on the web app's own host, and
- * `/` stays the single-page app for the Auth0 login answer and on an org's own host (BK-16).
- */
 const PUBLIC_SITE = 'https://public-site.example.test';
-/** A preview deployment: the public site is always served there. */
 const ENV = { VITE_PUBLIC_SITE_URL: PUBLIC_SITE, VERCEL_ENV: 'preview' };
-/** Production with the company data (name and partita IVA). */
 const PRODUCTION = { ...ENV, VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Esempio S.r.l.', VITE_LEGAL_VAT_ID: '01234567890' };
 
 function request(url: string): Request {
@@ -38,16 +32,12 @@ describe('site middleware (SEO-VETRINA)', () => {
   });
 
   it.each([
-    // The Auth0 login comes back to the origin: the single-page app completes it there.
     `${PUBLIC_SITE}/?code=abc&state=xyz`,
     `${PUBLIC_SITE}/?error=access_denied&error_description=x&state=xyz`,
-    // An org's own host: `/` and the other paths are the org's booking site.
     'https://www.villa-rossi.example.test/',
     'https://www.villa-rossi.example.test/funzionalita',
-    // The pricing page does not exist: CasaZen is on private invitation and has no prices.
     `${PUBLIC_SITE}/prezzi`,
     'https://rossi.sites.example.test/',
-    // Not a page of the site.
     `${PUBLIC_SITE}/app`,
   ])('sitePagePath_%s_goesOnUnchanged', (url) => {
     expect(sitePagePath(request(url), ENV)).toBeNull();
@@ -68,7 +58,6 @@ describe('site middleware (SEO-VETRINA)', () => {
     ['with an invalid partita IVA', { ...PRODUCTION, VITE_LEGAL_VAT_ID: '123' }],
     ['without the company name', { ...PRODUCTION, VITE_LEGAL_NAME: ' ' }],
   ])('sitePagePath_production_%s_keepsTheConsoleAtRoot', (_case, env) => {
-    // The company does not exist yet: production serves the public site only once its data is configured.
     expect(sitePagePath(request(`${PUBLIC_SITE}/`), env)).toBeNull();
     expect(sitePagePath(request(`${PUBLIC_SITE}/funzionalita`), env)).toBeNull();
   });
@@ -88,7 +77,6 @@ describe('site middleware (SEO-VETRINA)', () => {
     [{ VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Mario Rossi', VITE_PUBLIC_SITE_WITHOUT_VAT_ID: 'false', VITE_SUPPORT_EMAIL: 'info@example.com' }],
     [{ VERCEL_ENV: 'production', VITE_PUBLIC_SITE_WITHOUT_VAT_ID: 'true', VITE_SUPPORT_EMAIL: 'info@example.com' }],
   ])('isSiteEnabled_%j_isTheRuleOfTheSiteGate', (env: Record<string, string | undefined>) => {
-    // middleware.ts is bundled on its own: its copy of the gate must agree with src/site/site-gate.ts.
     expect(isSiteEnabled(env)).toBe(
       isPublicSiteEnabled({
         vercelEnv: env.VERCEL_ENV,

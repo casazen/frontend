@@ -13,7 +13,6 @@ describe('route manifest: the sender wizard (E03/F01/US02/T02)', () => {
     expect(entry?.context).toBe('short-rent');
     expect(entry?.requiredPermissions).toEqual(['property.write']);
 
-    // Who may only read the properties cannot change who sends: the endpoints refuse it too.
     const readOnly = (_context: string, permission: string) => permission !== 'property.write';
     expect(entry && hasEntryPermission(entry, readOnly)).toBe(false);
     expect(entry && hasEntryPermission(entry, () => true)).toBe(true);
@@ -29,7 +28,6 @@ describe('route manifest: the sender wizard (E03/F01/US02/T02)', () => {
   });
 
   it('RouteManifest_SenderWizard_NeedsNoFlagBecauseTheChannelManagerIsOfferedOnlyWhereTheServerSaysItCanSend', () => {
-    // With the connector off the wizard still serves the other ways (NF-49): the page is there, and the choice is the server's.
     expect(entry?.featureFlag).toBeUndefined();
     expect(entry && isEntryFeatureEnabled(entry, DEFAULT_FEATURE_FLAGS)).toBe(true);
   });
@@ -40,7 +38,6 @@ describe('route manifest: the sender wizard (E03/F01/US02/T02)', () => {
     expect(senderWizardPath(PROPERTY_ID, (_context, permission) => permission !== 'property.write')).toBeNull();
   });
 
-  // The first import of the page pulls in the whole wizard (its steps, the guided panel of the channel manager): slow on a loaded machine, hence the room.
   it('RouteManifest_SenderWizard_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
     const page = await entry?.component();
 

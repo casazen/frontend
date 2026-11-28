@@ -35,7 +35,6 @@ const CHANNELS: ReadonlyArray<{ channel: string; labelKey: string }> = [
   { channel: 'WhatsApp', labelKey: 'crm.contacts.channel.WhatsApp' },
 ];
 
-/** The codes of `reachabilityReason` and the sentence of each: why the contact cannot be written to for marketing. */
 const REASONS: ReadonlyArray<{ reason: string; sentenceKey: string }> = [
   { reason: 'suppressed', sentenceKey: 'crm.contacts.reachability.suppressed' },
   { reason: 'ota_forward', sentenceKey: 'crm.contacts.reachability.otaForward' },
@@ -44,25 +43,21 @@ const REASONS: ReadonlyArray<{ reason: string; sentenceKey: string }> = [
   { reason: 'channel_not_available', sentenceKey: 'crm.contacts.reachability.channelNotAvailable' },
 ];
 
-/** Where a contact came from, in words ("Online check-in", "Forward address of a booking channel"). */
 export function originLabel(t: TFunction, origin: string): string {
   const known = ORIGINS.find((entry) => entry.origin === origin);
   return known ? t(known.labelKey) : origin;
 }
 
-/** What a contact may be used for, in words ("Consent", "Service only"). */
 export function basisLabel(t: TFunction, basis: string): string {
   const known = BASES.find((entry) => entry.basis === basis);
   return known ? t(known.labelKey) : basis;
 }
 
-/** Whether the guest confirmed the address, in words. */
 export function confirmationLabel(t: TFunction, confirmation: string): string {
   const known = CONFIRMATIONS.find((entry) => entry.confirmation === confirmation);
   return known ? t(known.labelKey) : confirmation;
 }
 
-/** The name of the channel of a contact ("E-mail", "Phone", "WhatsApp"). */
 export function contactChannelLabel(t: TFunction, channel: string): string {
   const known = CHANNELS.find((entry) => entry.channel === channel);
   return known ? t(known.labelKey) : channel;

@@ -11,15 +11,9 @@ import { ACCOUNT_INVITE_PATH, ACCOUNT_INVITED_PATH } from '../team-paths';
 import { useCopyInvitationLink } from '../use-copy-invitation-link';
 
 interface InviteDoneProps {
-  /** Available in the tab that submitted the invitation, until the page reloads. */
   sent: OrgInvitationSent | undefined;
 }
 
-/**
- * «Cosa succede ora» after the invitation is made. Only true things: how long the link lasts, that the person chooses the password
- * and accepts the documents again, that the invitation takes a seat. When the email could not be queued it says so and offers the
- * link to hand by hand (`POST …/{id}/link`).
- */
 export function InviteDone({ sent }: InviteDoneProps) {
   const { t, i18n } = useTranslation();
   const { copyLink, copying } = useCopyInvitationLink();

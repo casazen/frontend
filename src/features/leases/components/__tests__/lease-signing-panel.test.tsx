@@ -11,7 +11,6 @@ import { LeaseSigningPanel } from '../lease-signing-panel';
 import { httpError } from '../../__tests__/lease-test-utils';
 import type { LeaseDetail, LeaseSigner, LeaseSigningState } from '@/types';
 
-// LT-02 (A7-02, A7-16): the signature panel with the real API client and query hooks; only axios is mocked.
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -75,7 +74,6 @@ function pdf(name = 'contratto-firmato.pdf', type = 'application/pdf') {
   return new File(['%PDF-1.4 firmato'], name, { type });
 }
 
-/** A 422 as axios rejects it for a `responseType: 'blob'` request: the JSON ProblemDetails arrives as a Blob. */
 function blobProblem(status: number, code: string): AxiosError {
   const config = { headers: new AxiosHeaders(), responseType: 'blob' } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, {
@@ -118,7 +116,6 @@ describe('LeaseSigningPanel (LT-02)', () => {
     expect(offline.getByRole('button', { name: 'Scarica contratto da firmare' })).toBeEnabled();
     expect(offline.getByRole('button', { name: 'Carica contratto firmato' })).toBeEnabled();
     expect(offline.getByRole('button', { name: 'Anteprima (non valida per la firma)' })).toBeEnabled();
-    // No provider path and no fake link: nothing is sent to anyone.
     expect(p.queryByTestId('lease-signing-provider')).not.toBeInTheDocument();
     expect(p.queryByRole('link')).not.toBeInTheDocument();
     expect(p.queryByText(/example\.com/)).not.toBeInTheDocument();
@@ -239,7 +236,6 @@ describe('LeaseSigningPanel (LT-02)', () => {
   });
 
   it('render_ProviderLinksAfterARefresh_ShowsPersistedLinksAndTheExpiredBadge', async () => {
-    // A7-16: the links come from the API (persisted signers), not from the state of the page that started the signing.
     mockSigning(() =>
       Promise.resolve({
         data: state({
@@ -277,7 +273,6 @@ describe('LeaseSigningPanel (LT-02)', () => {
     );
     expect(within(landlord).queryByTestId('lease-signer-link-expired')).not.toBeInTheDocument();
     expect(within(tenant).getByTestId('lease-signer-link-expired')).toHaveTextContent('Link scaduto');
-    // The offline path stays available as an alternative; the provider cannot be started twice.
     expect(p.getByText('In alternativa: firma su carta o con firma digitale')).toBeInTheDocument();
     expect(p.queryByTestId('lease-signing-provider')).not.toBeInTheDocument();
   });

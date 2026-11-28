@@ -1,7 +1,6 @@
 import { getManifestEntry, hasEntryPermission, type PermissionPredicate } from '@/config/route-manifest';
 import type { ActivationStep } from '@/types/onboarding.types';
 
-/** The wizard of the first access: the only page of the checklist that is not in the ROUTE_MANIFEST. */
 const ONBOARDING_PATH = '/onboarding';
 
 const PROPERTIES = '/app/short-rent/properties';
@@ -11,7 +10,6 @@ const PAYMENTS = '/app/short-rent/settings/payments';
 const COMPLIANCE = '/app/short-rent/compliance';
 const VETRINA = '/app/short-rent/vetrina';
 
-/** Page where the host does what a step asks. Every path but the onboarding one is a ROUTE_MANIFEST entry. */
 function activationStepPath(step: Pick<ActivationStep, 'key' | 'reason'>): string | null {
   switch (step.key) {
     case 'account':
@@ -36,11 +34,9 @@ function activationStepPath(step: Pick<ActivationStep, 'key' | 'reason'>): strin
         case 'payments_not_ready':
           return PAYMENTS;
         default:
-          // A reason this version of the app does not know: no page to guess.
           return null;
       }
     case 'firstBooking':
-      // The link to share is on the "Vetrina" page.
       return VETRINA;
     default:
       return null;
@@ -66,10 +62,6 @@ export function activationStepRoute(
   return entry.path;
 }
 
-/**
- * Label of the button of a step, as a translation key of `activation.cta.*`: what the host does on the page
- * {@link activationStepRoute} opens.
- */
 export function activationStepCtaKey(step: Pick<ActivationStep, 'key' | 'state' | 'reason'>): string {
   switch (step.key) {
     case 'account':

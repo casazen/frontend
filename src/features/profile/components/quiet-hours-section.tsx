@@ -21,7 +21,6 @@ interface QuietHoursSectionProps {
 export function QuietHoursSection({ quietHours }: QuietHoursSectionProps) {
   const { t } = useTranslation();
   const save = useSaveNotificationPreferences();
-  // `null` until the person types: the fields then show what the server has, read from the props and not copied into state.
   const [draft, setDraft] = useState<QuietHoursFields | null>(null);
 
   const stored: QuietHoursFields = { start: toTimeFieldValue(quietHours.start), end: toTimeFieldValue(quietHours.end) };

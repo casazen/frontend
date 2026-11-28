@@ -57,7 +57,6 @@ function InvitationStep({ email, area }: { email: string | null; area: TourArea 
   );
 }
 
-// The static HTML declares its own example day. After hydration the tour follows today's date in Rome.
 const staticDay = () => '2026-11-18';
 const subscribeDay = () => () => {};
 

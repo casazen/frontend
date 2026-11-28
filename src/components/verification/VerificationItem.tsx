@@ -38,7 +38,6 @@ const TONE_ICON: Record<ResultTone, { Icon: typeof CheckCircle2; className: stri
   attention: { Icon: AlertTriangle, className: 'text-amber-700' },
 };
 
-/** One check of the automatic outcome in plain words: which check, what it found and, when it has them, the value and the threshold. */
 function ReasonLine({ reason }: { reason: VerificationReason }) {
   const { t, i18n } = useTranslation();
   const { Icon, className } = TONE_ICON[resultTone(reason.result)];
@@ -69,10 +68,8 @@ export function VerificationItem({ verification }: VerificationItemProps) {
   const recordVerification = useRecordVerification();
   const rejectVerification = useRejectVerification();
   const proposeVideoCall = useProposeVideoCall();
-  // The video call is offered while the identity verification is on (the flag): the words next to it say so, and with the flag off the card says what it always said.
   const { flags } = useFeatureFlags();
   const videoCallOffered = isFeatureEnabled(flags, 'checkInIdentityVerification');
-  // One write of this card at a time: whatever is in flight, none of its buttons can start another.
   const busy = requestNewPhoto.isPending || recordVerification.isPending || rejectVerification.isPending || proposeVideoCall.isPending;
 
   const handleRequestPhoto = () => {
@@ -83,7 +80,6 @@ export function VerificationItem({ verification }: VerificationItemProps) {
   const handleVerify = (outcome: boolean) => {
     if (busy) return;
     if (outcome) {
-      // Approve: the note is optional.
       recordVerification.mutate(
         {
           bookingId: verification.bookingId,
@@ -97,7 +93,6 @@ export function VerificationItem({ verification }: VerificationItemProps) {
         }
       );
     } else {
-      // Not verified: the note is required.
       if (!note.trim()) {
         return;
       }
@@ -151,7 +146,6 @@ export function VerificationItem({ verification }: VerificationItemProps) {
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="space-y-1.5">
-              {/* A heading of the level below the title of the page (the card title of the kit is an h3). */}
               <h2 className="text-xl font-semibold leading-none tracking-tight">{verification.propertyName}</h2>
               <CardDescription>
                 {t('verification.arrivalDeparture', {
@@ -257,7 +251,6 @@ export function VerificationItem({ verification }: VerificationItemProps) {
         </CardContent>
       </Card>
 
-      {/* Decision dialog: approve (the note is optional) or not verified (the note is required) */}
       <Dialog open={showVerifyDialog} onOpenChange={setShowVerifyDialog}>
         <DialogContent>
           <DialogHeader>
@@ -310,7 +303,6 @@ export function VerificationItem({ verification }: VerificationItemProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Reject dialog: the check-in is closed and no further attempt is possible; the reason is required */}
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
         <DialogContent>
           <DialogHeader>

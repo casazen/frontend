@@ -110,7 +110,6 @@ describe('PropertyModeWizard: from long-term leases to short stays (PM-03)', { t
     expect(propertyModeApi.preview).toHaveBeenCalledWith(PROPERTY_ID, 'Short', TOMORROW);
     next();
 
-    // The first day is the one after the lease ends, and the draft is named: no day frees it.
     await onStep('date');
     expect(screen.getByTestId('property-mode-date')).toHaveValue('2026-12-02');
     const reason = screen.getByTestId('property-mode-date-reason');
@@ -122,7 +121,6 @@ describe('PropertyModeWizard: from long-term leases to short stays (PM-03)', { t
     const drafts = await screen.findByTestId('property-mode-drafts', undefined, WAIT);
     expect(drafts).toHaveTextContent(i18n.t('propertyMode.checks.drafts.help'));
     expect(within(drafts).getByTestId('property-mode-blocker-open-DraftLease')).toHaveAttribute('href', '/app/long-rent/leases/draft-1');
-    // The lease ends before the day: that check passes, the draft is the only thing left.
     expect(screen.getByTestId('property-mode-check-passed')).toHaveTextContent('Nessun contratto finisce il 2 dicembre 2026 o dopo.');
     next();
     expect(await screen.findByTestId('wizard-error-summary', undefined, WAIT)).toHaveTextContent(i18n.t('propertyMode.errors.checksFailed'));
@@ -164,7 +162,6 @@ describe('PropertyModeWizard: a change already programmed (PM-03)', { timeout: 3
     await expectNoAxeViolations(container);
     expect(panel).toHaveTextContent("C'è già un passaggio in programma");
     expect(panel).toHaveTextContent("«Villa Aurora» passerà all'affitto lungo il 1 dicembre 2026.");
-    // A property has one change at a time: no wizard to program a second one, and no request for a preview.
     expect(screen.queryByTestId('property-mode-wizard')).not.toBeInTheDocument();
     expect(propertyModeApi.preview).not.toHaveBeenCalled();
     expect(screen.getByTestId('property-mode-scheduled-back')).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}`);
@@ -179,7 +176,6 @@ describe('PropertyModeWizard: a change already programmed (PM-03)', { timeout: 3
 
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('propertyMode.cancel.action') }));
     await waitFor(() => expect(propertyModeApi.cancel).toHaveBeenCalledWith(PROPERTY_ID, 'c1'), WAIT);
-    // It is withdrawn: the person goes back to the property.
     await waitFor(() => expect(screen.getByTestId('short-detail')).toBeInTheDocument(), WAIT);
   });
 
@@ -189,11 +185,9 @@ describe('PropertyModeWizard: a change already programmed (PM-03)', { timeout: 3
 
     expect(await screen.findByRole('heading', { level: 2, name: 'Passaggio programmato' }, WAIT)).toBeInTheDocument();
     expect(screen.getByText("«Villa Aurora» passerà all'affitto lungo il 1 dicembre 2026.")).toBeInTheDocument();
-    // It does not wait for a second request: the screen is the state the server has.
     expect(propertyModeApi.preview).not.toHaveBeenCalled();
     cleanup();
 
-    // With nothing programmed there is nothing to confirm: the page leads to the property.
     vi.mocked(propertyModeApi.getState).mockResolvedValue(state());
     renderPage(MODE_URL('short-rent', '?step=fatto'));
     await waitFor(() => expect(screen.getByTestId('short-detail')).toBeInTheDocument(), WAIT);
@@ -218,7 +212,6 @@ describe('PropertyModeWizard: where the person is and where they came from (PM-0
     renderPage(MODE_URL('long-rent', '?from=account'));
     await onStep('choice');
 
-    // "Annulla" on the first step goes back to where the person began, and the draft is gone.
     fireEvent.click(screen.getByTestId('property-mode-exit'));
     await waitFor(() => expect(screen.getByTestId('account-list')).toBeInTheDocument(), WAIT);
     cleanup();
@@ -235,7 +228,6 @@ describe('PropertyModeWizard: where the person is and where they came from (PM-0
     finish();
 
     expect(await screen.findByRole('heading', { level: 2, name: 'Passaggio programmato' }, WAIT)).toBeInTheDocument();
-    // "Torna all'elenco" is the list of the account, not the one of the section; the step in the address keeps `from`.
     expect(screen.getByTestId('wizard-done-secondary')).toHaveAttribute('href', '/app/account/properties');
     expect(screen.getByTestId('wizard-done-primary')).toHaveAttribute('href', `/app/long-rent/properties/${PROPERTY_ID}`);
     expect(screen.getByTestId('location')).toHaveTextContent('from=account');
@@ -263,7 +255,6 @@ describe('PropertyModeWizard: where the person is and where they came from (PM-0
     const error = await screen.findByTestId('property-mode-load-error', undefined, WAIT);
     expect(error).toHaveTextContent(i18n.t('propertyMode.notFound'));
     expect(within(error).queryByRole('button')).not.toBeInTheDocument();
-    // Every state has a way on: back to the list the person came from.
     expect(within(error).getByTestId('property-mode-load-error-back')).toHaveAttribute('href', '/app/account/properties');
   });
 

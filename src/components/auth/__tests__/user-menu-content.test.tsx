@@ -46,10 +46,8 @@ function renderMenu() {
 
 const trigger = () => screen.getByRole('button', { name: /Menu utente/ });
 
-/** The rows of the menu, in order: items, and the choices of the radio groups. */
 const rowsOf = (menu: HTMLElement) => [...menu.querySelectorAll<HTMLElement>('[role="menuitem"], [role="menuitemradio"]')];
 
-/** Opens the menu as a keyboard user does (Radix opens it on a pointer press, which jsdom cannot send). */
 async function openMenu() {
   fireEvent.keyDown(trigger(), { key: 'Enter' });
   return screen.findByRole('menu');
@@ -94,7 +92,6 @@ describe('UserMenu content (UI-05)', () => {
       const menu = await openMenu();
 
       const rows = rowsOf(menu);
-      // Profile, two languages, two areas, logout.
       expect(rows).toHaveLength(6);
       for (const row of rows) {
         expect(row).toHaveClass('max-md:min-h-11', 'pointer-coarse:min-h-11');
@@ -110,8 +107,6 @@ describe('UserMenu content (UI-05)', () => {
     });
   });
 
-  // Where "Profilo" leads in each area (UI-00) is guarded by user-menu-profile-path.test.tsx: not repeated here.
-
   describe('language', () => {
     it('UserMenu_Language_ShowsTheNamesInTheirOwnLanguageWithTheCurrentOneChecked', async () => {
       arrange(['short-rent']);
@@ -123,7 +118,6 @@ describe('UserMenu content (UI-05)', () => {
       const english = within(menu).getByRole('menuitemradio', { name: 'English' });
       expect(italian).toHaveAttribute('aria-checked', 'true');
       expect(english).toHaveAttribute('aria-checked', 'false');
-      // A screen reader reads each name in its language.
       expect(italian).toHaveAttribute('lang', 'it');
       expect(english).toHaveAttribute('lang', 'en');
     });
@@ -138,7 +132,6 @@ describe('UserMenu content (UI-05)', () => {
       await waitFor(() => expect(i18n.language).toBe('en'));
       expect(localStorage.getItem('casazen.locale')).toBe('en');
       expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-      // The trigger speaks the new language.
       expect(screen.getByRole('button', { name: 'User menu: Mario Rossi' })).toBeInTheDocument();
     });
 
@@ -235,7 +228,6 @@ describe('UserMenu content (UI-05)', () => {
       fireEvent.keyDown(within(menu).getByRole('menuitemradio', { name: 'Italiano' }), { key: 'Escape' });
 
       expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-      // Radix gives the focus back one tick after the menu is gone.
       await waitFor(() => expect(trigger()).toHaveFocus());
     });
 

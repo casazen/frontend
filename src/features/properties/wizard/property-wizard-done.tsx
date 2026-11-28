@@ -18,10 +18,6 @@ interface PropertyWizardDoneProps {
   propertyId: string | null;
 }
 
-/**
- * The blocking steps of the activation, said as what the host still has to do (the wording of the wizard, not of the law). The step of a property in Switzerland is one of
- * them (its municipality and, in Ticino, its structure number): left out, the screen would say that only the Terms are missing for a property that lacks more.
- */
 const OPEN_STEPS = ['base-data', 'cin', 'documents', 'safety', GUEST_REGISTRATION_STEP_ID] as const;
 
 /**
@@ -49,7 +45,6 @@ export function PropertyWizardDone({ propertyId }: PropertyWizardDoneProps) {
   if (!property.data || !activation.data) return <LoadingScreen message={t('propertyWizard.page.loading')} className="h-auto" />;
 
   const name = property.data.name;
-  // The wizard again with an empty address: the page starts a new one (it does not go on with the one that has just ended).
   const another = { label: t('propertyWizard.done.another'), to: PROPERTY_CREATE_PATH };
 
   if (activation.data.complianceStatus === 'Active') {
@@ -95,7 +90,6 @@ export function PropertyWizardDone({ propertyId }: PropertyWizardDoneProps) {
         ...open.map((step) => ({ icon: CircleAlert, text: t(`propertyWizard.done.open.${step.id}`) })),
         ...(open.length === 0 ? [{ icon: CircleCheck, text: t('propertyWizard.done.readyToActivate') }] : []),
       ]}
-      // The step is named: this screen is the end of the same wizard, which keeps its answers and goes straight to what is missing.
       primary={{ label: t('propertyWizard.done.complete'), to: open[0] ? fixLink(open[0].id) : propertyWizardPath(propertyId, 'finish') }}
       secondary={backToPlan ?? { label: t('propertyWizard.done.toList'), to: PROPERTIES_PATH }}
     >

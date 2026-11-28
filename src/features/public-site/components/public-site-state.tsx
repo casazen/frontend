@@ -8,16 +8,9 @@ interface PublicSiteStateProps {
   /** `alert` when something went wrong and the guest has to act (retry); otherwise the state is plain content. */
   role?: 'alert';
   testId?: string;
-  /** The way out: one action, the focal point of the state. */
   children?: ReactNode;
 }
 
-/**
- * A state of the booking site that replaces its content (the site does not exist, it could not be loaded): one icon, one
- * message and one way out, calm and centered. It sits inside the frame of the site (header and footer, the theme of the
- * host), and it reads the semantic tokens, which follow the theme there and the app's own look anywhere else (the page of
- * an unknown address is also shown outside the frame).
- */
 export function PublicSiteState({ icon: Icon, title, description, role, testId, children }: PublicSiteStateProps) {
   return (
     <section

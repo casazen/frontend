@@ -29,9 +29,7 @@ import {
 import { AddressStep, ApeStep, CadastralStep, ReviewStep } from './long-rent-property-wizard-steps';
 
 interface LongRentPropertyWizardProps {
-  /** The server (or the profile) says the plan has no room for another property: the page swaps the wizard for the plan notice. */
   onPlanLimit: () => void;
-  /** "Annulla" on the first step: out of the flow. */
   onExit: () => void;
 }
 
@@ -47,11 +45,8 @@ export function LongRentPropertyWizard({ onPlanLimit, onExit }: LongRentProperty
   const createProperty = useCreateProperty('Long');
   const saveCadastral = useUpdatePropertyCadastral();
   const uploadDocument = useUploadPropertyDocument();
-  // What to say when the last button fails with an error that has no words of its own (a duplicate address, for one).
   const [failureMessage, setFailureMessage] = useState<string | undefined>(undefined);
-  // The APE is being read: the server takes up to two minutes over a photographed certificate, and the button alone does not say so.
   const [reading, setReading] = useState(false);
-  // The file made of the pages chosen, when the APE step already made it (a photo is turned into a PDF there, once).
   const prepared = useRef<{ selection: unknown; file: File } | null>(null);
 
   const apeFile = async (values: LongRentPropertyWizardValues): Promise<File> => {
@@ -86,7 +81,6 @@ export function LongRentPropertyWizard({ onPlanLimit, onExit }: LongRentProperty
       purpose: t('longRentProperties.wizard.steps.ape.purpose'),
       optional: true,
       schema: LONG_RENT_PROPERTY_STEP_SCHEMAS.ape,
-      // A photo is turned into a PDF here, so a file the browser cannot make stops the step, not the last button.
       beforeNext: async (values) => {
         if (hasApeSelection(values)) await apeFile(values);
       },
@@ -111,15 +105,12 @@ export function LongRentPropertyWizard({ onPlanLimit, onExit }: LongRentProperty
       if (isPlanLimitError(error)) onPlanLimit();
       else if (isDuplicateAddressError(error)) {
         setFailureMessage(t('longRentProperties.wizard.duplicate'));
-        // Not the error of the request: its words are the server's, this one says where to fix it.
         throw new Error('duplicate_property_address');
       }
       throw error;
     }
-    // The profile carries `hasProperties`: refresh it before leaving, or the guard would send the host back to the first property.
     await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
 
-    // From here the property exists: nothing below may throw out of this function, or the wizard would ask to create it again.
     let cadastral: LongRentPropertyWizardResult['cadastral'] = 'none';
     const cadastralData = toCadastralPayload(values);
     if (cadastralData) {
@@ -147,7 +138,6 @@ export function LongRentPropertyWizard({ onPlanLimit, onExit }: LongRentProperty
       }
     }
 
-    // The last screen tells all of it: the toasts of each request would say it again.
     toast.dismiss();
     return { property, cadastral, cadastralComplete: isCadastralComplete(values), ape };
   };
@@ -169,7 +159,6 @@ export function LongRentPropertyWizard({ onPlanLimit, onExit }: LongRentProperty
       }
       draft={{ exclude: LONG_RENT_PROPERTY_WIZARD_DRAFT_EXCLUDE }}
       onExit={onExit}
-      // Opened again on the last screen (a reload): the answers and the property are gone from here, so the list is the way on.
       renderDone={({ result }) => (result ? <LongRentPropertyDone result={result} /> : <Navigate to={LONG_RENT_PROPERTIES_PATH} replace />)}
       testIds={{
         root: 'long-rent-property-wizard',

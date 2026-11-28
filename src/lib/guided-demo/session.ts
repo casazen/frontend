@@ -4,7 +4,6 @@ import { SAMPLE_LONG_ID, type TourArea } from './scenario';
 const TOUR_KEY = 'casazen:guided-demo';
 let activeInMemory = false;
 
-/** A build with real authentication never reads or creates a guided session. */
 export function isGuidedDemo(): boolean {
   if (!isDemoMode || typeof window === 'undefined' || !window.location.pathname.startsWith('/app/')) return false;
   const params = new URLSearchParams(window.location.search);
@@ -23,7 +22,6 @@ export function isGuidedDemo(): boolean {
   }
 }
 
-/** Public visitors see the standalone example. Only the separate demo build can enter the synthetic PMS. */
 export function tourEntry(area: TourArea): string {
   if (!isDemoMode) return (area === 'short' ? '/affitti-brevi' : '/affitti-lunghi') + '#demo';
   return area === 'short'

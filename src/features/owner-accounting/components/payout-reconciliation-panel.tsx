@@ -6,20 +6,12 @@ import type { OwnerPayout } from '@/types';
 
 interface PayoutReconciliationPanelProps {
   currency: string;
-  /** What the page can see of the reconciliation the close will make. */
   preview: ReconciliationPreview;
-  /** Every payout made on the versions of the month, the reversed ones too (they are shown, never counted). */
   payouts: readonly OwnerPayout[];
-  /** The figures the server answered to a refused close: they are the ones that count, and replace the preview. */
   serverFigures?: { due: number; paid: number; difference: number } | null;
   loading?: boolean;
 }
 
-/**
- * Payout and bank reconciliation (AC-NF110-3): what the approved statement says is owed, what the payouts of the month settle, and the
- * difference. A month that does not reconcile, or whose balance is negative, is closed only with a reason and by who may waive it: the panel
- * says so before the person asks to close. The close reads everything again on the server; its figures replace these.
- */
 export function PayoutReconciliationPanel({ currency, preview, payouts, serverFigures, loading = false }: PayoutReconciliationPanelProps) {
   const { t } = useTranslation();
   const { money, date } = useOwnerFormat();

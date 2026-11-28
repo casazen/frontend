@@ -29,7 +29,6 @@ const USERNAME = 'ISTAT-UTENTE-77';
 const PASSWORD = 'Pa55 Word S3cret!';
 
 let client: QueryClient;
-/** What the server holds: the steps and the requests of the host. The fakes answer from it. */
 let steps: PanelStep[];
 let requests: AssistRequest[];
 
@@ -125,7 +124,6 @@ describe('IstatCredentialsCard, the write-only credentials of the regional ISTAT
     renderCard();
 
     expect(await screen.findByText(/^Configurate il 10\/11\/2026/)).toBeInTheDocument();
-    // Write-only: the form stays empty, there is nothing to reveal.
     expect(screen.getByLabelText(text('istatCredentials.fields.username'))).toHaveValue('');
     expect(screen.getByLabelText(text('istatCredentials.fields.password'))).toHaveValue('');
     expect(screen.getByRole('button', { name: text('istatCredentials.replace') })).toBeInTheDocument();
@@ -155,13 +153,11 @@ describe('IstatCredentialsCard, the write-only credentials of the regional ISTAT
     fill(text('istatCredentials.fields.password'), PASSWORD);
     fireEvent.click(screen.getByRole('button', { name: text('istatCredentials.save') }));
 
-    // The structure code is optional: left empty it goes as empty, the password exactly as typed.
     await waitFor(() => expect(onboardingAssistApi.setIstatCredentials).toHaveBeenCalledWith(PROPERTY_ID, { username: USERNAME, password: PASSWORD, structureCode: '' }));
     expect(await screen.findByText(/^Configurate il 15\/11\/2026/)).toBeInTheDocument();
     expect(screen.getByLabelText(text('istatCredentials.fields.username'))).toHaveValue('');
     expect(screen.getByLabelText(text('istatCredentials.fields.password'))).toHaveValue('');
     expect(toast.success).toHaveBeenCalledWith(text('istatCredentials.saved'));
-    // Nothing the person typed stays anywhere the app keeps things: not in the cache of the queries, not in the one of the mutations, not in the page.
     await waitFor(() => expect(JSON.stringify(client.getMutationCache().getAll().map((mutation) => mutation.state))).not.toContain(PASSWORD));
     expect(JSON.stringify(client.getQueryCache().getAll().map((query) => query.state))).not.toContain(PASSWORD);
     expect(document.body.textContent).not.toContain(PASSWORD);
@@ -180,7 +176,6 @@ describe('IstatCredentialsCard, the write-only credentials of the regional ISTAT
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
     expect(screen.getByLabelText(text('istatCredentials.fields.username'))).toHaveValue(USERNAME);
     expect(screen.getByText(text('istatCredentials.notConfigured'))).toBeInTheDocument();
-    // A refusal is kept without the request that was sent.
     await waitFor(() => expect(JSON.stringify(client.getMutationCache().getAll().map((mutation) => mutation.state.error))).not.toContain(PASSWORD));
   });
 
@@ -213,7 +208,6 @@ describe('IstatCredentialsCard, the write-only credentials of the regional ISTAT
     await screen.findByText(/^Configurate il/);
     expect(screen.getByRole('button', { name: text('istatCredentials.replace') })).toBeInTheDocument();
 
-    // The property is not found any more: a query keeps the older answer when a read fails (a 404 included), and the card must not draw it as the truth.
     vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockRejectedValue(problemError(404, { code: 'property_not_found' }));
     await act(async () => {
       await client.invalidateQueries({ queryKey: ['istat-credentials', PROPERTY_ID] });
@@ -226,7 +220,6 @@ describe('IstatCredentialsCard, the write-only credentials of the regional ISTAT
     expect(screen.queryByRole('button', { name: text('istatCredentials.replace') })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: text('istatCredentials.remove') })).not.toBeInTheDocument();
 
-    // Asked again and answered, what is true now is shown.
     vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockResolvedValue({ configured: false, configuredAt: null });
     fireEvent.click(within(screen.getByTestId('istat-credentials-error')).getByRole('button', { name: text('istatCredentials.retry') }));
     expect(await screen.findByText(text('istatCredentials.notConfigured'))).toBeInTheDocument();
@@ -280,7 +273,6 @@ describe('IstatCredentialsCard, the request of help of the ISTAT connection', ()
     expect(outcome).toHaveTextContent(text('onboardingPlan.panel.assist.outcome.declared.title'));
     expect(outcome).toHaveTextContent(text('onboardingPlan.panel.assist.outcome.declared.text'));
     expect(within(outcome).getByTestId('assist-outcome-staff-note')).toHaveTextContent('Fatto con le credenziali della regione.');
-    // A word that nobody checked is never shown as checked.
     expect(outcome).not.toHaveTextContent(text('onboardingPlan.panel.assist.outcome.verified.title'));
     expect(within(outcome).getByRole('button', { name: text('onboardingPlan.panel.assist.notWorking.action') })).toBeInTheDocument();
   });
@@ -296,7 +288,6 @@ describe('IstatCredentialsCard, the request of help of the ISTAT connection', ()
 
   it('IstatCredentialsCard_ClosedWithNoOutcomeRecorded_IsNeverShownAsVerified', async () => {
     steps = [istatStep({ status: 'confirmed', completedAt: '2026-11-13T09:00:00Z' })];
-    // A request closed before the outcome was recorded: it says nothing of a check, so it is the support's word.
     requests = [istatRequest({ status: 'Done', completedAt: '2026-11-13T09:00:00Z', outcome: null })];
     renderCard();
 
@@ -324,7 +315,6 @@ describe('IstatCredentialsCard, the request of help of the ISTAT connection', ()
 
     fireEvent.click(await screen.findByTestId('assist-reopen'));
     const dialog = await screen.findByTestId('assist-reopen-dialog');
-    // The note is required: without it nothing is sent.
     fireEvent.click(within(dialog).getByTestId('assist-reopen-confirm'));
     expect(await within(dialog).findByTestId('assist-reopen-missing')).toHaveTextContent(text('onboardingPlan.panel.assist.notWorking.required'));
     expect(onboardingAssistApi.reopenRequest).not.toHaveBeenCalled();
@@ -337,12 +327,10 @@ describe('IstatCredentialsCard, the request of help of the ISTAT connection', ()
     await waitFor(() => expect(onboardingAssistApi.reopenRequest).toHaveBeenCalledWith('req-9', 'Il portale dice ancora che mancano le credenziali.'));
     await waitFor(() => expect(screen.queryByTestId('assist-reopen-dialog')).not.toBeInTheDocument());
     expect(toast.success).toHaveBeenCalledWith(text('onboardingPlan.panel.assist.notWorking.reopened'));
-    // The request is open again, with what the host wrote, and the outcome is gone.
     const status = await screen.findByTestId('assist-request-status');
     expect(status).toHaveAttribute('data-status', 'Requested');
     expect(screen.getByTestId('assist-request-host-note')).toHaveTextContent('Il portale dice ancora che mancano le credenziali.');
     expect(screen.queryByTestId('assist-outcome')).not.toBeInTheDocument();
-    // The note was free text of the person: it is not kept by the mutation once the dialog is done.
     await waitFor(() => expect(JSON.stringify(client.getMutationCache().getAll().map((mutation) => mutation.state.variables))).not.toContain('credenziali'));
   });
 

@@ -5,7 +5,6 @@ import { buildBookingPath, buildInquiryPath } from '@/lib/supplier-site/booking-
 import type { SiteModel } from '@/lib/supplier-site/site-model';
 import { Reveal } from './reveal';
 
-/** The band that closes the home while the bookings are open: the two ways on, booking and the request on measure. Nothing to call. */
 export function ClosingSection({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
   return (

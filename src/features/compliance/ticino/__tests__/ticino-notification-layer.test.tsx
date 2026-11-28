@@ -21,7 +21,6 @@ vi.mock('@/api/swissCompliance.api', () => ({
   },
 }));
 vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getGuestSummary: vi.fn() } }));
-// The host form of the guests is not what is asked here: the layer opens it for a stay and gets it back when it closes.
 vi.mock('@/features/alloggiati/components/stay-guests-edit-dialog', () => ({
   StayGuestsEditDialog: ({ bookingId, onOpenChange }: { bookingId: string; onOpenChange: (open: boolean) => void }) => (
     <div data-testid="stay-guests-edit-dialog">
@@ -55,7 +54,6 @@ const OTHER_DAY = '2026-11-18';
 const REFERENCE = `TI-${PROPERTY_ID.replaceAll('-', '')}-20261119`;
 const EVERYTHING = ['guest.read', 'alloggiati.submit', 'booking.write', 'property.write'];
 
-/** A day as `GET …/swiss/ticino-notification` sends it: one guest with a child, nothing missing, not declared, no file written yet. */
 function dayOf(overrides: Partial<TicinoNotificationDay> = {}): TicinoNotificationDay {
   return {
     propertyId: PROPERTY_ID,
@@ -158,7 +156,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       expect(stepOf('guests')).toHaveAttribute('data-state', 'done');
       expect(stepOf('file')).toHaveAttribute('data-state', 'todo');
       expect(stepOf('receipt')).toHaveAttribute('data-state', 'optional');
-      // The five steps are there, in order, and the week of the notification asks nothing else of the person.
       expect(within(screen.getByTestId('ticino-steps')).getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)).toEqual([
         expect.stringContaining('Ospiti da notificare'),
         expect.stringContaining('Scarica il file'),
@@ -218,7 +215,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       renderLayer();
 
       expect(await screen.findByTestId('ticino-day-state')).toHaveTextContent(/Già caricato il 19 novembre.*15:20 da Luca Bianchi\./);
-      // The proof is what is left to do, and the day is closed: every step before it is done.
       expect(isOpen('receipt')).toBe(true);
       for (const step of ['guests', 'file', 'portal', 'declare']) expect(stepOf(step)).toHaveAttribute('data-state', 'done');
       openStep('declare');
@@ -266,7 +262,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       const dialog = await screen.findByTestId('stay-guests-edit-dialog');
       expect(dialog).toHaveTextContent(OTHER_BOOKING_ID);
       expect(alloggiatiApi.getGuestSummary).toHaveBeenCalledWith(OTHER_BOOKING_ID);
-      // The layer is still there under the form: nothing was left.
       expect(screen.getByTestId('ticino-layer')).toBeInTheDocument();
       const reads = vi.mocked(swissComplianceApi.getTicinoDay).mock.calls.length;
 
@@ -303,12 +298,10 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       await screen.findByTestId('ticino-layer');
       openStep('guests');
       expect(screen.getByTestId('ticino-guests-ready')).toHaveTextContent('1 persona nel file');
-      // On a group the counters hold the other members, adults included: they are not minors.
       expect(screen.getByTestId('ticino-guests-ready')).not.toHaveTextContent('minor');
       expect(screen.getByTestId('ticino-guest-rows')).toHaveTextContent('Gruppo di 7 persone');
       expect(screen.getByTestId('ticino-warning-parental_authorization_needed')).toHaveTextContent(/autorizzazione scritta dei genitori/);
       expect(screen.getByTestId('ticino-warning-group_sheet_incomplete')).toBeInTheDocument();
-      // A code of a newer server has no words here and is left out, never shown as it came.
       expect(screen.queryByTestId('ticino-warning-something_from_the_future')).not.toBeInTheDocument();
       expect(screen.getByTestId('ticino-transliterated')).toHaveTextContent('2 lettere dei nomi non hanno il loro accento nel file');
     });
@@ -330,7 +323,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
 
       await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(expect.any(Blob), 'notifiche-ti-2026-11-19.csv'));
       expect(swissComplianceApi.downloadTicinoFile).toHaveBeenCalledWith(PROPERTY_ID, { reportDate: DAY, format: 'csv', confirmRegenerate: false });
-      // The next thing is the portal.
       await waitFor(() => expect(isOpen('portal')).toBe(true));
     });
 
@@ -362,7 +354,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       const dialog = await screen.findByRole('dialog', { name: 'Scaricare di nuovo il file?' });
       expect(dialog).toHaveTextContent(/Già caricato il 19 novembre.*da Luca Bianchi/);
       expect(dialog).toHaveTextContent('Gli ospiti già notificati potrebbero comparire due volte sul portale.');
-      // Nothing is asked of the server before the person says yes.
       expect(swissComplianceApi.downloadTicinoFile).not.toHaveBeenCalled();
 
       fireEvent.click(within(dialog).getByRole('button', { name: 'Scarica di nuovo' }));
@@ -391,7 +382,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       vi.mocked(swissComplianceApi.downloadTicinoFile).mockRejectedValueOnce(apiError(409, 'ticino_day_already_declared'));
       renderLayer();
       fireEvent.click(await screen.findByTestId('ticino-download-csv'));
-      // The day as the co-host left it.
       vi.mocked(swissComplianceApi.getTicinoDay).mockResolvedValue(declaredDay());
 
       const dialog = await screen.findByRole('dialog', { name: 'Scaricare di nuovo il file?' });
@@ -449,10 +439,8 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       expect(link).toHaveAttribute('href', 'https://www.notifiche.ti.ch');
       expect(link).toHaveAttribute('target', '_blank');
       expect(link.getAttribute('rel')).toContain('noopener');
-      // CasaZen tells it does not sign in to the portal: the host uploads the file.
       expect(screen.getByTestId('ticino-portal')).toHaveTextContent(/CasaZen non accede al portale/);
 
-      // jsdom cannot open a tab: the click is told not to follow the link, which the layer does not depend on.
       link.addEventListener('click', (event) => event.preventDefault());
       fireEvent.click(link);
 
@@ -480,7 +468,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       fireEvent.click(screen.getByTestId('ticino-declare-button'));
 
       await waitFor(() => expect(swissComplianceApi.declareTicinoDay).toHaveBeenCalledWith(PROPERTY_ID, { arrivalDay: DAY }));
-      // The summary of the cockpit (and with it the counter of the menu) and the days of the property read again: the day leaves the days to notify without a reload.
       await waitFor(() => {
         const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
         expect(keys).toContainEqual(['compliance']);
@@ -499,7 +486,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       );
       renderLayer();
       await screen.findByTestId('ticino-layer');
-      // A receipt is chosen in the last step, so its button would be ready if nothing were on its way.
       openStep('receipt');
       fireEvent.change(screen.getByTestId('ticino-receipt-police-file'), { target: { files: [new File(['pdf'], 'riepilogo.pdf', { type: 'application/pdf' })] } });
       expect(screen.getByTestId('ticino-receipt-police-upload')).toBeEnabled();
@@ -508,7 +494,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       fireEvent.click(screen.getByTestId('ticino-declare-button'));
 
       await waitFor(() => expect(screen.getByTestId('ticino-declare-button')).toBeDisabled());
-      // The other actions of the same layer wait too: no second request starts over the first.
       expect(screen.getByTestId('ticino-download-csv')).toBeDisabled();
       expect(screen.getByTestId('ticino-download-xml')).toBeDisabled();
       expect(screen.getByTestId('ticino-receipt-police-upload')).toBeDisabled();
@@ -539,7 +524,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       await screen.findByTestId('ticino-layer');
       openStep('declare');
 
-      // Undoing the declaration would leave the day closed by the receipt and tell the others the day was reopened: the button is not offered.
       expect(screen.getByTestId('ticino-declared')).toHaveTextContent(/Già caricato il 19 novembre.*da Luca Bianchi/);
       expect(screen.queryByTestId('ticino-undeclare')).not.toBeInTheDocument();
     });
@@ -566,7 +550,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
     });
 
     it('TicinoLayer_TheFirstActionOnADayAskedWithoutADate_PinsItSoDeclaringItLeavesItOnScreenClosed', async () => {
-      // A read without a date always answers the oldest day still to notify: after the declaration that is another day.
       vi.mocked(swissComplianceApi.getTicinoDay).mockImplementation(async (_property, date) => {
         if (date === undefined) return dayOf({ day: DAY });
         return date === DAY ? declaredDay() : dayOf({ day: OTHER_DAY });
@@ -580,7 +563,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       await waitFor(() => expect(swissComplianceApi.declareTicinoDay).toHaveBeenCalledWith(PROPERTY_ID, { arrivalDay: DAY }));
       await waitFor(() => expect(screen.getByTestId('ticino-day-state')).toHaveTextContent(/Già caricato il 19 novembre/));
       expect(screen.getByTestId('ticino-day-title')).toHaveTextContent('Arrivi di giovedì 19 novembre');
-      // From then on the layer reads that day, never the next one by itself.
       expect(vi.mocked(swissComplianceApi.getTicinoDay).mock.calls.filter(([, date]) => date === undefined)).toHaveLength(1);
     });
 
@@ -613,7 +595,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
 
       await waitFor(() => expect(swissComplianceApi.uploadReceipt).toHaveBeenCalledWith(PROPERTY_ID, { type: 'Police', reportDate: DAY, reference: REFERENCE, file }));
       await waitFor(() => expect(swissComplianceApi.declareTicinoDay).toHaveBeenCalledWith(PROPERTY_ID, { arrivalDay: DAY, receiptId: 'receipt-1' }));
-      // The file chosen is forgotten once it is filed: the button waits for another one.
       await waitFor(() => expect(screen.getByTestId('ticino-receipt-police-upload')).toBeDisabled());
     });
 
@@ -643,7 +624,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
 
       await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Il file è vuoto oppure troppo grande: al massimo 10 MB.'));
       expect(swissComplianceApi.declareTicinoDay).not.toHaveBeenCalled();
-      // The file stays chosen: the person can try again.
       expect(screen.getByTestId('ticino-receipt-police-upload')).toBeEnabled();
     });
 
@@ -688,7 +668,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
           file,
         }),
       );
-      // The authorization is a document kept five years, not the receipt of the portal: it does not close the day.
       expect(swissComplianceApi.declareTicinoDay).not.toHaveBeenCalled();
     });
 
@@ -732,7 +711,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       openStep('receipt');
       expect(screen.getByTestId('ticino-receipt-needs-submit')).toBeInTheDocument();
       expect(screen.queryByTestId('ticino-receipt-police-upload')).not.toBeInTheDocument();
-      // Reading the guests and downloading the file stay available: the file asks `guest.read`, not the permission to declare.
       expect(screen.getByTestId('ticino-download-csv')).toBeEnabled();
     });
 
@@ -803,7 +781,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
 
     it('TicinoLayer_A404WhileTheOldDayIsStillInTheCache_IsNotFoundNeverTheOldDay', async () => {
       const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-      // What an earlier visit left in the cache: TanStack Query keeps it when the next read fails.
       client.setQueryData(['ticino-police', PROPERTY_ID, DAY], dayOf());
       vi.mocked(swissComplianceApi.getTicinoDay).mockRejectedValue(apiError(404));
       render(
@@ -818,7 +795,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       expect(screen.queryByTestId('ticino-layer')).not.toBeInTheDocument();
     });
 
-    /** The day is read again while it is on screen (an event of the cockpit, the window in front again): the read that fails is what the tests below are about. */
     const readAgain = async (view: ReturnType<typeof renderLayer>) => {
       await act(async () => {
         await view.client.invalidateQueries({ queryKey: ['ticino-police', PROPERTY_ID] });
@@ -832,20 +808,17 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       fireEvent.change(screen.getByTestId('ticino-receipt-police-file'), { target: { files: [new File(['pdf'], 'riepilogo.pdf', { type: 'application/pdf' })] } });
       expect(screen.getByTestId('ticino-receipt-police-upload')).toBeEnabled();
 
-      // A blip of the line: the day is read again and the read fails.
       vi.mocked(swissComplianceApi.getTicinoDay).mockRejectedValue(apiError(500));
       await readAgain(view);
 
       const notice = await screen.findByTestId('ticino-layer-stale');
       expect(notice).toHaveTextContent('Non riusciamo ad aggiornare questo giorno');
-      // Nothing the person is in the middle of went with it: the same day, the step that was open and the file that was chosen.
       expect(screen.getByTestId('ticino-layer')).toBeInTheDocument();
       expect(screen.queryByTestId('ticino-layer-error')).not.toBeInTheDocument();
       expect(screen.queryByTestId('ticino-layer-problem')).not.toBeInTheDocument();
       expect(isOpen('receipt')).toBe(true);
       expect(screen.getByTestId('ticino-receipt-police-upload')).toBeEnabled();
 
-      // Read again, the day answers: the line goes and the person is where they were.
       vi.mocked(swissComplianceApi.getTicinoDay).mockResolvedValue(dayOf());
       const retry = within(notice).getByRole('button', { name: 'Riprova' });
       await waitFor(() => expect(retry).toBeEnabled());
@@ -868,7 +841,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       await readAgain(view);
 
       await screen.findByTestId('ticino-layer-stale');
-      // What the host is typing in the form of the guests is not lost with the day.
       expect(screen.getByTestId('stay-guests-edit-dialog')).toBeInTheDocument();
       expect(screen.getByTestId('ticino-layer')).toBeInTheDocument();
     });
@@ -884,7 +856,6 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
 
       await readAgain(view);
 
-      // A refusal is the answer about the day (the permission was taken away, the property is gone): the guests it names are not shown any more.
       expect(await screen.findByTestId('ticino-layer-problem')).toHaveTextContent(words);
       expect(screen.queryByTestId('ticino-layer')).not.toBeInTheDocument();
       expect(screen.queryByTestId('ticino-layer-stale')).not.toBeInTheDocument();

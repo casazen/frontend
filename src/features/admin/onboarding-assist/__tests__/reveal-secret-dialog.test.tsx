@@ -32,7 +32,6 @@ function opened(overrides: Partial<SupportVaultReveal> = {}): SupportVaultReveal
   };
 }
 
-/** The dialog as its parent holds it: open until it asks to be closed, and gone after, with whatever state it had. */
 function Harness({ onClosed }: { onClosed: () => void }) {
   const [open, setOpen] = useState(true);
   return open ? (
@@ -64,14 +63,12 @@ function renderDialog() {
   );
 }
 
-/** Lets React and the query client finish what they started: the promises first, then the zero-delay timers TanStack Query uses to tell React. */
 async function settle() {
   await act(async () => {
     await vi.advanceTimersByTimeAsync(0);
   });
 }
 
-/** Moves the clock, with everything that was waiting for it. */
 async function advance(ms: number) {
   await act(async () => {
     await vi.advanceTimersByTimeAsync(ms);
@@ -83,7 +80,6 @@ async function typeReason(reason: string) {
   fireEvent.change(screen.getByTestId('assist-reveal-reason'), { target: { value: reason } });
 }
 
-/** Writes the reason and presses the button once it can be pressed: what staff does, and then the values are on screen. */
 async function openWithReason(reason: string = REASON) {
   await typeReason(reason);
   const confirm = screen.getByTestId('assist-reveal-confirm');
@@ -94,14 +90,12 @@ async function openWithReason(reason: string = REASON) {
 
 const valuesOnScreen = () => screen.queryByTestId('assist-reveal-values');
 
-/** Everything the app keeps of the queries and the mutations, as one text: the place a value must never be found. */
 function whatTheCachesHold(): string {
   const queries = client.getQueryCache().getAll().map((query) => query.state);
   const mutations = client.getMutationCache().getAll().map((mutation) => ({ state: mutation.state, key: mutation.options.mutationKey }));
   return JSON.stringify({ queries, mutations });
 }
 
-/** What the browser stores: the three storages a value could be put in. */
 function whatTheBrowserStores(): string {
   return JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage }, title: document.title });
 }
@@ -119,7 +113,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
   cleanup();
-  // What Radix left to do after the dialog went (a focus handed back) is done before the real clock is back.
   await vi.runOnlyPendingTimersAsync();
   vi.useRealTimers();
 });
@@ -129,10 +122,8 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
   it('RevealSecretDialog_ReasonTooShort_AsksAgainAndOpensNothing', async () => {
     renderDialog();
 
-    // Eight characters once the spaces around it are gone (eleven with them): the server counts the reason trimmed, and so does the dialog.
     await openWithReason('   serve ok   ');
 
-    // The server would answer 422: the dialog does not even ask. No value, no call.
     expect(screen.getByTestId('assist-reveal-reason-error')).toHaveTextContent(i18n.t('onboardingPlan.assist.reveal.reason.invalid'));
     expect(screen.getByTestId('assist-reveal-reason')).toHaveAttribute('aria-invalid', 'true');
     expect(onboardingAssistApi.revealSecret).not.toHaveBeenCalled();
@@ -144,7 +135,6 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
     renderDialog();
 
-    // The counter says how much of the 300 characters is used, and the field takes no more.
     await typeReason(REASON);
     expect(screen.getByTestId('assist-reveal-reason-counter')).toHaveTextContent(`${REASON.length}/300`);
     expect(screen.getByTestId('assist-reveal-reason')).toHaveAttribute('maxlength', '300');
@@ -155,7 +145,6 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
     expect(screen.getByTestId('assist-reveal-value-username')).toHaveTextContent(USERNAME);
     expect(screen.getByTestId('assist-reveal-value-password')).toHaveTextContent(PASSWORD);
     expect(screen.getByTestId('assist-reveal-value-extraCode')).toHaveTextContent(EXTRA);
-    // A button copies each value, and the reason is not kept for a next opening.
     fireEvent.click(screen.getByTestId('assist-reveal-copy-password'));
     await settle();
     expect(writeText).toHaveBeenCalledWith(PASSWORD);
@@ -168,13 +157,11 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
     await openWithReason();
     expect(valuesOnScreen()).toBeInTheDocument();
 
-    // Still there when a second is left, with the seconds that are left...
     await advance(59_000);
     expect(valuesOnScreen()).toBeInTheDocument();
     expect(screen.getByTestId('assist-reveal-remaining')).toHaveTextContent(i18n.t('onboardingPlan.assist.reveal.visible.remaining', { seconds: 1 }));
     expect(document.body.textContent).toContain(PASSWORD);
 
-    // ...and gone with the minute: nothing of them is left on the page, and the next opening asks a new reason.
     await advance(1_000);
     expect(valuesOnScreen()).not.toBeInTheDocument();
     for (const secret of SECRETS) expect(document.body.textContent).not.toContain(secret);
@@ -183,14 +170,11 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
     expect(onClosed).not.toHaveBeenCalled();
   });
 
-  // The minute does not depend on one clock being right: the timer of the minute counts its own time, the clock of the page can be ahead of it (a machine that slept, a clock that
-  // was set) or behind it (a timer that fires a hair early), and the values must not stay on screen past the minute whichever it is.
   it('RevealSecretDialog_TheClockOfThePageIsAheadOfTheTimer_HidesTheValuesWithTheNextTickAndNotAMinuteLater', async () => {
     renderDialog();
     await openWithReason();
     expect(valuesOnScreen()).toBeInTheDocument();
 
-    // The clock jumps past the minute while the timer of the minute still has all its time to run: nothing fires by itself, the countdown reads zero at its next tick.
     act(() => {
       vi.setSystemTime(Date.now() + 61_000);
     });
@@ -205,7 +189,6 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
     renderDialog();
     await openWithReason();
 
-    // The clock of the page is half a second behind the timer: when the minute of the timer is over, the clock says it is not.
     act(() => {
       vi.setSystemTime(Date.now() - 500);
     });
@@ -221,7 +204,6 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
     renderDialog();
     await openWithReason();
 
-    // A hidden tab runs no timer: the clock is past the minute when the tab is shown again, and the values go before the next tick.
     act(() => {
       vi.setSystemTime(Date.now() + 61_000);
       document.dispatchEvent(new Event('visibilitychange'));
@@ -267,7 +249,6 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
     expect(onClosed).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('gone')).toBeInTheDocument();
     for (const secret of SECRETS) expect(document.body.textContent).not.toContain(secret);
-    // A minute later nothing wakes up for a dialog that is not there.
     await advance(60_000);
     expect(onClosed).toHaveBeenCalledTimes(1);
   });
@@ -291,7 +272,6 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
     await openWithReason();
     expect(valuesOnScreen()).toBeInTheDocument();
 
-    // The values are in the state of the dialog and nowhere else: not in a query, not in a mutation (neither its data nor what it was asked), not in a storage of the browser.
     const caches = whatTheCachesHold();
     const stored = whatTheBrowserStores();
     for (const secret of SECRETS) {
@@ -299,10 +279,8 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
       expect(stored).not.toContain(secret);
     }
     expect(client.getQueryCache().getAll()).toHaveLength(0);
-    // The mutation that asked is dropped as soon as nothing watches it (`gcTime: 0`).
     expect(client.getMutationCache().getAll().filter((mutation) => mutation.state.data !== undefined)).toHaveLength(0);
 
-    // And after the minute, nothing either.
     await advance(60_000);
     for (const secret of SECRETS) {
       expect(whatTheCachesHold()).not.toContain(secret);
@@ -318,7 +296,6 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
 
     expect(screen.getByTestId('assist-reveal-error')).toHaveTextContent(i18n.t('apiErrors.codes.supportVaultTooManyOpenings'));
     expect(valuesOnScreen()).not.toBeInTheDocument();
-    // The reason stays to be sent again; a failure is kept without the request that was sent.
     expect(screen.getByTestId('assist-reveal-reason')).toHaveValue(REASON);
     expect(screen.getByTestId('assist-reveal-confirm')).toBeEnabled();
     expect(whatTheCachesHold()).not.toContain('config');

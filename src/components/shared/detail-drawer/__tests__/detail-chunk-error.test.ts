@@ -3,10 +3,10 @@ import { isChunkLoadError } from '../detail-chunk-error';
 
 describe('isChunkLoadError (UI-15)', () => {
   it.each([
-    'Failed to fetch dynamically imported module: https://app.example/assets/booking-drawer-Bx3.js', // Chrome, Edge
-    'error loading dynamically imported module: https://app.example/assets/booking-drawer-Bx3.js', // Firefox
-    'Importing a module script failed.', // Safari
-    'Loading chunk 42 failed.', // webpack-style bundlers
+    'Failed to fetch dynamically imported module: https://app.example/assets/booking-drawer-Bx3.js',
+    'error loading dynamically imported module: https://app.example/assets/booking-drawer-Bx3.js',
+    'Importing a module script failed.',
+    'Loading chunk 42 failed.',
   ])('isChunkLoadError_%s_IsAChunkThatDidNotLoad', (message) => {
     expect(isChunkLoadError(new Error(message))).toBe(true);
   });

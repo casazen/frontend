@@ -99,7 +99,6 @@ afterEach(() => {
   cleanup();
 });
 
-// E03/F03/US01/T02 (NF-52, AC-NF52-9): the booking card shows the light of its compliance items, with the same component and words as the page.
 describe('BookingNextStep and the compliance lights of the stay', () => {
   it('shows who must complete check-in before opening the guidance', async () => {
     vi.mocked(useBookingCheckInSession).mockReturnValue({
@@ -127,10 +126,8 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     expect(block).toHaveTextContent('È stato inviato, ma la ricevuta non è archiviata: caricala.');
     expect(block).toHaveTextContent('Tocca a te');
     expect(block).toHaveAttribute('data-tone', 'warning');
-    // The existing route of the action: the tab of the booking where the communication is followed.
     expect(screen.getByTestId('booking-next-compliance')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
     expect(screen.getByTestId('booking-next-compliance')).toHaveTextContent('Carica la ricevuta');
-    // The red one is the block itself: a green one is not listed next to it.
     expect(screen.queryByTestId('compliance-lines')).not.toBeInTheDocument();
   });
 
@@ -160,7 +157,6 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     expect(line).toHaveAttribute('data-action', 'VerifyIdentity');
     expect(within(line).getByRole('img', { name: "In corso: Aspettiamo il selfie dell'ospite prima dell'arrivo." })).toHaveTextContent('In corso');
     expect(line).toHaveTextContent("Identità dell'ospite");
-    // The tab that shows the check-in link and what the guest sent.
     expect(within(line).getByTestId('compliance-line-action')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
     expect(within(line).getByTestId('compliance-line-action')).toHaveTextContent("Controlla l'identità");
   });
@@ -176,7 +172,6 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     expect(screen.getByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'completed');
     const rows = within(lines).getAllByTestId('compliance-line');
     expect(rows.map((row) => row.getAttribute('data-light'))).toEqual(['green', 'green']);
-    // Nothing is asked here: no button. And a line says only what the API told, never «tutto a posto».
     expect(within(lines).queryByRole('link')).not.toBeInTheDocument();
     expect(lines).toHaveTextContent('La ricevuta è archiviata.');
   });
@@ -184,7 +179,6 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
   it('BookingNextStep_NoItemsOrNoLight_IsTheCardOfAlways', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(
       summaryOf({
-        // An older API, or the traffic light off: items with no light (and one of another stay) say nothing on a card.
         alloggiatiManualRequired: section(item('SendAlloggiati', undefined, '')),
         receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Red', 'receipt_missing', { id: 'other', bookingId: 'other' })),
       }),
@@ -203,7 +197,6 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     renderStep();
     fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
-    // A bare 403 on a GET takes the user to «nessun accesso»: the card does not ask what it may not read.
     expect(await screen.findByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'completed');
     expect(fetchComplianceSummary).not.toHaveBeenCalled();
   });
@@ -220,7 +213,6 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     let answer: (summary: ComplianceSummaryResult) => void = () => {};
     vi.mocked(fetchComplianceSummary).mockReturnValue(new Promise<ComplianceSummaryResult>((resolve) => (answer = resolve)));
     renderStep();
-    // «Concluso» would be said and taken back a moment later: the block keeps its place and waits.
     expect(await screen.findByTestId('booking-next-step-loading')).toBeInTheDocument();
     expect(screen.queryByTestId('booking-next-step')).not.toBeInTheDocument();
 
@@ -243,7 +235,6 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     expect(await screen.findByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'sendAlloggiati');
   });
 
-  // A read that fails is «non lo so», never «concluso» or «tutto a posto»: the block says it could not check and offers to try again.
   it.each([
     ['a server error', () => httpError(500)],
     ['a 403', () => httpError(403)],
@@ -260,7 +251,6 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     expect(block).toHaveAttribute('data-tone', 'neutral');
     expect(screen.queryByTestId('compliance-lines')).not.toBeInTheDocument();
 
-    // «Riprova» reads the lights again: with an answer the card is the one it always is.
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Red', 'receipt_missing')) }));
     fireEvent.click(within(block).getByRole('button', { name: 'Riprova' }));
 

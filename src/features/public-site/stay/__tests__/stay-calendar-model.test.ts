@@ -67,7 +67,6 @@ describe('rangeProblem', () => {
   });
 
   it('rangeProblem_CheckOutDayThatIsTaken_IsFreeToLeaveOn', () => {
-    // The 5th is taken as a night; leaving on the morning of the 5th is a stay of the nights of the 3rd and the 4th.
     expect(rangeProblem(index, '2026-11-03', '2026-11-05')).toBeNull();
   });
 
@@ -76,7 +75,6 @@ describe('rangeProblem', () => {
   });
 
   it('rangeProblem_TakenNightAndTooFewNights_ReportsTheTakenNightFirst', () => {
-    // From the 12th the minimum is 3 nights and the stay has 2: the sentence is about the minimum; with a taken night it is about that.
     const withBusy = buildCalendarIndex(
       days.map((day) => (day.date === '2026-11-13' ? { ...day, available: false } : day)),
       TODAY,
@@ -114,12 +112,7 @@ describe('selectDay', () => {
   });
 });
 
-/**
- * The rules the host set on the days (E08/F05/US01, NF-36): what the picker refuses must be what the checkout refuses, or a guest
- * is offered a stay that the payment then turns down. Today is the 25th of October 2026, so «two days ahead» is the 27th.
- */
 describe('the rules of the host on the days', () => {
-  /** The same nights with rules on some of them. */
   const withRules = (rules: Record<string, Partial<CalendarDay>>) =>
     buildCalendarIndex(
       days.map((day) => ({ ...day, ...rules[day.date] })),
@@ -192,7 +185,6 @@ describe('the rules of the host on the days', () => {
     });
 
     it('rangeProblem_ClosedDepartureAndTooFewNights_ReportsTheDepartureFirstLikeTheCheckout', () => {
-      // From the 13th the minimum is 3 nights; the 15th is closed to departure and the stay has 2 nights: the checkout says the closed day.
       const both = withRules({ '2026-11-15': { closedToDeparture: true } });
 
       expect(rangeProblem(both, '2026-11-13', '2026-11-15')).toEqual({ kind: 'departureClosed', date: '2026-11-15' });
@@ -221,7 +213,6 @@ describe('the rules of the host on the days', () => {
     });
 
     it('rangeProblem_MaximumOfANightInsideTheStay_IsNotTheOneOfTheStay', () => {
-      // The 21st allows one night, but the stay arrives on the 20th: the rule is the one of the arrival.
       expect(rangeProblem(limited, '2026-11-20', '2026-11-23')).toBeNull();
     });
 
@@ -246,7 +237,6 @@ describe('the rules of the host on the days', () => {
   });
 
   describe('the advance', () => {
-    // Today is the 25th: the 27th is 2 days ahead, the 28th is 3, the 4th of November is 10, the 8th is 14.
     const windowed = withRules({
       '2026-10-27': { minAdvanceDays: 3 },
       '2026-10-28': { minAdvanceDays: 3 },
@@ -283,7 +273,6 @@ describe('the rules of the host on the days', () => {
     });
 
     it('rangeProblem_AdvanceOfTheNightsInsideTheStay_IsNotChecked', () => {
-      // The 27th is too close, but the stay arrives on the 26th and the rule of the 27th is not the one of its arrival.
       expect(rangeProblem(windowed, '2026-10-26', '2026-10-30')).toBeNull();
     });
   });
@@ -299,7 +288,6 @@ describe('the rules of the host on the days', () => {
   });
 
   it('rangeProblem_CalendarThatCouldNotBeRead_ChecksNoRule', () => {
-    // Nothing is known of the days: the checkout checks the same rules again before the payment.
     const unread = { ...withRules({ '2026-11-10': { closedToArrival: true } }), unverified: true, days: new Map<string, CalendarDay>() };
 
     expect(rangeProblem(unread, '2026-11-10', '2026-11-12')).toBeNull();
@@ -336,7 +324,7 @@ describe('the months and the grid', () => {
   it.each([
     ['2026-10-01', 3, 31],
     ['2026-11-01', 6, 30],
-    ['2026-03-01', 6, 31], // summer time starts on the 29th
+    ['2026-03-01', 6, 31],
     ['2028-02-01', 1, 29],
   ])('monthGrid_%s_StartsAfter%sBlanksAndHas%sDays', (month, blanks, length) => {
     const grid = monthGrid(month);

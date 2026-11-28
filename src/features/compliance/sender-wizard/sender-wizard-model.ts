@@ -9,10 +9,8 @@ import type { SetQuesturaCredentialsRequest } from '@/types/questura-credentials
 /** The parameter of the address that names the property (`?property=<id>`): the one the panel «Invio a Polizia e ISTAT» and the pages that lead here write. */
 export const SENDER_PROPERTY_PARAM = 'property';
 
-/** What changing the sender asks: the permission of the endpoints that change it (`PUT`, the connection test, the declaration), the one the route of the wizard asks. */
 export const SENDER_WRITE_PERMISSION = 'property.write';
 
-/** Raise it when the shape of the values changes: a draft written for the old shape is ignored. (2: the consent to the delegation is no longer kept in it.) */
 export const SENDER_DRAFT_VERSION = 2;
 
 /**
@@ -24,7 +22,6 @@ export const SENDER_DRAFT_VERSION = 2;
  */
 export const SENDER_DRAFT_EXCLUDE: readonly string[] = ['switchConfirmed', 'delegationConsentVersion', 'autoSendGuests'];
 
-/** The steps of the wizard, by the name `?step=` carries. */
 export const SENDER_STEP = {
   choice: 'choice',
   summary: 'summary',
@@ -51,21 +48,16 @@ export interface SenderWizardValues {
 
 export const SENDER_WIZARD_DEFAULTS: SenderWizardValues = { sender: '', delegationConsentVersion: '', switchConfirmed: '', autoSendGuests: null };
 
-/** Whether the organization lets CasaZen write the guests to the channel manager on its own, as the server says it now (absent: off, the default). */
 export const autoSendInForce = (read: Pick<PropertySender, 'autoSendGuestsToOctorate'>): boolean => read.autoSendGuestsToOctorate === true;
 
-/** What the switch shows: the value the person chose, or, while they have not touched it, the setting in force as the server says it now. */
 export const autoSendShown = (values: Pick<SenderWizardValues, 'autoSendGuests'>, read: Pick<PropertySender, 'autoSendGuestsToOctorate'>): boolean =>
   typeof values.autoSendGuests === 'boolean' ? values.autoSendGuests : autoSendInForce(read);
 
-/** What the person asked for the setting: the value they chose when it is not the one in force, and `undefined` (nothing to send) when they never touched the switch or left it as it is. */
 export const autoSendAsked = (values: Pick<SenderWizardValues, 'autoSendGuests'>, read: Pick<PropertySender, 'autoSendGuestsToOctorate'>): boolean | undefined =>
   typeof values.autoSendGuests === 'boolean' && values.autoSendGuests !== autoSendInForce(read) ? values.autoSendGuests : undefined;
 
-/** The name the draft of the wizard is kept under, in the browser: one for each property, so a draft never leads to another property than the one in the address. */
 export const senderWizardId = (propertyId: string) => `compliance-sender:${propertyId}`;
 
-/** The address of the wizard for a property, at a step when there is one: only the id of the property is in it. */
 export function senderWizardHref(propertyId: string, step?: SenderStepId): string {
   const query = new URLSearchParams({ [SENDER_PROPERTY_PARAM]: propertyId });
   if (step) query.set('step', step);
@@ -74,7 +66,6 @@ export function senderWizardHref(propertyId: string, step?: SenderStepId): strin
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** The property the address names, or `''` when it names none that can be one: the id ends up in the path of requests, so nothing but an id goes through. */
 export function propertyOfAddress(params: URLSearchParams): string {
   const value = params.get(SENDER_PROPERTY_PARAM)?.trim() ?? '';
   return GUID.test(value) ? value : '';
@@ -82,14 +73,12 @@ export function propertyOfAddress(params: URLSearchParams): string {
 
 export const isAutomaticSender = (sender: ComplianceSenderType | ''): boolean => sender === 'ChannelManager' || sender === 'CasaZen';
 
-/** The steps for the sender chosen: the manual send ends at the summary, and CasaZen has no panel to pass through. */
 export function senderStepIds(sender: ComplianceSenderType | ''): SenderStepId[] {
   if (sender === 'ChannelManager') return [SENDER_STEP.choice, SENDER_STEP.summary, SENDER_STEP.credentials, SENDER_STEP.panel, SENDER_STEP.test];
   if (sender === 'CasaZen') return [SENDER_STEP.choice, SENDER_STEP.summary, SENDER_STEP.credentials, SENDER_STEP.test];
   return [SENDER_STEP.choice, SENDER_STEP.summary];
 }
 
-/** One of the ways to send, with whether the host can choose it now. */
 export interface SenderOption {
   sender: ComplianceSenderType;
   available: boolean;
@@ -97,10 +86,6 @@ export interface SenderOption {
 
 const ALL_SENDERS: readonly ComplianceSenderType[] = ['ChannelManager', 'CasaZen', 'Manual'];
 
-/**
- * What is offered. The channel manager is hidden when the property has none that can send (`channelManagerAvailable`), so a property without one has only the other ways (NF-49);
- * a way the server does not let the host choose now (CasaZen, in this release) is shown as not available and cannot be picked: the list is the server's, never the client's.
- */
 export function senderOptions(read: Pick<PropertySender, 'channelManagerAvailable' | 'availableSenders'>): SenderOption[] {
   return ALL_SENDERS.filter((sender) => sender !== 'ChannelManager' || read.channelManagerAvailable).map((sender) => ({
     sender,
@@ -108,16 +93,11 @@ export function senderOptions(read: Pick<PropertySender, 'channelManagerAvailabl
   }));
 }
 
-/** What the choice starts from: the sender in effect when the host can choose it again (the channel manager when the property is connected is the default), else the first way offered. */
 export function defaultSenderChoice(read: Pick<PropertySender, 'sender' | 'channelManagerAvailable' | 'availableSenders'>): ComplianceSenderType | '' {
   if (read.availableSenders.includes(read.sender)) return read.sender;
   return senderOptions(read).find((option) => option.available)?.sender ?? '';
 }
 
-/**
- * The texts of the delegation this version of the app can show, by the version of the text (`delegationTextVersion` of the API). A version that is not here is a text this
- * page cannot show: the consent is not asked for it (a person never consents to a text they were not shown), and the wizard tells them to reload the page.
- */
 const DELEGATION_TEXT_KEYS: Readonly<Record<string, string>> = {
   '2026-11-v1': 'compliance.sender.delegation.text',
 };
@@ -126,17 +106,14 @@ export function delegationTextKey(version: string): string | null {
   return Object.hasOwn(DELEGATION_TEXT_KEYS, version) ? DELEGATION_TEXT_KEYS[version] : null;
 }
 
-/** The consent counts only when it was given to the version of the text in force, and this page can show that text. */
 export function consentGiven(values: Pick<SenderWizardValues, 'delegationConsentVersion'>, read: Pick<PropertySender, 'delegationTextVersion'>): boolean {
   return values.delegationConsentVersion !== '' && values.delegationConsentVersion === read.delegationTextVersion && delegationTextKey(read.delegationTextVersion) !== null;
 }
 
-/** Whether the delegation is settled for the sender chosen: nothing is asked for the manual send, and nothing again once the organization accepted the text in force. */
 export function delegationSettled(values: SenderWizardValues, read: Pick<PropertySender, 'delegationAccepted' | 'delegationTextVersion'>): boolean {
   return !isAutomaticSender(values.sender) || read.delegationAccepted || consentGiven(values, read);
 }
 
-/** How the sender changes: nothing, or from an automatic send to another, from the host's own to an automatic one, or to the host's own. */
 export type SwitchKind = 'same' | 'automaticToAutomatic' | 'manualToAutomatic' | 'toManual';
 
 export function switchKind(current: ComplianceSenderType, chosen: ComplianceSenderType | ''): SwitchKind {
@@ -145,14 +122,12 @@ export function switchKind(current: ComplianceSenderType, chosen: ComplianceSend
   return current === 'Manual' ? 'manualToAutomatic' : 'automaticToAutomatic';
 }
 
-/** What the confirmation is about: the change on screen. It is the value `switchConfirmed` holds when the host confirmed it. */
 export const confirmationOf = (current: ComplianceSenderType, chosen: ComplianceSenderType | ''): string => `${current}>${chosen}`;
 
 export function switchConfirmed(values: SenderWizardValues, read: Pick<PropertySender, 'sender'>): boolean {
   return switchKind(read.sender, values.sender) === 'same' || values.switchConfirmed === confirmationOf(read.sender, values.sender);
 }
 
-/** What decides whether the request carries the automatic send of the guests: whether the person may change it (only the organization administrator, the server refuses anyone else). */
 interface SwitchRequestOptions {
   canChangeAutoSend?: boolean;
 }
@@ -177,15 +152,10 @@ export function toSwitchRequest(values: SenderWizardValues, read: PropertySender
   };
 }
 
-/**
- * Whether a refusal is the server saying that this person may not change the automatic send of the guests: a 403 with no code of the delegation, for a request that carried the setting.
- * The delegation codes are the other 403s of the change and have their own words (`switchProblemOf`).
- */
 export function autoSendRefused(error: unknown, request: Pick<SwitchSenderRequest, 'autoSendGuestsToOctorate'>): boolean {
   return request.autoSendGuestsToOctorate !== undefined && isAxiosError(error) && error.response?.status === 403 && switchProblemOf(error) === null;
 }
 
-/** What a refusal of the change says, so the screen tells the person what to do (and never leaves them with a code). */
 export type SwitchProblemKind =
   | 'confirmationRequired'
   | 'delegationRequired'
@@ -207,7 +177,6 @@ const PROBLEM_KINDS: Readonly<Record<string, SwitchProblemKind>> = {
   sender_changed_concurrently: 'changedConcurrently',
 };
 
-/** The kind of refusal an error is, or `null` for any other failure (the screen then says what the server said, or the generic words). */
 export function switchProblemOf(error: unknown): SwitchProblemKind | null {
   if (!isAxiosError(error)) return null;
   const code = getProblemCode(error.response?.data);
@@ -221,10 +190,6 @@ export function switchProblemOf(error: unknown): SwitchProblemKind | null {
  */
 export type StepProblemKind = SwitchProblemKind | 'credentialsIncomplete' | 'credentialsNotSaved' | 'istatIncomplete' | 'istatNotSaved';
 
-/**
- * The step stops on something that has words of its own. It is thrown in place of the answer, which holds the request that was sent: the shell finds nothing to say in it
- * and shows the words of the kind (`finishFailedMessage`).
- */
 export class SenderStepBlockedError extends Error {
   readonly kind: StepProblemKind;
 
@@ -234,21 +199,12 @@ export class SenderStepBlockedError extends Error {
   }
 }
 
-/**
- * Whether the person typed something in the credentials of the portal that is not saved yet (a field of spaces is empty). The credentials are in no value of the wizard and in no draft, so
- * what leaves the step with them typed is lost: the main button saves them first and «Salva ed esci» says that they were not kept.
- */
 export function hasTypedCredentials(values: SetQuesturaCredentialsRequest): boolean {
   return [values.username, values.password, values.wsKey].some((value) => value.trim() !== '');
 }
 
-/** What the result of the connection test, or of the state of the sender, means for the host. Only `active` is shown as «Attivo». */
 export type SenderOutcome = 'active' | 'declared' | 'unverified' | 'inactive' | 'manual' | 'notAvailable';
 
-/**
- * The outcome of the sender as the server says it (`state` and `verification`): a state is «Attivo» only when the server verified it. A sender that is chosen and that
- * the server cannot confirm is never shown as working.
- */
 export function outcomeOfSender(read: Pick<PropertySender, 'sender' | 'state' | 'verification'>): SenderOutcome {
   if (read.sender === 'Manual' || read.state === 'NotConfigured') return 'manual';
   if (read.sender === 'CasaZen') return 'notAvailable';
@@ -258,7 +214,6 @@ export function outcomeOfSender(read: Pick<PropertySender, 'sender' | 'state' | 
   return 'unverified';
 }
 
-/** What a connection test found, in the words of the screen: `active` only for `Verified`. */
 export function outcomeOfTest(test: Pick<SenderConnectionTest, 'outcome'>): SenderOutcome {
   switch (test.outcome) {
     case 'Verified':
@@ -274,16 +229,11 @@ export function outcomeOfTest(test: Pick<SenderConnectionTest, 'outcome'>): Send
   }
 }
 
-/**
- * What the screen says about the sender: the test of this visit, or the state the server holds when there is none; the host's own declaration stands only while the test cannot tell.
- * «Attivo» is the outcome `active`, which only the server's word `Verified` gives.
- */
 export function outcomeToShow(read: PropertySender, result: SenderConnectionTest | undefined): SenderOutcome {
   const outcome = result ? outcomeOfTest(result) : outcomeOfSender(read);
   return read.state === 'Declared' && read.sender === 'ChannelManager' && (result === undefined || outcome === 'unverified') ? 'declared' : outcome;
 }
 
-/** The reason codes (`octorate_*`) of the server that have words of their own; any other code gets the generic words of the outcome. */
 const KNOWN_REASONS: ReadonlySet<string> = new Set([
   'octorate_not_connected',
   'octorate_police_account_invalid',
@@ -295,7 +245,6 @@ const KNOWN_REASONS: ReadonlySet<string> = new Set([
 
 export const knownReason = (reason: string | null | undefined): string | null => (reason !== null && reason !== undefined && KNOWN_REASONS.has(reason) ? reason : null);
 
-/** The step where a reason is fixed: the panel for the police account, the choice when the channel manager cannot send at all; nothing when the fix is only to wait. */
 export function fixStepOf(reason: string | null | undefined): SenderStepId | null {
   switch (reason) {
     case 'octorate_police_account_invalid':
@@ -309,15 +258,10 @@ export function fixStepOf(reason: string | null | undefined): SenderStepId | nul
   }
 }
 
-/** What the guided step of the panel stores to come back here: the wizard, its draft (the property) and the step, named and never carried. */
 export function senderPanelResume(propertyId: string): Pick<StartPanelStepRequest, 'resumeWizardType' | 'resumeDraftEntityId' | 'resumeStepCode'> {
   return { resumeWizardType: 'ComplianceSender', resumeDraftEntityId: propertyId, resumeStepCode: SENDER_STEP.panel };
 }
 
-/**
- * The address of the wizard a guided step of the panel was started from, at the step it stored, for the property of the step: where the person goes when the step is done.
- * `null` for a step that this wizard did not start (or whose step code this version does not know).
- */
 export function senderResumePath(step: Pick<PanelStep, 'propertyId' | 'resume'> | undefined): string | null {
   if (!step?.propertyId || step.resume.wizardType !== 'ComplianceSender') return null;
   const stepId = (Object.values(SENDER_STEP) as string[]).find((candidate) => candidate === step.resume.stepCode);

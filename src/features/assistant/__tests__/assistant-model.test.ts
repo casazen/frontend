@@ -32,7 +32,6 @@ import {
 
 type Tree = { [key: string]: string | Tree };
 
-/** A key of a locale file, or `undefined`. */
 function textOf(locale: unknown, key: string): string | undefined {
   let node: unknown = locale;
   for (const part of key.split('.')) {
@@ -157,18 +156,15 @@ describe('the words of the assistant screens exist in both languages', () => {
   it('situationText_KnownAndUnknownCode_WordsBoth', () => {
     expect(situationText('wifi', i18n.getFixedT('it'), i18n)).toBe('Wi-Fi');
     expect(situationText('check_in_time', i18n.getFixedT('en'), i18n)).toBe('Check-in time');
-    // A code a later version adds is written as a phrase, never as a raw identifier.
     expect(situationText('late_arrival_card', i18n.getFixedT('en'), i18n)).toBe('Late arrival card');
   });
 
   it('topicText_TopicsAndSituationsOfTheLists_AreWordedAndAnUnknownNameIsAPhrase', () => {
     const t = i18n.getFixedT('en');
     expect(topicText('CheckIn', t, i18n)).toBe('Check-in');
-    // A situation that is not a topic is worded as the situation.
     expect(topicText('InvoiceRequest', t, i18n)).toBe('Invoice request');
     expect(topicText('SomethingNew', t, i18n)).toBe('Something new');
     expect(TOPIC_NAMES).toEqual(expect.arrayContaining(['CheckIn', 'Faq', 'InvoiceRequest', 'Other']));
-    // A name that is both a topic and a situation is listed once.
     expect(TOPIC_NAMES.filter((name) => name === 'Parking')).toHaveLength(1);
     // A name the server holds and this version does not know is kept in the list, so that a save does not drop it.
     expect(topicOptions(['Parking', 'SomethingNew'])).toContain('SomethingNew');
@@ -188,7 +184,6 @@ describe('the hours', () => {
     expect(hoursProblem('09:00', '')).toBe('bothEnds');
     expect(hoursProblem('', '21:00')).toBe('bothEnds');
     expect(hoursProblem('09:00', '09:00')).toBe('sameTime');
-    // A window across midnight is allowed.
     expect(hoursProblem('22:00', '06:00')).toBeNull();
   });
 });
@@ -269,9 +264,7 @@ describe('the modes', () => {
 describe('what an exception of a property loosens', () => {
   it('relaxedTopics_PropertyListThatLetsThroughATopicTheOrganizationForbids_NamesIt', () => {
     expect(relaxedTopics(['Money', 'Parking'], ['Money'])).toEqual(['Parking']);
-    // An empty list of its own means that nothing is forbidden for the property: everything the organization forbids is loosened.
     expect(relaxedTopics(['Money', 'Parking'], [])).toEqual(['Money', 'Parking']);
-    // The property that follows the organization loosens nothing; names compare without regard to case.
     expect(relaxedTopics(['Money'], null)).toEqual([]);
     expect(relaxedTopics(['Money'], ['money'])).toEqual([]);
   });
@@ -280,7 +273,6 @@ describe('what an exception of a property loosens', () => {
     expect(relaxedThreshold(0.7, 0.85)).toBe(true);
     expect(relaxedThreshold(0.9, 0.85)).toBe(false);
     expect(relaxedThreshold(null, 0.85)).toBe(false);
-    // The organization's value is not known (the person may not read it): nothing is claimed.
     expect(relaxedThreshold(0.7, undefined)).toBe(false);
   });
 
@@ -316,7 +308,6 @@ describe('the entries of the knowledge', () => {
     expect(entryProblem({ ...fields, text: '   ' })).toMatchObject({ field: 'text', key: 'assistant.knowledge.entry.error.textRequired' });
     expect(entryProblem({ ...fields, text: 'x'.repeat(1001) })).toMatchObject({ field: 'text', max: 1000 });
     expect(entryProblem({ ...fields, title: ' ' })).toMatchObject({ field: 'title', key: 'assistant.knowledge.entry.error.questionRequired' });
-    // Only a question has a title: a fact needs none.
     expect(entryProblem({ ...fields, kind: 'Fact', title: '' })).toBeNull();
   });
 
@@ -324,7 +315,6 @@ describe('the entries of the knowledge', () => {
     const request = entryRequestOf({ ...entryFieldsOf(entry), isActive: false });
 
     expect(request).toEqual({ topic: 'WiFi', kind: 'Faq', title: 'Qual è la password del Wi-Fi?', text: 'È in cucina.', language: 'it', isActive: false });
-    // A fact carries no title, and «any language» is null.
     expect(entryRequestOf({ ...entryFieldsOf({ ...entry, kind: 'Fact', language: null }) })).toMatchObject({ kind: 'Fact', title: null, language: null });
   });
 

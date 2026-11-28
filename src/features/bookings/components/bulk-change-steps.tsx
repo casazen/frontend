@@ -22,7 +22,6 @@ import { KEEP, type DayRuleField, type DayRulesValues, type FieldAction, type Nu
 import { BULK_CHANGE_STEP, BULK_MAX_PROPERTIES, changedDaysOf, changedFields, firstInvalidStep, periodDays, toChangeRequest, type BulkChangeValues } from '../lib/bulk-change-model';
 import { useDayLayer } from '../lib/use-day-layer';
 
-/** A Monday: the weekday names are read from the days that follow it. */
 const A_MONDAY = '2026-01-05';
 
 /** The words of each value of a night, by key, written out so that the i18n test finds a missing translation. */
@@ -47,18 +46,11 @@ const NUMBER_UNIT: Record<NumberRuleField, 'currency' | 'nights' | 'days'> = {
 const FLAG_FIELDS: readonly DayRuleField[] = ['closedToArrival', 'closedToDeparture'];
 const FIELD_ORDER: readonly DayRuleField[] = ['price', 'minNights', 'maxNights', 'closedToArrival', 'closedToDeparture', 'minAdvanceDays', 'maxAdvanceDays'];
 
-/** The message of a field in error, in words (the schemas of the wizard give i18n keys). */
 function useErrorText() {
   const { t, i18n } = useTranslation();
   return (message: string | undefined) => translateValidationMessage(message, t, i18n);
 }
 
-/* --------------------------------------------------------------------------------------------------------------------- Properties */
-
-/**
- * Step 1: the short-rent properties the host may write (the page is for who has `property.write`, and the API narrows the list to what the caller reaches), several
- * choosable, each with whether it is connected to the channel manager. Where that is not known (the days could not be read, or the caller may not read them) nothing is said about it.
- */
 export function PropertiesStep() {
   const { t } = useTranslation();
   const errorText = useErrorText();
@@ -70,7 +62,6 @@ export function PropertiesStep() {
   const search = query.trim().toLocaleLowerCase();
   const visible = list.filter((property) => [property.name, property.city].some((value) => value?.toLocaleLowerCase().includes(search)));
   const canRead = useContext(WorkspaceContext)?.hasPermission('short-rent', 'property.read') ?? false;
-  // With the connector of the channel manager off nothing is sent there: the step says nothing about it.
   const connectorOn = useFeatureFlags().flags.octorateConnector;
   const today = todayInRome();
   const { layer } = useDayLayer(canRead ? { from: today, to: today } : undefined, canRead);
@@ -147,9 +138,6 @@ export function PropertiesStep() {
   );
 }
 
-/* -------------------------------------------------------------------------------------------------------------------------- Period */
-
-/** Step 2: from and to (at most 366 days, not entirely over) and the weekdays to touch. */
 export function PeriodStep() {
   const { t, i18n } = useTranslation();
   const { control, register, setValue, formState: { errors } } = useFormContext<BulkChangeValues>();
@@ -204,19 +192,12 @@ export function PeriodStep() {
 
 const BULK_WEEKDAYS_FALLBACK = 'booking.calendar.bulk.errors.weekdaysRequired';
 
-/* ------------------------------------------------------------------------------------------------------------------------ Changes */
-
-/** The choices of a value: leave it as it is, set it (a flag is closed), clear it (a flag is opened again). */
 function actionLabel(flag: boolean, action: FieldAction, t: TFunction): string {
   if (action === 'Keep') return t('booking.calendar.bulk.changes.keep');
   if (action === 'Set') return t(flag ? 'booking.calendar.bulk.changes.close' : 'booking.calendar.bulk.changes.set');
   return t(flag ? 'booking.calendar.bulk.changes.reopen' : 'booking.calendar.bulk.changes.clear');
 }
 
-/**
- * Step 3: the seven values of a night, each "leave as is", "set" or "clear"; at least one must change. The price is typed as text and sent as the number typed, at most two
- * decimals between 0,01 and 100.000, exactly as in the panel of the days.
- */
 export function ChangesStep() {
   const { t } = useTranslation();
   const errorText = useErrorText();
@@ -272,11 +253,8 @@ export function ChangesStep() {
   );
 }
 
-/* ------------------------------------------------------------------------------------------------------------------------ Summary */
-
 type PreviewMutation = ReturnType<typeof usePreviewCalendarChange>;
 
-/** What a value is, in words, for the before and after of a sample night. */
 function valueText(field: DayRuleField, values: CalendarChangeValues, currency: string, language: string, t: TFunction): string {
   switch (field) {
     case 'price':
@@ -296,7 +274,6 @@ function valueText(field: DayRuleField, values: CalendarChangeValues, currency: 
   }
 }
 
-/** The values of a night that differ before and after, as "Prezzo: 100 € → 120 €". */
 function diffTexts(before: CalendarChangeValues, after: CalendarChangeValues, currency: string, language: string, t: TFunction): string[] {
   return FIELD_ORDER.filter((field) => valueText(field, before, currency, language, t) !== valueText(field, after, currency, language, t)).map((field) =>
     t('booking.calendar.bulk.summary.diff', {
@@ -307,7 +284,6 @@ function diffTexts(before: CalendarChangeValues, after: CalendarChangeValues, cu
   );
 }
 
-/** What the answers of the wizard are, as the lines of the summary ("Edit" goes back to the step that gives each). */
 function summaryItems(values: BulkChangeValues, names: (id: string) => string, t: TFunction, language: string): WizardSummaryItem[] {
   const days = periodDays(values.from, values.to);
   const period = `${formatStayDate(values.from, language)} - ${formatStayDate(values.to, language)} (${t('booking.calendar.bulk.period.days', { count: days })})`;
@@ -342,15 +318,9 @@ function summaryItems(values: BulkChangeValues, names: (id: string) => string, t
 }
 
 interface SummaryStepProps {
-  /** The preview, owned by the page: its state decides whether the last button is offered. */
   preview: PreviewMutation;
 }
 
-/**
- * Step 4, the summary (UX-05): the answers with "Edit", then what would happen, in plain words, from `POST /api/calendar/changes/preview`: what changes on how many days of how
- * many properties, which properties the change is also sent to the channel manager for (and about how many calls it would use: an estimate, said so) and which stay in CasaZen,
- * per property the days that change and the days skipped (past days, days with a booking), and the first changes as before and after. Nothing is sent before the last button.
- */
 export function SummaryStep({ preview }: SummaryStepProps) {
   const { t, i18n } = useTranslation();
   const { control } = useFormContext<BulkChangeValues>();
@@ -363,9 +333,7 @@ export function SummaryStep({ preview }: SummaryStepProps) {
   const connectorOn = useFeatureFlags().flags.octorateConnector;
   const propertyList = Array.isArray(properties.data) ? properties.data : [];
   const names = (id: string) => propertyList.find((property) => property.id === id)?.name ?? '';
-  // The prices of the preview are in cents of the currency of each property: the list of the properties says it (it is there whatever the caller may read), the day layer repeats it.
   const currencyOf = (id: string) => propertyList.find((property) => property.id === id)?.currency ?? layer?.get(id)?.currency ?? 'EUR';
-  // A draft or an address can open the wizard here with answers that do not meet the rules of the steps before: nothing is asked, and the step that is wrong is said.
   const invalidStep = firstInvalidStep(values);
   const requestKey = invalidStep ? null : JSON.stringify(toChangeRequest(values));
   const { mutate } = preview;
@@ -409,14 +377,12 @@ interface PreviewBodyProps {
   values: BulkChangeValues;
   names: (id: string) => string;
   currencyOf: (id: string) => string;
-  /** The connector of the channel manager is on: only then does the summary speak of the channel manager, of the room and of the quota. */
   connectorOn: boolean;
 }
 
 function PreviewBody({ preview, values, names, currencyOf, connectorOn }: PreviewBodyProps) {
   const { t, i18n } = useTranslation();
   const what = new Intl.ListFormat(i18n.language, { style: 'long', type: 'conjunction' }).format(changedFields(values.rules).map((field) => t(FIELD_KEYS[field].what)));
-  // The days that change, not the days the period covers (which count the days already over and the ones that already hold these values): of every property, added up.
   const changedDays = changedDaysOf(preview);
   const roomMissing = new Set(preview.warnings.filter((warning) => warning.code === 'room_not_chosen').map((warning) => warning.propertyId));
 

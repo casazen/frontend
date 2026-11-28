@@ -28,7 +28,6 @@ vi.mock('@/queries/use-users', () => ({
 vi.mock('@/queries/supplier/use-profile', () => ({
   useSupplierSuspended: () => supplier.suspended
 }));
-// The counters of the menu have their own tests: the shell does not need a query client.
 vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: () => ({}) }));
 
 function workspace(contextKeys: AppContextKey[]): WorkspaceContextValue {
@@ -107,13 +106,10 @@ describe('AppShellLayout (UI-03)', () => {
     // The header has no menu button since UI-05: the phone has "Altro" in the bottom bar, and only there.
     expect(screen.queryByRole('button', { name: 'Apri menu di navigazione' })).not.toBeInTheDocument();
     expect(within(screen.getByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).getByRole('button', { name: i18n.t('nav.more') })).toBeInTheDocument();
-    // An user with several areas chooses between them with the area switcher (UI-04a), no longer with icon tabs.
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: i18n.t('areas.switcher.current', { name: i18n.t('areas.shortRent.name') }) })).toHaveLength(1);
-    // The language is in the menu of the profile (UI-05), not a switch of the header.
     expect(screen.queryByTestId('language-switcher')).not.toBeInTheDocument();
     expect(screen.getByTestId('org-badge')).toBeInTheDocument();
-    // `header` is queried by tag in the end-to-end specs: there is one, and it is the banner of the page.
     expect(document.querySelectorAll('header')).toHaveLength(1);
     expect(screen.getByRole('banner')).toBe(document.querySelector('header'));
   });
@@ -125,7 +121,6 @@ describe('AppShellLayout (UI-03)', () => {
       </AppShellLayout>,
     );
 
-    // The one control that opens the global search (UI-06) is in the header: not a second one in the menus.
     expect(screen.getAllByTestId('command-palette-trigger')).toHaveLength(1);
     const search = within(screen.getByRole('banner')).getByRole('button', { name: i18n.t('commandPalette.placeholder') });
     expect(screen.queryByRole('dialog', { name: i18n.t('commandPalette.title') })).not.toBeInTheDocument();
@@ -135,7 +130,6 @@ describe('AppShellLayout (UI-03)', () => {
     const palette = await screen.findByRole('dialog', { name: i18n.t('commandPalette.title') });
     const box = within(palette).getByRole('combobox');
     await waitFor(() => expect(box).toHaveFocus());
-    // This shell has no query client: the palette still opens and finds the pages of the menus.
     fireEvent.change(box, { target: { value: 'prenotazioni' } });
     expect(within(palette).getAllByRole('option')[0]).toHaveTextContent('Prenotazioni');
   });
@@ -161,14 +155,12 @@ describe('AppShellLayout (UI-03)', () => {
       '/app/short-rent?detail=shell-probe:42',
     );
 
-    // The drawer of the shell (UI-15) is one dialog in a portal: it takes no room in the layout and moves nothing in it.
     const dialog = await screen.findByRole('dialog', { name: 'Dettaglio' });
     expect(within(dialog).getByText('dentro il cassetto')).toBeInTheDocument();
     expect(screen.getAllByRole('dialog')).toHaveLength(1);
     expect(screen.getByTestId('app-shell')).not.toContainElement(dialog);
     expect(document.querySelectorAll('header')).toHaveLength(1);
     expect(document.querySelectorAll('main')).toHaveLength(1);
-    // The skip link is still the first thing the Tab key reaches.
     const focusable = document.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input, select, textarea');
     expect(focusable[0]).toBe(screen.getByTestId('skip-link'));
     unregister();
@@ -201,7 +193,6 @@ describe('AppShellLayout (UI-03)', () => {
     );
 
     expect(screen.getByTestId('app-shell')).toHaveAttribute('data-context', contextKey);
-    // The name heads the sidebar, with the organization under it (a user with a single area has nothing to choose).
     const heading = within(screen.getByRole('complementary')).getByTestId('area-header');
     expect(heading).toHaveTextContent(i18n.t(nameKey));
     expect(heading).toHaveTextContent('Acme Stays');
@@ -258,7 +249,6 @@ describe('AppShellLayout (UI-03)', () => {
     expect(screen.getByRole('main')).toContainElement(loader as HTMLElement);
   });
 
-  // The window scrolls (not an inner region): these classes are what makes the header and the sidebar stay in place.
   it('AppShellLayout_Rendered_LetsTheWindowScrollWithAStickyHeaderAndSidebar', () => {
     renderInRouter(
       <AppShellLayout contextKey="short-rent">
@@ -283,7 +273,6 @@ describe('AppShellLayout (UI-03)', () => {
         <p>pagina</p>
       </AppShellLayout>,
     );
-    // The usual room is the bottom bar's; the fixed action of a page (UI-05) needs its own on top.
     expect(screen.getByRole('main')).not.toHaveClass(room);
 
     act(() => useUiStore.setState({ mobilePrimaryVisible: true }));
@@ -301,10 +290,8 @@ describe('AppShellLayout (UI-03)', () => {
       </AppShellLayout>,
     );
 
-    // The height of the header is said once, in `globals.css` (`--header-height`): the shell does not repeat it (UI-05).
     expect(document.documentElement.style.scrollPaddingTop).toBe('var(--header-height)');
 
-    // Nothing is left behind when the user leaves the shell (the public pages have no sticky header).
     unmount();
     expect(document.documentElement.style.scrollPaddingTop).toBe('');
   });

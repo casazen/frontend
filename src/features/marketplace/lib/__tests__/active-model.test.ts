@@ -55,7 +55,6 @@ describe('buildActiveRows', () => {
     );
 
     expect(rows).toHaveLength(1);
-    // The health row tells `Requested` from `Pending`, and is the only place the id of the activation is.
     expect(rows[0]).toMatchObject({ status: 'Requested', activationId: 'act-9' });
     expect(rows[0].health?.activationId).toBe('act-9');
   });
@@ -67,7 +66,6 @@ describe('buildActiveRows', () => {
     );
 
     expect(rows.find((row) => row.property?.id === 'prop-1')?.activationId).toBe('act-1');
-    // The same portal on another property is another activation: it takes nothing of the first one's health.
     expect(rows.find((row) => row.property?.id === 'prop-2')?.activationId).toBeNull();
     expect(rows.find((row) => row.property?.id === 'prop-2')?.health).toBeNull();
   });
@@ -76,7 +74,6 @@ describe('buildActiveRows', () => {
     const rows = buildActiveRows([integration({ status: 'ToFix' })], null);
 
     expect(rows[0]).toMatchObject({ status: 'ToFix', health: null, activationId: null });
-    // The badge of the list still says it is to fix.
     expect(rowHasProblem(rows[0])).toBe(true);
   });
 
@@ -204,13 +201,10 @@ describe('the words of a date', () => {
   });
 
   it('formatDeclaredDay_InstantOfAnotherKind_IsTheDayInRome_NotTheUtcOne', () => {
-    // A function of the license is declared at the instant the host asks for it: 23:30 UTC of the 12th is the 13th in Rome (UTC+1 in winter)...
     expect(formatDeclaredDay('2026-11-12T23:30:00Z', 'it', 'LicensedFunction')).toBe('13 novembre 2026');
     expect(formatDeclaredDay('2026-11-12T23:30:00Z', 'en', 'LicensedFunction')).toBe('November 13, 2026');
-    // ... and 22:30 UTC of the 12th of July is the 13th too (UTC+2 in summer); 21:30 UTC is still the 12th.
     expect(formatDeclaredDay('2026-07-12T22:30:00Z', 'it', 'LicensedFunction')).toBe('13 luglio 2026');
     expect(formatDeclaredDay('2026-07-12T21:30:00Z', 'it', 'LicensedFunction')).toBe('12 luglio 2026');
-    // The same instant for a partner is the day the host gave: the UTC one.
     expect(formatDeclaredDay('2026-11-12T23:30:00Z', 'it', 'Partner')).toBe('12 novembre 2026');
     expect(formatDeclaredDay('not a date', 'it', 'LicensedFunction')).toBe('');
     expect(formatDeclaredDay('not a date', 'it', 'Partner')).toBe('');

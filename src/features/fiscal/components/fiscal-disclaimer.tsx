@@ -1,7 +1,6 @@
 import { Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-/** Informative-only notice of the fiscal area, in the UI language (same content as the backend disclaimer). A quiet line, not a box. */
 export function FiscalDisclaimer() {
   const { t } = useTranslation();
   return (

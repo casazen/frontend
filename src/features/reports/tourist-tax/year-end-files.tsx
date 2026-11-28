@@ -13,13 +13,10 @@ import { getTouristTaxErrorMessage } from '@/lib/tourist-tax-summary-errors';
 import { useDownloadTouristTaxYearEndFile } from '@/queries/use-tourist-tax-year-end';
 import { YEAR_END_ACCOUNT_CUTS, type YearEndFileRequest, type YearEndRow } from './tourist-tax-year-end-model';
 
-/** Where the properties are listed and edited: where the municipality of a house in Switzerland is completed. */
 const PROPERTIES_PATH = '/app/short-rent/properties';
 
-/** The two formats of a file: the CSV for a spreadsheet set to Italian, the Excel file the accountant opens. */
 const FORMATS: readonly ReportFileFormat[] = ['csv', 'xlsx'];
 
-/** What a failed file says, in words: a caller who may not read it (no payments permission, or not the whole organization), the sentence of the code of any other, else that the file did not come. */
 function failureText(error: unknown, t: TFunction): string {
   if (error instanceof ReportAccessDeniedError) return t('reports.touristTax.yearEnd.files.noAccess');
   return getTouristTaxErrorMessage(error, t) ?? t('reports.touristTax.yearEnd.files.failed');
@@ -27,9 +24,7 @@ function failureText(error: unknown, t: TFunction): string {
 
 interface FormatButtonsProps {
   id: string;
-  /** What the file is, for a screen reader that reads the buttons of the page one after the other. */
   title: string;
-  /** The format being made now (the request of this row that is on its way), if any. */
   pending: ReportFileFormat | null;
   disabled: boolean;
   onDownload: (format: ReportFileFormat) => void;
@@ -62,9 +57,7 @@ function FormatButtons({ id, title, pending, disabled, onDownload }: FormatButto
 interface FileRowProps extends FormatButtonsProps {
   description: string;
   failure: string | null;
-  /** What the person chooses before the file is made (how the account is cut). */
   control?: ReactNode;
-  /** What waits under the buttons: a note about what the file holds. */
   children?: ReactNode;
 }
 

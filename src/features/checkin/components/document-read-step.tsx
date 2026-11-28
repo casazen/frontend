@@ -28,18 +28,11 @@ interface DocumentReadStepProps {
   onContinue: () => void;
   /** The property keeps no image of the document (canton Ticino, decision D6): the step says the photo is not stored. Nothing is said otherwise. */
   notArchived?: boolean;
-  /**
-   * What the local reading gave, to check before it goes into the form (self-hosted flow, E71/F02/US01/T02): each value marked as read from the document and editable, and the data the guest will still be
-   * asked for. `null` (or absent) is the step as it always was: the values go straight into the form.
-   */
   prefill?: DocumentPrefill | null;
-  /** The guest confirmed the values (as they left them): the page puts them in the form. */
   onConfirmPrefill?: (values: PrefillValues) => void;
-  /** The guest drops the reading to take the photo again. */
   onDiscardPrefill?: () => void;
 }
 
-/** First step of check-in: a photo of the identity document, read before the guest confirms the fields. */
 export function DocumentReadStep({
   review,
   onConfirm,
@@ -80,7 +73,6 @@ export function DocumentReadStep({
             if (file) onFile(file);
           }}
         />
-        {/* After a first read «Avanti» is the way on: the camera becomes the second choice. */}
         <Button
           type="button"
           variant={readCount > 0 ? 'outline' : 'default'}
@@ -126,7 +118,6 @@ export function DocumentReadStep({
 
 interface DocumentPrefillPanelProps {
   prefill: DocumentPrefill;
-  /** The page is putting the values in the form, or reading a photo: nothing can be confirmed or dropped. */
   busy: boolean;
   onConfirm: (values: PrefillValues) => void;
   onDiscard?: () => void;
@@ -144,12 +135,10 @@ function DocumentPrefillPanel({ prefill, busy, onConfirm, onDiscard }: DocumentP
 
   const change = (name: PrefillRow['name'], value: string) => setValues((current) => ({ ...current, [name]: value }));
 
-  // A press of Enter in a field of the panel must not send the form of the page around it: confirming is a button.
   const keepTheFormUnsent = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') event.preventDefault();
   };
 
-  // Names the page has no label for share one line.
   const asked = [...new Map(prefill.missing.map((name) => [prefillFieldKey(name), name])).entries()];
 
   return (

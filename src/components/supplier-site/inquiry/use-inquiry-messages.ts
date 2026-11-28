@@ -3,7 +3,6 @@ import { publicBookingApi } from '@/api/public-supplier-booking.api';
 import type { RequestFailure } from '@/lib/supplier-site/request-errors';
 import type { QuietCall } from './types';
 
-/** A message written on this page that the server has not confirmed yet. */
 export interface PendingMessage {
   key: string;
   text: string;

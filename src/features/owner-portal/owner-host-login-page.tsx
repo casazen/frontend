@@ -10,7 +10,6 @@ import { useSeoMeta } from '@/lib/seo-meta';
 import { isSignInFailedState } from './paths';
 import { startedRecently, rememberStart } from '@/lib/login-restart-guard';
 
-/** When this page last sent the visitor to the sign-in (`sessionStorage`, one tab). */
 const LAST_START_KEY = 'casazen.owner-host-login-started-at';
 
 /**
@@ -31,7 +30,6 @@ export function OwnerHostLoginPage() {
   const { isAuthenticated, isLoading, user, login } = useAuth();
   const navigate = useNavigate();
   const signInFailed = isSignInFailedState(useLocation().state);
-  // Decided once, when the page opens.
   const [redirect] = useState(() => !signInFailed && !startedRecently(LAST_START_KEY));
   const started = useRef(false);
   useSeoMeta({ title: t('ownerPortal.hostLogin.title'), noindex: true });

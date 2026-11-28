@@ -18,7 +18,6 @@ import { OwnerPortalShell } from '@/features/owner-portal/owner-portal-shell';
 import { OwnerHostLoginPage } from '../owner-host-login-page';
 import { SIGN_IN_FAILED_STATE } from '../paths';
 
-// The sign-in service is the only thing replaced: what it is told (`loginWithRedirect`, `logout`) is what is checked. The bridge of the app, the pages and the routes are the real ones.
 const auth0 = vi.hoisted(() => ({
   isLoading: false,
   authenticated: false,
@@ -39,7 +38,6 @@ vi.mock('@auth0/auth0-react', () => ({
   }),
 }));
 
-// The portal itself is not what is tried here, except for its way out: the route tests land on a stand-in, the sign-out test on the real shell.
 const shell = vi.hoisted(() => ({ real: false }));
 vi.mock('@/features/owner-portal/owner-portal-shell', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/features/owner-portal/owner-portal-shell')>();
@@ -47,7 +45,6 @@ vi.mock('@/features/owner-portal/owner-portal-shell', async (importOriginal) => 
 });
 vi.mock('@/queries/ownerPortal', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/queries/ownerPortal')>()), useCanManageOwnerContacts: () => false }));
 
-/** The own domain of an agency whose owners can sign in, and the origin the browser is on there (the docblock at the top of the file). */
 const HOST_ORIGIN = 'https://prenota.quokka.example.test';
 const READY: HostSite = {
   host: 'prenota.quokka.example.test',
@@ -64,7 +61,6 @@ function queryClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 }
 
-/** Shows where the router is. */
 function Where() {
   const { pathname } = useLocation();
   return <p data-testid="where">{pathname}</p>;
@@ -101,25 +97,20 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
   afterEach(() => {
     cleanup();
     setHostSite(null);
-    // The secret of a link waits in memory for the sign-in: no test leaves one for the next.
     clearOwnerInvitationToken();
   });
 
   it('redirect_uri is the host origin, the return lands on /portale-proprietari, sign-out returns to the host', () => {
-    // redirect_uri: the identity service is told the origin of the page the sign-in starts from, so on the agency's domain it is the agency's origin.
     expect(window.location.origin).toBe(HOST_ORIGIN);
     expect(authConfig.authorizationParams.redirect_uri).toBe(HOST_ORIGIN);
-    // The tokens are kept in the storage of that origin: nothing is shared with the CasaZen domain.
     expect(authConfig.cacheLocation).toBe('localstorage');
 
-    // The return: the sign-in page asks for `/portale-proprietari`, which is a path the app accepts as a return address and nothing that could leave the origin.
     expect(safeReturnTo('/portale-proprietari')).toBe('/portale-proprietari');
     expect(safeReturnTo('/portale-proprietari/invito')).toBe('/portale-proprietari/invito');
     for (const outside of ['https://evil.example.test/portale-proprietari', '//evil.example.test/portale-proprietari', '/\\evil.example.test', 'portale-proprietari', undefined, null]) {
       expect(safeReturnTo(outside)).toBeNull();
     }
 
-    // Sign-out: the bridge sends the browser back to the origin of the page, the agency's domain.
     function SignOutButton() {
       const { logout } = useAuth();
       return (
@@ -164,9 +155,7 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
       expect(await screen.findByTestId('owner-host-login-redirecting')).toHaveTextContent('Ti stiamo portando alla pagina di accesso');
       await waitFor(() => expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1));
       const [options] = auth0.loginWithRedirect.mock.calls[0];
-      // The return is a path of the agency's domain (the identity service gives the browser back at the origin of the page, then the app goes there).
       expect(options.appState).toEqual({ returnTo: '/portale-proprietari' });
-      // The start is remembered in this tab only, to tell a return from a loop.
       expect(sessionStorage.getItem(STARTED_KEY)).not.toBeNull();
       expect(localStorage.length).toBe(0);
     });
@@ -178,7 +167,6 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
     });
 
     it('OwnerHostLoginPage_ComesBackWithinAFewSecondsOfTheLastStart_OffersTheWayInWithAButtonInsteadOfARedirectLoop', async () => {
-      // The browser's back button from the sign-in, or an error of the sign-in that sends the app here again.
       sessionStorage.setItem(STARTED_KEY, String(Date.now() - 2_000));
 
       renderLoginPage();
@@ -192,14 +180,12 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
     });
 
     it('OwnerHostLoginPage_OpenedAfterASignInThatFailed_SaysSoAndWaitsForTheVisitorInsteadOfSendingThemOffAgain', async () => {
-      // `HostSignInFailure` of `App` opens the page this way when the sign-in came back with an error.
       renderLoginPage(false, SIGN_IN_FAILED_STATE);
 
       const failed = await screen.findByTestId('owner-host-login-failed');
       expect(failed).toHaveTextContent('L’accesso non è andato a buon fine. Puoi riprovare.');
       expect(failed).toHaveAttribute('role', 'alert');
       expect(screen.queryByTestId('owner-host-login-redirecting')).not.toBeInTheDocument();
-      // Nothing is started by itself (that would be a loop for an error that comes back at once); the way to try again is the button.
       expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
       expect(sessionStorage.getItem(STARTED_KEY)).toBeNull();
       fireEvent.click(screen.getByTestId('owner-host-login-button'));
@@ -269,19 +255,16 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
       renderHost(path);
 
       const frame = await screen.findByTestId('host-surface-frame');
-      // The page of the link, as on the CasaZen domain: with no secret in the link it says so, and asks nothing of the server.
       expect(within(frame).getByTestId('invite-accept-page')).toBeInTheDocument();
       expect(screen.queryByTestId('owner-login-not-enabled')).not.toBeInTheDocument();
       expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
     });
 
     it('RouteOfTheInvitation_LinkOfTheEmailOnTheDomain_SecretLeavesTheAddressAndTravelsInTheAppStateOfTheLogin', async () => {
-      // The secret of an invitation, as the backend issues it (64 hex characters).
       const secret = 'd4'.repeat(32);
       const router = renderHost(`/portale-proprietari/invito?token=${secret}`);
 
       const login = await screen.findByTestId('owner-invitation-login');
-      // Out of the address bar and the router at once; it waits in memory for the sign-in.
       await waitFor(() => expect(router.state.location.search).toBe(''));
       expect(document.body.innerHTML).not.toContain(secret);
       expect(Object.keys(localStorage)).toHaveLength(0);
@@ -289,7 +272,6 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
 
       fireEvent.click(login);
 
-      // It goes with the sign-in in the `appState`, never in an address, and the return is the page of the link on this same domain.
       expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1);
       const [options] = auth0.loginWithRedirect.mock.calls[0];
       expect(options.appState).toEqual({ ownerInvitation: secret, returnTo: '/portale-proprietari/invito' });
@@ -331,7 +313,6 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
     });
 
     it('RouteOfTheNoAccessPage_SignedInPerson_ShowsThePageOfTheDomainInsideTheFrameWithTheWayOut', async () => {
-      // Where a refused read of the portal ends (403): `/app/no-access` is «not found» on a host, so the page is the domain's own.
       auth0.authenticated = true;
 
       renderHost('/portale-proprietari/accesso-negato');
@@ -344,7 +325,6 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
       expect(within(page).getByTestId('owner-host-no-access-home')).toHaveAttribute('href', '/');
       expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
 
-      // The way out: the sign-out of the domain, which brings the browser back to the origin of the agency (so the person can come back with the right account).
       fireEvent.click(within(page).getByTestId('owner-host-no-access-sign-out'));
       expect(auth0.logout).toHaveBeenCalledWith({ logoutParams: { returnTo: HOST_ORIGIN } });
     });
@@ -361,7 +341,6 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
     });
 
     it('RouteOfTheNoAccessPage_SignedOutVisitor_GoesToTheSignInPageOfTheDomain', async () => {
-      // Nothing was refused to somebody who is not signed in.
       const router = renderHost('/portale-proprietari/accesso-negato');
 
       expect(await screen.findByTestId('owner-host-login')).toBeInTheDocument();

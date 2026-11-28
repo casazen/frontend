@@ -8,19 +8,16 @@
  * nothing is remembered and the flow works as if there were no draft.
  */
 
-/** A draft older than this is ignored and deleted when the flow opens. */
 export const WIZARD_DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
 
 const KEY_PREFIX = "casazen.wizardDraft";
 
-/** Whose draft it is. A draft is never read by another user, nor by the same user in another organization. */
 export interface WizardDraftScope {
   userId: string;
   orgId: string | null;
 }
 
 export interface WizardDraft {
-  /** Id of the step the person was on. */
   step: string;
   values: Record<string, unknown>;
   /** When it was written, ms since the epoch. */
@@ -28,7 +25,6 @@ export interface WizardDraft {
 }
 
 interface StoredDraft extends WizardDraft {
-  /** Shape of the values: a draft written for another version of the flow is ignored. */
   version: number;
 }
 
@@ -42,16 +38,13 @@ export interface WizardDraftReadOptions {
 export interface WizardDraftWriteOptions {
   now?: number;
   version?: number;
-  /** Fields that are never written: dotted paths, `*` stands for any key or index (`guests.*.fiscalCode`). */
   exclude?: readonly string[];
 }
 
-/** Where the draft of the flow `id` lives for `scope`. */
 export function wizardDraftKey(id: string, scope: WizardDraftScope): string {
   return [KEY_PREFIX, scope.userId, scope.orgId ?? "-", id].map(encodeURIComponent).join(":");
 }
 
-/** Values that are not data: they are not written (a `File` becomes `{}` in JSON, a function disappears). */
 function dropNonData(_key: string, value: unknown): unknown {
   if (typeof value === "function" || typeof value === "symbol") return undefined;
   if (typeof File !== "undefined" && value instanceof File) return undefined;
@@ -71,10 +64,6 @@ function removePath(node: unknown, segments: readonly string[]): void {
   }
 }
 
-/**
- * A copy of `values` that is safe to write: JSON data only, without the `exclude`d fields. `null` when the values
- * cannot be turned into JSON (a circular structure).
- */
 export function storableValues(values: Record<string, unknown>, exclude: readonly string[] = []): Record<string, unknown> | null {
   try {
     const copy = JSON.parse(JSON.stringify(values, dropNonData)) as Record<string, unknown>;
@@ -108,7 +97,6 @@ function parseStoredDraft(raw: string): StoredDraft | null {
   }
 }
 
-/** The draft of the flow, or `null` when there is none, it is expired, it is of another version or it is unreadable. */
 export function readWizardDraft(id: string, scope: WizardDraftScope, options: WizardDraftReadOptions = {}): WizardDraft | null {
   const { now = Date.now(), ttlMs = WIZARD_DRAFT_TTL_MS, version = 1 } = options;
   const key = wizardDraftKey(id, scope);
@@ -116,7 +104,6 @@ export function readWizardDraft(id: string, scope: WizardDraftScope, options: Wi
     const raw = sessionStorage.getItem(key);
     if (!raw) return null;
     const entry = parseStoredDraft(raw);
-    // An expired, foreign or unreadable draft is deleted, not kept around: it can never be used again.
     if (!entry || entry.version !== version || now - entry.savedAt > ttlMs || entry.savedAt > now + ttlMs) {
       sessionStorage.removeItem(key);
       return null;
@@ -127,7 +114,6 @@ export function readWizardDraft(id: string, scope: WizardDraftScope, options: Wi
   }
 }
 
-/** Writes the draft. Returns what was written, or `null` when nothing could be (the flow goes on without a draft). */
 export function writeWizardDraft(
   id: string,
   scope: WizardDraftScope,
@@ -148,10 +134,6 @@ export function writeWizardDraft(
 
 const wipeListeners = new Set<() => void>();
 
-/**
- * Registers what a mounted flow does when every draft is deleted (the person signs out): it forgets what it has queued, so the
- * page leaving (`pagehide`, unmount) cannot write the answers back under the old user. Returns the function that unregisters.
- */
 export function onWizardDraftsWiped(listener: () => void): () => void {
   wipeListeners.add(listener);
   return () => {
@@ -159,7 +141,6 @@ export function onWizardDraftsWiped(listener: () => void): () => void {
   };
 }
 
-/** Deletes every draft of every flow of every user: the person signs out, and what they typed does not stay in the tab. */
 export function clearAllWizardDrafts(): void {
   for (const listener of wipeListeners) {
     try {
@@ -180,7 +161,6 @@ export function clearAllWizardDrafts(): void {
   }
 }
 
-/** Deletes the draft: the flow was confirmed, or the person left it on purpose. */
 export function clearWizardDraft(id: string, scope: WizardDraftScope): void {
   try {
     sessionStorage.removeItem(wizardDraftKey(id, scope));

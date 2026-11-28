@@ -13,14 +13,8 @@ import type {
   MessageTranslationRequest,
 } from '@/types';
 
-/** The cache entry of one conversation. */
 const threadKeyOf = (threadKey: string) => [MESSAGE_HUB_QUERY, 'thread', threadKey] as const;
 
-/**
- * One conversation of the hub (`GET /api/messages/threads/{threadKey}`, NF-61): the messages, the booking card, the customer link and
- * what the channel allows. A guest writes from outside, so it is read again when the page opens, on return to the window, every minute
- * while it is visible, and when the in-app notifications change.
- */
 export function useMessageThread(threadKey: string, enabled: boolean = true) {
   useRefetchOnNotificationsChange(enabled);
   return useQuery({
@@ -35,10 +29,6 @@ export function useMessageThread(threadKey: string, enabled: boolean = true) {
   });
 }
 
-/**
- * Marks the guest's messages of the conversation as read (`POST …/read`, called when it opens): the unread counter of the thread, of the
- * lists, of the menu and of the bell drop. A direct conversation also clears the caller's notifications of it, so those are read again.
- */
 export function useMarkHubThreadRead(threadKey: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -53,7 +43,6 @@ export function useMarkHubThreadRead(threadKey: string) {
   });
 }
 
-/** The message a reply answers with when it carries none (it always does for a conversation): what the host wrote, with the state the answer gives. */
 function provisionalMessage(text: string, answer: MessageHubReply, idempotencyKey: string): MessageHubMessage {
   return { id: `reply-${idempotencyKey}`, direction: 'Outbound', origin: 'Person', text, sentAt: new Date().toISOString(), deliveryState: answer.state };
 }
@@ -81,10 +70,6 @@ export function useSendHubReply(threadKey: string) {
   return useThreadSend<MessageHubThreadDetail, MessageHubMessage>(key, send);
 }
 
-/**
- * How the guest of a booking can be written to now (`GET /api/bookings/{id}/contact-options`, NF-63). Read when asked for: the answer
- * says whether an e-mail or a number exist, never the address or the number.
- */
 export function useContactOptions(bookingId: string | null, enabled: boolean = true) {
   return useQuery({
     queryKey: [MESSAGE_HUB_QUERY, 'contact-options', bookingId],
@@ -124,7 +109,6 @@ export function useStartConversation(bookingId: string) {
   return { ...mutation, send };
 }
 
-/** The templates of the organization the composer offers (`GET /api/message-templates?activeOnly=true`). Read when the picker opens. */
 export function useMessageTemplates(enabled: boolean) {
   return useQuery({
     queryKey: [MESSAGE_HUB_QUERY, 'templates'],
@@ -135,7 +119,6 @@ export function useMessageTemplates(enabled: boolean) {
   });
 }
 
-/** The templates the channel keeps for a conversation, read only (`GET …/channel-templates`). Read when the picker opens. */
 export function useChannelTemplates(threadKey: string, enabled: boolean) {
   return useQuery({
     queryKey: [MESSAGE_HUB_QUERY, 'channel-templates', threadKey],
@@ -145,22 +128,18 @@ export function useChannelTemplates(threadKey: string, enabled: boolean) {
   });
 }
 
-/** The text of a template for the conversation, with its variables filled in by the server (`POST …/render`): nothing is stored or sent. */
 export function useRenderTemplate(threadKey: string) {
   return useMutation({ mutationFn: (templateId: string) => messageHubApi.renderTemplate(templateId, threadKey) });
 }
 
-/** A translation for the screen only (`POST /api/messages/translate`): it is never stored, the message keeps its original text. */
 export function useTranslateMessage() {
   return useMutation({ mutationFn: (request: MessageTranslationRequest) => messageHubApi.translate(request) });
 }
 
-/** A file that is not a picture, read through the API when the host asks to download it. */
 export function useDownloadAttachment() {
   return useMutation({ mutationFn: (messageId: string) => messageHubApi.openAttachment(messageId) });
 }
 
-/** The file of a message, read through the API (`GET /api/messages/{id}/attachment`) when it is asked for. */
 export function useMessageAttachment(messageId: string, enabled: boolean) {
   return useQuery({
     queryKey: [MESSAGE_HUB_QUERY, 'attachment', messageId],

@@ -7,12 +7,9 @@ import { commissionPercentText } from '../billing-wizard-model';
 import type { BillingWizardValues } from '../billing-wizard-schema';
 
 interface CommissionPercentsEditorProps {
-  /** The rules of the portals and what applies today to each. */
   set: ChannelCommissionRuleSet;
-  /** What the person typed, by portal: a portal that is not in it shows the percent that applies today. */
   typed: Record<string, string>;
   onChange: (channel: string, value: string) => void;
-  /** What is wrong with the percent of a portal (a message or an i18n key), if anything. */
   errorOf?: (channel: string) => FieldErrorInput;
   disabled?: boolean;
 }
@@ -39,7 +36,6 @@ export function CommissionPercentsEditor({ set, typed, onChange, errorOf, disabl
         {set.channels.map((row) => {
           const sourceKey = `booking.source.${row.channel}`;
           const own = typed[row.channel];
-          // The rule in force of the portal, if there is one: emptying the box does not remove it.
           const percentInForce = row.ruleId && typeof row.percent === 'number' ? row.percent : null;
           const kept = own !== undefined && own.trim() === '' ? percentInForce : null;
           return (
@@ -78,11 +74,9 @@ export function CommissionPercentsEditor({ set, typed, onChange, errorOf, disabl
 }
 
 interface CommissionPercentsProps {
-  /** The rules of the portals and what applies today to each. */
   set: ChannelCommissionRuleSet;
 }
 
-/** The editor in the form of the wizard: what is typed is a field of the form (`commissionPercents`), saved by «Continua». */
 export function CommissionPercents({ set }: CommissionPercentsProps) {
   const {
     control,

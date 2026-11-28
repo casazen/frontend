@@ -39,27 +39,20 @@ interface FiscalTaxRuleStampDuty {
 
 /** The tax rule in force today for the profile of the issuer (`FiscalDocuments:TaxRules`): its version and dates, the kind of document and the VAT of every line type. */
 export interface FiscalTaxRule {
-  /** `IT` or `CH`. */
   jurisdiction: string;
   regime: string;
-  /** The version stored on the documents made with the rule. */
   version: string;
   validFrom: string;
   validTo?: string;
   sourceUrl?: string;
-  /** `Receipt` or `Invoice`. */
   documentKind: string;
   fatturaPaRegimeCode?: string;
   rates: FiscalTaxRuleRate[];
   stampDuty?: FiscalTaxRuleStampDuty;
 }
 
-/** The preview of the issuer of the organization (`GET api/fiscal/documents/issuer-preview` without a booking): CasaZen, and the rule in force when there is one. */
 export interface FiscalIssuerPreview {
-  /** `CasaZen`, or `None` while the issuance is off. */
   issuer: string;
-  /** `issuer_casazen` or `issuance_off`. */
   reason: string;
-  /** Absent while the profile has no regime or no rule of the catalog covers it. */
   rule?: FiscalTaxRule;
 }

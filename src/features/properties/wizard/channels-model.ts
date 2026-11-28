@@ -10,20 +10,15 @@ import { WIZARD_STEP_IDS, type WizardStepId } from './property-wizard-model';
  */
 export const CONTENT_CHANNELS: readonly string[] = ['booking_xml', 'airbnb_xml', 'homeaway'];
 
-/** The mapping step of the wizard «Collega i tuoi canali»: where a listing waiting to be confirmed or rejected is settled. */
 export const OCTORATE_MAPPING_PATH = '/app/short-rent/integrations/octorate';
 
-/** One channel of the step: its code, its row in the status (none before the first publication) and whether content is sent to it. */
 export interface ChannelEntry {
   code: string;
   row: ListingChannelStatus | null;
-  /** The content of the channel is managed on the channel itself (Expedia): CasaZen sends nothing and says so. */
   managed: boolean;
-  /** CasaZen sends content to it: the host can choose to publish to it. */
   selectable: boolean;
 }
 
-/** The channels of the step: the ones that receive content, then the others the status knows (managed ones included). */
 export function channelEntries(status: ListingStatus | undefined): ChannelEntry[] {
   const rows = new Map((status?.channels ?? []).map((row) => [row.channel, row]));
   const codes = [...CONTENT_CHANNELS, ...[...rows.keys()].filter((code) => !CONTENT_CHANNELS.includes(code))];
@@ -34,7 +29,6 @@ export function channelEntries(status: ListingStatus | undefined): ChannelEntry[
   });
 }
 
-/** The channels to publish to: the ones that receive content, less the ones the host left out. */
 export function selectedChannels(entries: readonly ChannelEntry[], leftOut: readonly string[]): string[] {
   return entries.filter((entry) => entry.selectable && !leftOut.includes(entry.code)).map((entry) => entry.code);
 }
@@ -62,17 +56,11 @@ export function missingStepsOf(row: Pick<ListingChannelStatus, 'missing' | 'erro
   return WIZARD_STEP_IDS.filter((id) => found.has(id));
 }
 
-/** The steps that lack data for any channel, in the order of the wizard. */
 export function missingSteps(status: ListingStatus | undefined, cinValid?: boolean): WizardStepId[] {
   const found = new Set((status?.channels ?? []).flatMap((row) => missingStepsOf(row, cinValid)));
   return WIZARD_STEP_IDS.filter((id) => found.has(id));
 }
 
-/**
- * The steps an already published or imported listing opens on: the ones that lack data for some channel, then the channels and the last
- * step (the check of an imported listing, NF-29). `null` when the property has no channel yet: there is nothing to check, the wizard is
- * the whole of it.
- */
 export function importedSteps(status: ListingStatus | undefined, cinValid?: boolean): WizardStepId[] | null {
   if (!status || status.channels.length === 0) return null;
   const wanted = new Set<WizardStepId>([...missingSteps(status, cinValid), 'channels', 'finish']);
@@ -84,7 +72,6 @@ export function firstStepToFix(status: ListingStatus | undefined, cinValid?: boo
   return missingSteps(status, cinValid)[0] ?? 'channels';
 }
 
-/** The groups of a change made outside CasaZen that «Prendi la nuova versione» can adopt: only the descriptions. */
 export function canTakeTheirs(groups: readonly string[]): boolean {
   return groups.length > 0 && groups.every((group) => group === 'descriptions');
 }
@@ -99,7 +86,6 @@ export type PublishProblem =
 
 const strings = (value: unknown): string[] => (Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []);
 
-/** The refusal of the publication endpoint as the step answers it: the stable `code` of the body, with the lists it carries. */
 export function publishProblemOf(error: unknown): PublishProblem {
   if (!isAxiosError(error)) return { kind: 'other', error };
   const data: unknown = error.response?.data;

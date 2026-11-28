@@ -1,15 +1,10 @@
 import type { ChannelCommissionMode, ChannelCostRow } from '@/types';
 
-/** The ways a commission is settled that the page has words for, in the order they are explained. */
 export const COMMISSION_MODES: readonly ChannelCommissionMode[] = ['DeductedFromPayout', 'InvoicedSeparately', 'Unknown'];
 
-/** The rows of the report by what their cost is, each group in the order the server sent it (the highest cost rate first). */
 export interface CostGroups {
-  /** The commission of the channels. */
   channels: ChannelCostRow[];
-  /** The card fees of the direct stays: a line of their own, never mixed with the commissions of the channels. */
   cardFees: ChannelCostRow[];
-  /** The stays nobody charges the host for (entered by hand, local). */
   free: ChannelCostRow[];
 }
 
@@ -28,7 +23,6 @@ export function groupCostRows(rows: readonly ChannelCostRow[]): CostGroups {
   return groups;
 }
 
-/** The mode a channel row shows: the one the server says, `Unknown` for anything it does not know how to say (never a claim of its own). */
 export function modeOf(row: Pick<ChannelCostRow, 'commissionMode'>): ChannelCommissionMode {
   return row.commissionMode !== null && COMMISSION_MODES.includes(row.commissionMode) ? row.commissionMode : 'Unknown';
 }

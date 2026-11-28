@@ -12,12 +12,6 @@ import type {
   PublicStayTaxState,
 } from '@/types/public-stays.types';
 
-/**
- * What a card of a home decides before it draws anything (DB-07b, DB-07c): which words, which price, which label. All of it from
- * the data of the server; nothing here adds up a price or guesses a fact (D24: no sentence on the page that is not true).
- */
-
-/** A text of the host in the language of the page: the English one when there is one, else the Italian (DB-D8). */
 export function localizedText(value: string | PublicLocalizedText | null | undefined, language: string | undefined): string {
   if (!value) return '';
   if (typeof value === 'string') return value.trim();
@@ -25,7 +19,6 @@ export function localizedText(value: string | PublicLocalizedText | null | undef
   return english || value.it?.trim() || '';
 }
 
-/** The name of a country in the language of the page (`CH` is «Svizzera»), or nothing when it cannot be said. */
 function countryName(code: string, language: string | undefined): string {
   try {
     return new Intl.DisplayNames([language?.toLowerCase().startsWith('en') ? 'en' : 'it'], { type: 'region' }).of(code.toUpperCase()) ?? '';
@@ -34,14 +27,12 @@ function countryName(code: string, language: string | undefined): string {
   }
 }
 
-/** Where the home is: the zone the host wrote, else the comune; a home outside Italy says its country («Lugano, Svizzera»). */
 export function placeOfCard(card: Pick<PublicStayCard, 'zone' | 'comune' | 'country'>, language: string | undefined): string {
   const place = localizedText(card.zone, language) || card.comune?.trim() || '';
   const country = card.country && card.country.toUpperCase() !== 'IT' ? countryName(card.country, language) : '';
   return place && country ? `${place}, ${country}` : place;
 }
 
-/** A «Preferita dagli ospiti» needs a high mark given by enough guests: a mark from one or two of them says nothing. */
 export const FAVOURITE_MIN_AVERAGE = 4.8;
 export const FAVOURITE_MIN_REVIEWS = 5;
 
@@ -50,15 +41,10 @@ export function isGuestFavourite(card: Pick<PublicStayCard, 'rating'>): boolean 
   return Boolean(rating && rating.count >= FAVOURITE_MIN_REVIEWS && rating.average >= FAVOURITE_MIN_AVERAGE);
 }
 
-/** The price line of a card: the lowest night while no dates are chosen, the total of the quote once they are. */
 export type CardPrice =
   | { kind: 'from'; perNightCents: number }
   | { kind: 'total'; totalCents: number; perNightCents: number; nights: number; tax: PublicStayTaxState };
 
-/**
- * `nights` comes from the answer of the search (`result.nights`). A home that is not free for the stay, or that the quote refuses,
- * has no total: its card falls back to the night price.
- */
 export function cardPrice(card: Pick<PublicStayCard, 'price'>, nights: number | null | undefined): CardPrice {
   const { totalCents, perNightCents, includesTouristTax } = card.price;
   if (nights && nights > 0 && typeof totalCents === 'number' && totalCents > 0) {
@@ -67,14 +53,12 @@ export function cardPrice(card: Pick<PublicStayCard, 'price'>, nights: number | 
   return { kind: 'from', perNightCents };
 }
 
-/** The last day of the free cancellation, only when the guest can really use it (the dates are a promise the system keeps). */
 export function freeCancellationUntil(card: Pick<PublicStayCard, 'cancellation'>): string | null {
   const cancellation = card.cancellation;
   if (!cancellation?.selfServiceAvailable || !cancellation.fullRefundUntil) return null;
   return cancellation.fullRefundUntil;
 }
 
-/** The facts of a home worth a line, in the order a guest looks for them; a number the home did not say is left out. */
 export function cardFacts(card: Pick<PublicStayCard, 'maxGuests' | 'bedrooms' | 'bathrooms' | 'areaSqm'>): {
   guests: number | null;
   bedrooms: number | null;
@@ -90,13 +74,11 @@ export function cardFacts(card: Pick<PublicStayCard, 'maxGuests' | 'bedrooms' | 
   };
 }
 
-/** The page of the home on the booking site, carrying the stay when dates are chosen (the guest never chooses them twice). */
 export function cardLink(orgSlug: string, card: Pick<PublicStayCard, 'id' | 'slug'>, stay: StayState | null): string {
   const path = buildPropertyBookingPath(orgSlug, card);
   return stay && stay.checkIn && stay.checkOut ? stayHref(path, stay) : path;
 }
 
-/** What `useCardLink` gives: the same arguments as `cardLink`. */
 export type CardLink = (orgSlug: string, card: Pick<PublicStayCard, 'id' | 'slug'>, stay: StayState | null) => string;
 
 /**
@@ -107,7 +89,6 @@ export type CardLink = (orgSlug: string, card: Pick<PublicStayCard, 'id' | 'slug
 export function useCardLink(): CardLink {
   const embed = useEmbed();
   const { search } = useLocation();
-  // Only a frame carries the campaign of its page from card to card.
   const campaign = embed ? embedCampaignOf(search) : null;
 
   return useCallback<CardLink>(
@@ -116,7 +97,6 @@ export function useCardLink(): CardLink {
   );
 }
 
-/** The home that costs least per night, for the examples that need one (the receipt of the home, the zones). */
 export function cheapestCard<T extends Pick<PublicStayCard, 'price'>>(cards: readonly T[]): T | undefined {
   return cards.reduce<T | undefined>(
     (best, card) => (best === undefined || card.price.perNightCents < best.price.perNightCents ? card : best),

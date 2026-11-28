@@ -9,11 +9,6 @@ interface ActivateStepProps {
   onChoose: () => void;
 }
 
-/**
- * Step «Attivazione» (E09/F02/US04/T02, UX-05): before the action that has effects outside CasaZen, a summary in simple words of what will happen, where and when
- * («we will connect the channel for this property; its bookings and availability will flow both ways»), with «Modifica» that goes back to the rooms. The button of the
- * step is the last one of the wizard: it activates each property in its turn (`POST .../activate`).
- */
 export function ActivateStep({ context, onChoose }: ActivateStepProps) {
   const { t } = useTranslation();
   const { control } = useFormContext<ActivationWizardValues>();

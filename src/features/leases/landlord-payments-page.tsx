@@ -20,7 +20,6 @@ interface CondoDue {
 }
 const url = "/long-rent/condominiums/manual-payments";
 
-/** Home banking remains external: this page only records the landlord's explicit payment declaration. */
 export function LandlordPaymentsPage() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();

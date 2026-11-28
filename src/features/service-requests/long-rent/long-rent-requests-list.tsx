@@ -21,20 +21,15 @@ import {
 import { longRentRequestPath } from './paths';
 
 export interface LongRentRequestsListOptions {
-  /** The tab the list is under: what an empty list says depends on it. */
   tab: RequestTab;
-  /** `property.write` (long-rent): who may ask for a request gets the button in the empty list. */
   canRequest: boolean;
-  /** Opens the window to ask for a request. */
   onRequest: () => void;
 }
 
-/** The line under the name of a request: where it is, and how the landlord described it. */
 function subLine(request: ServiceRequest): string {
   return [request.propertyName, notesSnippet(request.notes)].filter(Boolean).join(' · ');
 }
 
-/** The cell of the day and the hours; an old request has no time, and it is said, never guessed (the supplier's list says the same). */
 function whenCell(request: ServiceRequest, t: TFunction, language: string): ReactNode {
   const when = whenText(request, language, t);
   if (!when.day) return <span className="text-foreground/70">{t('longRentRequests.list.noTime')}</span>;
@@ -46,7 +41,6 @@ function whenCell(request: ServiceRequest, t: TFunction, language: string): Reac
   );
 }
 
-/** The cell of the price as the server worked it out; "da definire" while there is none. */
 function priceCell(request: ServiceRequest, t: TFunction, language: string): ReactNode {
   const price = priceText(request, language);
   return price ? <span className="whitespace-nowrap font-medium">{price}</span> : <span className="text-foreground/70">{t('longRentRequests.list.priceTbd')}</span>;
@@ -134,7 +128,6 @@ export function useLongRentRequestsList({ tab, canRequest, onRequest }: LongRent
       },
       primaryAction: (request) => ({ id: 'open', label: t('longRentRequests.list.open'), href: longRentRequestPath(request.id) }),
       rowHref: (request) => longRentRequestPath(request.id),
-      // What waits for the landlord is marked at the start of its row; what is over is quieter.
       rowTone: (request) => (waitsForLandlord(hostPhaseOf(request)) ? 'urgent' : isClosedRequest(request.status) ? 'done' : undefined),
       card: (request): ListCardContent => {
         const when = whenText(request, language, t);
@@ -150,7 +143,6 @@ export function useLongRentRequestsList({ tab, canRequest, onRequest }: LongRent
           ],
         };
       },
-      // With the sidebar open (from `lg`) a table of five columns and a button is not seen whole under 1280 px: cards until then.
       cardsUntil: 'xl',
       csv: false,
       countLabel: (count) => t('longRentRequests.list.count', { count }),

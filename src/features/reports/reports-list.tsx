@@ -7,7 +7,6 @@ import type { ReportDefinition, ReportType } from '@/features/reports/report-cat
 import { todayInRome } from '@/lib/stay-dates';
 
 interface ReportsListOptions {
-  /** The person asked to download this report: the page opens the dialog of the days and the format. */
   onDownload: (report: ReportDefinition) => void;
 }
 
@@ -17,7 +16,6 @@ const TYPE_ICONS: Record<ReportType, LucideIcon> = {
   financial: Wallet,
 };
 
-/** The kind of a report, with an icon: the word says it, the icon only helps the eye. */
 const typeCell = (type: ReportType, label: string) => {
   const Icon = TYPE_ICONS[type];
   return (
@@ -90,7 +88,6 @@ export function useReportsList({ onDownload }: ReportsListOptions) {
       ],
       defaultChip: 'all',
 
-      // The one thing to do about a row, always in sight: download it, or open the page that already has it.
       primaryAction: (report): ListRowAction =>
         report.source.kind === 'page'
           ? { id: 'open', label: t('reports.open'), icon: ArrowRight, href: report.source.href(today), variant: 'outline' }

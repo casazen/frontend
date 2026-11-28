@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { mountMapSvg } from '@/features/site-maps/mount-svg';
 
-/** The SVG text of the engine as real nodes, filling a box with the aspect ratio of the map. */
 export function SvgBox({ svg, className = '' }: { svg: string; className?: string }) {
   const host = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {

@@ -53,22 +53,17 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
 
   const query = usePropertyCleaningSetup(propertyId);
   const save = useSavePropertyCleaningSetup(propertyId);
-  // The record of the property says whether it has a check-out time (`checkOutBy`): the page of the property has read it already, so this asks for nothing more. Said only from a read that worked.
   const record = useProperty(propertyId);
   const [form, setForm] = useState<CleaningForm | null>(null);
   const [attempted, setAttempted] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // A read that failed keeps the old answer in the query: the card never shows it as if it were current.
   const setup = query.isError ? undefined : query.data;
   const editing = form !== null;
 
   const wantsSuppliers = editing && form.kind === 'Supplier';
   const suppliers = useSuppliersByProperty(wantsSuppliers ? propertyId : undefined, CLEANING_CATEGORY, { fresh: true });
-  // The team is read again every time the card opens (a person who left is not offered, a new one is), and only by who may list it: the server answers 403 to the others, which sends the whole app
-  // to the page of no access.
   const members = useOrgMembers(canListTeam, { fresh: true });
-  // Whether the routine is on: said only from a read that worked.
   const routines = useRoutines();
 
   const supplierChoices = useMemo(
@@ -109,7 +104,6 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
   };
 
   const problems = form && attempted ? cleaningProblems(form) : {};
-  // What an empty time stands for: the check-out time of the property, or the default time of the server when the property has none (the server tells the time, not where it comes from).
   const timeSource = setup ? cleaningTimeSourceOf(setup, record.data?.checkOutBy, !record.isError && record.data !== undefined) : null;
 
   let body: React.ReactNode;
@@ -177,7 +171,6 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
     );
   } else if (setup) {
     const price = setup.priceCents === null ? null : formatCleaningPrice(setup.priceCents, setup.currency, i18n.language);
-    // The name of the person is said only from a read of the team that worked: after a failed read the card says «a member of the staff», never a name from the old answer.
     const staffName = setup.staffUserId && !members.isError ? members.data?.items.find((member) => member.userId === setup.staffUserId) : undefined;
     body = !setup.configured ? (
       <div className="space-y-3" data-testid="property-cleaning-none">
@@ -222,10 +215,7 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
     body = null;
   }
 
-  // The routine that makes the cleaning is said only from a read that worked: an error says nothing, and a stale list is not trusted either. An empty list is not «off»: the server answers it also
-  // to who reaches only some of the properties, and such a person cannot see the routines at all, so the card says it cannot tell and sends to the automations.
   const routineState = routines.isError || routines.data === undefined ? undefined : cleaningRoutineStateOf(routines.data);
-  // The routine acts only on a property that has an active setup (without one the action is blocked, `routine_cleaning_not_configured`): «it starts by itself» is told only then.
   const setupRuns = setup?.configured === true && setup.active;
   const routine: { tone: StatusTone; Icon: LucideIcon; key: string } | undefined =
     routineState === 'on'

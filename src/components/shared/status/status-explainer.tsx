@@ -12,15 +12,8 @@ export interface StatusExplainerProps<K extends StatusKind> {
   perspective?: StatusPerspective;
   /** A line instead of a block: the state, the next one and the sentence, with what is missing inside it. */
   compact?: boolean;
-  /** Which items of "what is needed" are already done (from 0): they get a check, and are read as done. */
   done?: ReadonlyArray<number>;
-  /**
-   * A sentence of the caller in place of the dictionary's, for a state that means something else in this place (a draft that is not
-   * written in CasaZen but by a service). The state keeps its badge; the next state and the list of what it takes to get there, which
-   * are those of the dictionary, are left out: they would describe another path.
-   */
   explain?: string;
-  /** What to do about it: one or two buttons (`Button`), under the text. */
   actions?: React.ReactNode;
   className?: string;
 }
@@ -30,24 +23,15 @@ function lowerFirst(text: string): string {
   return text.length > 1 && text[0] !== text[0].toLowerCase() && text[1] === text[1].toLowerCase() ? text[0].toLowerCase() + text.slice(1) : text;
 }
 
-/**
- * A state told in words: what it means, what has to happen to move on, and what comes after. It answers "why am I seeing
- * this?" and "what do I do now?" without a manual. The sentence is the one of the dictionary, in the point of view of whoever
- * looks (host or supplier).
- *
- *     <StatusExplainer kind="lease" status={lease.status} actions={<Button>...</Button>} />
- */
 export function StatusExplainer<K extends StatusKind>({ kind, status, perspective = "host", compact = false, done = [], explain, actions, className }: StatusExplainerProps<K>) {
   const { t, i18n } = useTranslation();
   const view = getStatusView(kind, status, perspective, t, i18n);
-  // A sentence of the caller replaces the dictionary's, and with it the path the dictionary describes (the next state and what it takes).
   const own = explain !== undefined;
   const sentence = own ? explain : view.explain;
   const next = own ? null : view.next;
   const need = own ? [] : view.need;
   const missing = need.filter((_, index) => !done.includes(index));
 
-  // The state after this one, in the same words: a quieter badge, never the same color as the current one.
   const nextBadge = next ? (
     <>
       <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />

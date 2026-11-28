@@ -81,9 +81,7 @@ describe('ChoiceCard (UI-07)', () => {
       render(<Regime />);
 
       const card = screen.getByRole('radio', { name: /Cedolare secca/ }).closest('label')!;
-      // A thick dark outline and a grey background, when the radio inside is checked...
       expect(card).toHaveClass('has-checked:ring-2', 'has-checked:ring-foreground', 'has-checked:bg-muted/60');
-      // ...and a tick in the corner: a disc for one choice, empty until it is chosen.
       const tick = card.querySelector('span[aria-hidden="true"].absolute');
       expect(tick).toHaveClass('rounded-full', 'peer-checked:bg-foreground', 'peer-checked:text-background');
       expect(tick?.querySelector('svg')).toBeInTheDocument();

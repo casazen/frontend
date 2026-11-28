@@ -30,13 +30,9 @@ export function ContextPickerPage() {
     return <Navigate to={contexts[0].defaultRoute} replace />;
   }
 
-  // The areas as the area selector names them (`config/areas.ts`), in its order, not the `displayName` of the backend: there the
-  // staff console and the customer's administration are both «Amministrazione», and a person with both saw two equal buttons.
   const areas = getAccessibleAreas(contexts);
 
   return (
-    // A screen of the signed-in app without a shell, where a user with several areas lands after the login: like the
-    // header of the shells it carries the id that the e2e logins wait for (UI-00).
     <div data-testid="app-ready" className="workspace-entry flex min-h-dvh flex-col items-center justify-center gap-6 px-4 py-10">
       <CasaZenLogo size={44} tone="dark" />
       <Card className="w-full max-w-3xl">

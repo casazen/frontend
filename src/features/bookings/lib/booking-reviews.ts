@@ -1,19 +1,13 @@
 import { OTA_STAY_SOURCES, type Booking } from '@/types';
 
-/**
- * The portals the channel manager brings stays from, by the name of `BookingSource`: the six a stay can be made from a block of an iCal feed (`OTA_STAY_SOURCES`) and the portal that has no value
- * of its own (`OtherChannel`, named by the channel manager).
- */
 const CHANNEL_SOURCES: readonly string[] = [...OTA_STAY_SOURCES, 'OtherChannel'];
 
-/** The statuses of a stay that happens (the one definition of the product: a request, a hold and a cancelled booking are not). */
 const STAY_STATUSES: readonly string[] = ['Confirmed', 'CheckedIn', 'CheckedOut'];
 
 export function stayEndedForReviews(booking: Pick<Booking, 'status' | 'checkOutDate'>, today: string): boolean {
   return STAY_STATUSES.includes(booking.status) && booking.checkOutDate.slice(0, 10) < today;
 }
 
-/** Which reviews a booking can have: the one of the booking site (`direct`) or the ones of a portal (`channel`). */
 export type BookingReviewsKind = 'direct' | 'channel';
 
 /**

@@ -4,16 +4,11 @@ import { cn } from '@/lib/utils';
 import { useSwipe, type SwipeSide } from './use-swipe';
 import type { ListCardContent, ListSwipeAction } from './list-types';
 
-/** What a card says about a row, with its title already made into whatever opens the row (a link, a button). */
 export interface BuiltCard {
   content: ListCardContent;
   title: ReactNode;
 }
 
-/**
- * What a row is on a phone (UI-14): a card with the few things that matter, in the order of the priorities of the columns, and
- * the actions of the row at its foot. The title is whatever opens the row (a link, a button): it comes in already made.
- */
 export function ListCardBody({ content, title }: { content: ListCardContent; title: ReactNode }) {
   const { lead, sub, status, meta, foot } = content;
   return (
@@ -27,8 +22,6 @@ export function ListCardBody({ content, title }: { content: ListCardContent; tit
         {status ? <div className="max-w-[45%] shrink-0">{status}</div> : null}
       </div>
       {meta && meta.length > 0 ? (
-        // Not a list: "Total: € 450, Channel: direct" read as a line is what a person wants to hear, and a list in each card of a list
-        // of cards would be announced over and over.
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-foreground/70">
           {meta.map((item, index) => {
             const Icon = item.icon;
@@ -47,8 +40,6 @@ export function ListCardBody({ content, title }: { content: ListCardContent; tit
   );
 }
 
-// The action under the card, by tone. The pairs are those of the semantic tokens (text on its own background meets AA; the solid
-// red of `destructive` with white text is 4.48:1, a hair under it, so the danger tone is the soft one like the badges).
 const UNDER_TONE: Record<NonNullable<ListSwipeAction['tone']>, string> = {
   accent: 'bg-primary text-primary-foreground',
   success: 'bg-success-soft text-success-foreground',
@@ -56,7 +47,6 @@ const UNDER_TONE: Record<NonNullable<ListSwipeAction['tone']>, string> = {
   danger: 'bg-danger-soft text-danger-foreground',
 };
 
-/** What shows under the card as it is pulled: the icon and the name of the action it will run. */
 function UnderAction({ action }: { action?: ListSwipeAction | null }) {
   if (!action) return <span />;
   const Icon = action.icon;
@@ -69,19 +59,12 @@ function UnderAction({ action }: { action?: ListSwipeAction | null }) {
 }
 
 interface SwipeSurfaceProps {
-  /** What a swipe to the right does (the finger goes right: it is at the left edge, under the card). */
   right?: ListSwipeAction | null;
-  /** What a swipe to the left does. */
   left?: ListSwipeAction | null;
-  /** Off while the person is selecting rows: a tap selects, a swipe has no meaning. */
   enabled?: boolean;
   children: ReactNode;
 }
 
-/**
- * A card that can be pulled sideways to run an action (see `useSwipe`). The actions under it are for the eyes only: the
- * gesture is not the only way, the same actions are in the menu of the card, which a keyboard and a screen reader reach.
- */
 export function SwipeSurface({ right, left, enabled = true, children }: SwipeSurfaceProps) {
   const navigate = useNavigate();
   const fire = useCallback(

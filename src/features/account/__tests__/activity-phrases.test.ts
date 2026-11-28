@@ -31,12 +31,9 @@ describe('activityPhrase', () => {
     expect(activityPhrase(entry({ details: { reminders: 'safety' } }), context)).toBe(
       'Immobile attivato con la scheda di sicurezza da completare',
     );
-    // A code this page does not know: the generic sentence, never a raw key.
     expect(activityPhrase(entry({ details: { reminders: 'something' } }), context)).toBe("Modifica all'account");
   });
 
-  // FIX/BE-V2-NO-RECHARGE: the confirmed waiver of the recharge of the portal commissions is a line `OrgSettingsChanged` with the part `portalCommissionRechargeWaiver`. The list says what it is, and who
-  // confirmed it and when are the actor and the instant of the line that the list shows under the sentence.
   it('activityPhrase_TheConfirmedWaiverOfTheRecharge_SaysWhatItIs_AndAnyOtherChangeOfTheCompanyKeepsItsSentence', async () => {
     const waiver = entry({ type: 'OrgSettingsChanged', subjectType: 'Org', details: { part: 'portalCommissionRechargeWaiver' } });
     const context = { t: i18n.t, memberName: (userId: string) => (userId === 'auth0|owner' ? 'Anna Rossi' : undefined) };
@@ -69,14 +66,11 @@ describe('activityPhrase', () => {
     });
 
     it('activityPhrase_TheHostAskedOrReopenedARequest_NamesTheMemberWhoAskedAndIsNeverInTheSecondPerson', () => {
-      // The whole team reads the line: it says who asked, whoever reads it.
       const asked = assist({ type: 'OnboardingAssistRequested', actorUserId: 'auth0|anna', details: { status: 'requested' } });
       expect(activityPhrase(asked, { t: i18n.t, memberName: (userId) => (userId === 'auth0|anna' ? 'Anna Rossi' : undefined) })).toBe('Anna Rossi ha chiesto aiuto al supporto CasaZen');
-      // A person who is not in the team any more is still told as such, not as nobody.
       expect(activityPhrase(asked, context)).toBe('Ex membro ha chiesto aiuto al supporto CasaZen');
     });
 
-    // The lines support writes have as their actor a person of platform support, who is not a member of the team: never «Ex membro», and no name of a person of support.
     describe('who did it', () => {
       const staff = 'auth0|staff-1';
       const team = (userId: string) => (userId === 'auth0|anna' ? 'Anna Rossi' : undefined);

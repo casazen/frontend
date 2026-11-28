@@ -6,7 +6,6 @@ import type { ShowcaseMediaKind } from '@/types/supplier-showcase';
 import type { PoolPhoto } from '../showcase-photos';
 import { MediaUpload } from './media-upload';
 
-/** How a photo is named for a person who does not see it: "Foto 2 del profilo", "Pulizie: foto 1". */
 function photoName(photo: PoolPhoto, t: (key: string, options?: Record<string, unknown>) => string): string {
   return photo.from.kind === 'profile'
     ? t('supplier.showcase.editor.photos.profilePhoto', { n: photo.number })
@@ -16,22 +15,14 @@ function photoName(photo: PoolPhoto, t: (key: string, options?: Record<string, u
 interface PhotoPickerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** What the photo is for ("Copertina", "Foto del lavoro 2"). */
   title: string;
-  /** What the server stores an upload as: the cover, the photo of a job, or its "before" photo. */
   kind: Extract<ShowcaseMediaKind, 'cover' | 'work' | 'before'>;
   photos: PoolPhoto[];
   loading: boolean;
-  /** The photo chosen now, if any. */
   selected: string | null | undefined;
   onSelect: (url: string) => void;
 }
 
-/**
- * Where the photo of the cover or of a job comes from (SP-13b): **a new one**, uploaded here (checked and made smaller by the editor, stored by the
- * server without its metadata), or one of the photos the supplier already has on its profile and its services, as tiles. Either choice closes the
- * sheet and puts the photo into the content.
- */
 export function PhotoPicker({ open, onOpenChange, title, kind, photos, loading, selected, onSelect }: PhotoPickerProps) {
   const { t } = useTranslation();
   return (

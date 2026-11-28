@@ -7,7 +7,6 @@ import { fileApi } from '../file.api';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn() } }));
 
-/** What a failed call of the axios client looks like when the body is a Blob (`responseType: 'blob'`). */
 function blobError(status: number, body: unknown): AxiosError {
   const config = { headers: new AxiosHeaders(), responseType: 'blob' } as InternalAxiosRequestConfig;
   const data = new Blob([JSON.stringify(body)], { type: 'application/problem+json' });
@@ -37,7 +36,6 @@ describe('the files of the agency\'s money pages come through the authenticated 
     await fileApi.get('/properties/p1/swiss/guest-register', { from: '2026-10-23' }, { 'Accept-Language': 'en' });
     await fileApi.get('/statements/1/pdf');
 
-    // Only the call that asks for them carries headers: the others are as they were.
     expect(vi.mocked(axios.get).mock.calls[0]![1]).toMatchObject({ params: { from: '2026-10-23' }, responseType: 'blob', headers: { 'Accept-Language': 'en' } });
     expect(vi.mocked(axios.get).mock.calls[1]![1]).not.toHaveProperty('headers');
   });

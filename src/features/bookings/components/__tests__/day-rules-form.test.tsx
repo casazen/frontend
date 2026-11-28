@@ -35,7 +35,6 @@ describe('DayRulesForm: the price (E08/F05/US03/T02, money rule)', () => {
   afterEach(() => cleanup());
 
   it('DayRulesForm_PriceSentExactlyAsTyped_Test', () => {
-    // `120,5` is sent as 120.5, the number typed and not a rounded or a scaled one.
     const onSubmit = renderForm();
     typePrice('120,5');
     save();
@@ -44,9 +43,7 @@ describe('DayRulesForm: the price (E08/F05/US03/T02, money rule)', () => {
     const request = onSubmit.mock.calls[0][0];
     expect(request.price).toEqual({ action: 'Set', value: 120.5 });
     expect(request).toMatchObject({ propertyIds: ['p1'], from: '2026-09-12', to: '2026-09-14' });
-    // The amount in the request is the amount the host typed, also on the wire.
     expect(JSON.parse(JSON.stringify(request)).price.value).toBe(120.5);
-    // Everything the host did not touch is kept.
     expect(request.minNights).toEqual({ action: 'Keep' });
     expect(request.closedToArrival).toEqual({ action: 'Keep' });
   });
@@ -175,7 +172,6 @@ describe('DayRulesForm: the restrictions (E08/F05/US03/T02)', () => {
     fireEvent.click(screen.getByLabelText('Arrivi chiusi'));
     fireEvent.click(screen.getByLabelText('Arrivi chiusi'));
     save();
-    // Back to what the days are now is "leave as it is": with nothing else changed the form is not sent.
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 

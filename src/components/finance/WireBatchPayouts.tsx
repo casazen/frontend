@@ -12,7 +12,6 @@ import { readStateOf } from './wire-model';
 
 interface WireBatchPayoutsProps {
   batchId: string;
-  /** The id the button that opens this part points at (`aria-controls`). */
   id: string;
 }
 
@@ -42,7 +41,6 @@ export function WireBatchPayouts({ batchId, id }: WireBatchPayoutsProps) {
         />
       );
     }
-    // The server refuses the read (403): the access is not there, and nothing of the payouts of the file is offered.
     if (query.data === null) return <WireAccessLimited testId="wire-batch-payouts-refused" />;
     if (state === 'loading' || !query.data) return <SkeletonCard lines={2} label={t('wire.batch.payouts.loading')} />;
 
@@ -54,7 +52,6 @@ export function WireBatchPayouts({ batchId, id }: WireBatchPayoutsProps) {
         </p>
       );
     }
-    // The file of a payout reversed after it was made would still pay it: until the file is paid, it is not to be uploaded.
     const reversedInFile = batch.status !== 'Paid' && payouts.some((payout) => payout.status === 'Reversed');
     return (
       <div className="space-y-3">

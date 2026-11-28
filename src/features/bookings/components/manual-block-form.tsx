@@ -18,33 +18,20 @@ import {
 
 interface ManualBlockFormProps {
   propertyId: string;
-  /** First night to close (`YYYY-MM-DD`), e.g. the first day selected on the calendar. */
   initialStart?: string;
-  /** First free day after the block (`YYYY-MM-DD`). */
   initialEnd?: string;
   onCreated: () => void;
   onCancel: () => void;
-  /**
-   * Told when a request of the form starts and when it is over (and, with `false`, when the form goes away): the panel that holds the form keeps its other buttons and its
-   * close off while the request is on its way. Give it a stable function (a state setter).
-   */
   onPendingChange?: (pending: boolean) => void;
 }
 
 type Field = 'startDate' | 'endDate' | 'reason' | 'note';
 type FieldErrors = Partial<Record<Field, string>>;
 
-/**
- * "Blocca date" (PC-09, A2-25): the host closes nights by hand, with a reason (owner stay, maintenance, other) and an
- * optional note seen by the host only. The dates are stay dates: the block closes the nights from the first day to the
- * day before "free from", like a stay from arrival to departure. API errors (a booking or another block on those nights)
- * stay in the form.
- */
 export function ManualBlockForm({ propertyId, initialStart, initialEnd, onCreated, onCancel, onPendingChange }: ManualBlockFormProps) {
   const { t } = useTranslation();
   const createBlock = useCreateManualBlock();
   const { isPending } = createBlock;
-  // The request goes on after the form is gone (the panel moved to other days): what it brings back is then said by a message and does not close what the host is doing now.
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
@@ -66,7 +53,6 @@ export function ManualBlockForm({ propertyId, initialStart, initialEnd, onCreate
   const [note, setNote] = useState('');
   const [errors, setErrors] = useState<FieldErrors>({});
 
-  // A new attempt hides the error of the previous one.
   const edit = (field: Field, update: () => void) => {
     if (createBlock.isError) createBlock.reset();
     if (errors[field]) setErrors((current) => ({ ...current, [field]: undefined }));
@@ -101,13 +87,11 @@ export function ManualBlockForm({ propertyId, initialStart, initialEnd, onCreate
         if (mounted.current) onCreated();
       },
       (error: unknown) => {
-        // The form shows the refusal next to its fields; one that comes back when the form is gone is never lost: it is said as a message.
         if (!mounted.current) toast.error(getProblemMessage(error, t) ?? t('booking.calendar.manualBlock.createFailed'));
       },
     );
   };
 
-  // Error text of a field and the attributes that tie it to its input.
   const fieldState = (field: Field) => {
     const message = errors[field];
     const id = `manual-block-${field}-error`;

@@ -20,7 +20,6 @@ interface AlloggiatiBookingPanelProps {
   checkInDate: string;
 }
 
-/** The page is read again every time it opens, and a read older than half a minute is not fresh: the guests are written to the channel manager meanwhile (E20/F01). */
 const STATUS_READ = { refetchOnMount: 'always', staleTime: 30_000 } as const;
 
 /**
@@ -37,8 +36,6 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
   const { t, i18n } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useAlloggiatiStatus(bookingId, true, STATUS_READ);
   const { hasPermission } = useWorkspace();
-  // The query keeps its last data when a read fails: a 404 is «not found» whatever it still holds of an older read, and nothing of that read (the badge, the guests of the block, the
-  // actions «Riprova» and «Correggi») stays on screen.
   const notFound = isError && getHttpStatus(error) === 404;
   const status = notFound ? undefined : data;
   const channelView = status && !status.directSubmission ? stayChannelViewOf(status) : null;
@@ -73,7 +70,6 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
         <>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="text-sm text-muted-foreground">{t('booking.detailPage.communicationStatus')}</span>
-            {/* A stay with its receipt archived is not late: whatever the term says, the server holds the proof. */}
             {queued && <span className="font-medium">{t('institutionalPortals.directQueue')}</span>}
             {!queued && <AlloggiatiStatusBadge status={status.status} isOverdue={receiptArchived ? false : status.isOverdue} receiptArchived={receiptArchived} />}
           </div>

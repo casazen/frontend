@@ -14,9 +14,6 @@ const STEP_ICON_COLOR = {
 } as const;
 
 
-/** Link to a step of the wizard (`?step=`): a real link, so it can be opened, shared and followed with "back". */
-
-
 export function StepStatusIcon({ status, current }: { status: ComplianceStepStatus; current: boolean }) {
   const Icon = status === 'complete' ? CheckCircle2 : status === 'warning' ? AlertTriangle : Circle;
   const color =
@@ -31,14 +28,12 @@ export function StepStatusIcon({ status, current }: { status: ComplianceStepStat
 }
 
 
-/** Status of a step of the wizard: from the server, or of the summary (complete when nothing blocks). */
 function stepStatus(stepId: string, steps: ComplianceWizardStep[], reviewStatus: ComplianceStepStatus): ComplianceStepStatus {
   if (stepId === REVIEW_STEP_ID) return reviewStatus;
   return steps.find((s) => s.id === stepId)?.status ?? 'pending';
 }
 
 
-/** Progress bar: every step is clickable and shows whether it is complete (A5-18 d). */
 export function StepIndicator({
   stepIds,
   steps,
@@ -91,7 +86,6 @@ export function StepIndicator({
 }
 
 
-/** Blockers translated by code, each with a link to the step that fixes it. */
 export function BlockerList({
   blockers,
   steps,
@@ -103,7 +97,6 @@ export function BlockerList({
   steps: ComplianceWizardStep[];
   stepIds: string[];
   onNavigate: (stepId: string) => void;
-  /** The step the list is on: the step of Switzerland leads back to it (`stepHref`). */
   from?: string;
 }) {
   const { t } = useTranslation();
@@ -131,7 +124,6 @@ export function BlockerList({
 }
 
 
-/** Notes that never block (SU-04), shown whether the step is complete or not: the message is localized by the API. */
 export function StepWarnings({ step }: { step: ComplianceWizardStep }) {
   if (!step.warnings || step.warnings.length === 0) return null;
   return (
@@ -147,7 +139,6 @@ export function StepWarnings({ step }: { step: ComplianceWizardStep }) {
 }
 
 
-/** What keeps a step incomplete, translated by code (the safety step shows its own list in the form). */
 export function StepBlockers({ step }: { step: ComplianceWizardStep }) {
   const { t } = useTranslation();
   const texts = useStepTexts([step]);
@@ -164,7 +155,6 @@ export function StepBlockers({ step }: { step: ComplianceWizardStep }) {
       </ul>
     );
   }
-  // Only the iCal step warns without blockers; a step unknown here shows the text of the server.
   const hint = step.id === 'ical' ? t('compliance.activation.stepHint.ical') : step.message;
   if (!hint) return null;
   return (
@@ -176,7 +166,6 @@ export function StepBlockers({ step }: { step: ComplianceWizardStep }) {
 }
 
 
-/** A step kept mounted while hidden: what the host typed survives going back and forth (A5-18). */
 export function StepPanel({ active, stepId, children }: { active: boolean; stepId: string; children: ReactNode }) {
   return (
     <div hidden={!active} data-testid={`activation-panel-${stepId}`}>

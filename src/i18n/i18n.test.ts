@@ -37,7 +37,6 @@ const en = APP_RESOURCES.en.translation;
 
 type LocaleTree = { [key: string]: string | string[] | LocaleTree };
 
-/** Flattens a locale file into `a.b.c -> value`. */
 function flatten(tree: LocaleTree, prefix = ''): Map<string, string | string[]> {
   const out = new Map<string, string | string[]>();
   for (const [key, value] of Object.entries(tree)) {
@@ -56,7 +55,6 @@ const enKeys = flatten(en as LocaleTree);
 
 const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/;
 
-/** A leaf, plural base or object key used with returnObjects resolves in the locale. */
 function hasKey(keys: Map<string, unknown>, key: string): boolean {
   return keys.has(key) || keys.has(`${key}_other`) || [...keys.keys()].some((path) => path.startsWith(`${key}.`));
 }
@@ -68,19 +66,12 @@ function placeholders(value: string | string[]): string[] {
   return [...new Set([...vars, ...tags])].sort();
 }
 
-// Sources of the app (tests excluded): used to check that static keys exist.
 const SOURCES = import.meta.glob<string>(['/src/**/*.{ts,tsx}', '!/src/**/*.test.{ts,tsx}', '!/src/**/__tests__/**', '!/src/test/**'], {
   query: '?raw',
   import: 'default',
   eager: true,
 });
 
-/**
- * Static i18n keys referenced by the code:
- * - `t('a.b')`, `i18n.t("a.b")`, `` t(`a.b`) `` (no interpolation), `<Trans i18nKey="a.b">`;
- * - properties holding a key (`navKey: 'nav.x'`, `titleKey`, `descriptionKey`, ...);
- * - messages of Zod schemas (they are i18n keys translated by FormFieldError).
- */
 function collectUsedKeys(sources: Record<string, string> = SOURCES): Map<string, string> {
   const used = new Map<string, string>();
   const namespaces = Object.keys(it_);
@@ -152,7 +143,6 @@ describe('i18n helpers', () => {
 
 describe('locale files', () => {
   it('resourceRegistry_MatchesTheCompleteRuntimeBundles', () => {
-    // A feature bundle registered outside the shared registry must not silently escape key/placeholder validation.
     expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
     expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
     expect(itKeys.has('onboardingAccess.description')).toBe(true);
@@ -191,8 +181,6 @@ describe('locale files', () => {
   });
 
   it('localeFiles_Values_HaveNoEmptyStringsOrSingleBracePlaceholders', () => {
-    // `{name}` is not interpolated by i18next (it needs `{{name}}`); `/book/{slug}` style
-    // patterns shown literally to the user are allowed.
     const literalPatterns = new Set(['domain.modes.path', 'domain.modes.subdomain']);
     for (const keys of [itKeys, enKeys]) {
       const bad = [...keys.entries()]
@@ -215,7 +203,6 @@ describe('locale files', () => {
   });
 
   it('localeFiles_Values_NeverBuildPluralsWithSuffixVariables', () => {
-    // "notte{{plural}}" produced "3 nottei" / "3 nighti" (R-08): plurals use _one/_other keys.
     const manual = [...itKeys.entries(), ...enKeys.entries()]
       .filter(([, value]) => /\{\{\s*plural\s*\}\}/.test(Array.isArray(value) ? value.join() : value))
       .map(([key]) => key);
@@ -227,7 +214,6 @@ describe('keys used in code', () => {
   const used = collectUsedKeys();
 
   it('collectUsedKeys_Sources_FindsStaticKeys', () => {
-    // Guard against a broken scanner silently passing the next test.
     expect(Object.keys(SOURCES).length).toBeGreaterThan(100);
     expect(used.size).toBeGreaterThan(1000);
     expect(used.has('property.validation.name.minLength')).toBe(true);
@@ -244,8 +230,6 @@ describe('keys used in code', () => {
 
   it('enumLabels_ValuesShownToUsers_HaveKeysInBothLocales', () => {
     const expected = [
-      // The explained states (UI-11): every state of the dictionary, typed against the enums, has its name and its sentence in both
-      // languages, and its list of what is needed when it has a way forward (status.<kind>.<key>.*).
       ...Object.entries(STATUS_DICTIONARY).flatMap(([kind, states]) =>
         Object.entries(states as Record<string, StatusDefinition>).flatMap(([status, definition]) => [
           `status.${kind}.${status}.label`,
@@ -259,7 +243,6 @@ describe('keys used in code', () => {
       ),
       ...['Starter', 'Pro', 'Scale'].map((p) => `plan.tier.${p}`),
       ...['Richiesto', 'PresoInCarico', 'InCorso', 'Completato', 'Pagato', 'Rifiutato', 'Annullato'].map((s) => `serviceRequest.status.${s}`),
-      // Codes of GET /api/service-categories (backend ServiceCategories.All, SU-03).
       ...['cleaning', 'maintenance', 'plumbing', 'laundry', 'linen', 'check-in', 'gardening', 'events', 'rental', 'excursions'].map(
         (c) => `serviceRequest.categories.${c}`,
       ),
@@ -299,7 +282,6 @@ describe('keys used in code', () => {
       ...LEASE_STATUSES.map((s) => `leases.statusLabel.${s}`),
       ...LEASE_EVENT_TYPES.map((e) => `leases.eventType.${e}`),
       ...['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical', 'guest-registration'].map((s) => `compliance.activation.steps.${s}`),
-      // The card of the regime of the canton (E29/F02/US02/T01, NF-125): every member of every enum the API writes has its sentence, and every reason of what is missing its text.
       ...GUEST_REGISTRATION_OBLIGATIONS.map((v) => `guestRegistration.short.obligation.${v}`),
       ...GUEST_REGISTRATION_CHANNELS.flatMap((v) => [`guestRegistration.channel.${v}`, `guestRegistration.short.channel.${v}`]),
       ...GUEST_REGISTRATION_DEADLINE_KINDS.map((v) => `guestRegistration.deadline.${v}`),
@@ -312,14 +294,12 @@ describe('keys used in code', () => {
         `onboardingPlan.reasons.property.${code}`,
       ]),
       'onboardingPlan.reasons.no_swiss_property',
-      // The screen at the end of «Aggiungi immobile» says each open step in words, and what to do about it: the step of Switzerland is one of them.
       ...['base-data', 'cin', 'documents', 'safety', 'guest-registration'].flatMap((s) => [`propertyWizard.done.open.${s}`, `propertyWizard.done.fix.${s}`]),
       'guestRegistration.retention.years_one',
       'guestRegistration.retention.years_other',
       'guestRegistration.card.refreshFailed',
       'apiErrors.codes.guestRegistrationCountryNotSupported',
       'apiErrors.codes.guestRegistrationOverrideNotApplicable',
-      // D.L. 145/2023 safety checklist (CO-07): items, facts and stable codes of the API.
       ...SAFETY_ITEM_CODES.flatMap((c) => [`compliance.safety.items.${c}.title`, `compliance.safety.items.${c}.reference`]),
       ...SAFETY_ITEM_CODES.filter((c) => c !== 'EmergencyInstructions').map((c) => `compliance.safety.items.${c}.dateLabel`),
       ...COMBUSTION_APPLIANCES.map((a) => `compliance.safety.appliance.${a}`),
@@ -388,8 +368,6 @@ describe('zod error map', () => {
   });
 
   it('schemaMessage_ZodV4_KeepsTheI18nKeyAsMessage', () => {
-    // Zod v4 gives the schema message precedence over the global error map: the key must
-    // reach the form untouched, and FormFieldError translates it.
     const result = z.string().min(3, 'property.validation.name.minLength').safeParse('ab');
     expect(result.success).toBe(false);
     expect(result.error!.issues[0].message).toBe('property.validation.name.minLength');
@@ -413,11 +391,6 @@ describe('zod error map', () => {
   });
 });
 
-/**
- * The guest check-in page in five languages (NF-40, AC-NF40-4). Italian and English are in the app; German, French and Spanish are three
- * subset files that hold only the keys of the `checkin` namespace the page uses and are loaded when the guest chooses them. The keys of the
- * namespace that are not the page's are the host side (the link panel, the wizard) and the ones nothing uses any more.
- */
 describe('guest check-in locales', () => {
   const NOT_ON_THE_GUEST_PAGE_EXACT = new Set([
     'copyLink', 'linkCopied', 'generateError', 'resendLink', 'resendError', 'sessionLabel', 'sessionLoading', 'saveData', 'checkInComplete',
@@ -431,7 +404,6 @@ describe('guest check-in locales', () => {
     'validation.placeOfBirth.', 'validation.nationality.', 'validation.documentIssuingCountry.',
   ];
 
-  /** The keys of the `checkin` namespace of en.json that the guest page uses (they carry the `checkin.` prefix). */
   const guestPageKeys = [...enKeys.keys()].filter((key) => {
     if (!key.startsWith('checkin.')) return false;
     const local = key.slice('checkin.'.length);
@@ -445,7 +417,6 @@ describe('guest check-in locales', () => {
   ] as const;
 
   it('guestCheckinLocales_PageKeys_AreTheNamespaceOfEnglishWithoutTheHostSide', () => {
-    // Guard against a list that silently selects nothing.
     expect(guestPageKeys.length).toBeGreaterThan(100);
     expect(guestPageKeys).toContain('checkin.next');
     expect(guestPageKeys).toContain('checkin.language.label');
@@ -483,7 +454,6 @@ describe('guest check-in locales', () => {
     const used = [...collectUsedKeys(pageSources).keys()].filter((key) => key.startsWith('checkin.'));
 
     expect(used.length).toBeGreaterThan(40);
-    // A key the page uses is in the subset files too, or a German guest reads English where the page has a German text.
     expect(used.filter((key) => !guestPageKeys.some((candidate) => candidate === key || candidate === `${key}_other`))).toEqual([]);
     expect(used.filter((key) => !hasKey(itKeys, key) || !hasKey(enKeys, key))).toEqual([]);
   });
@@ -492,7 +462,6 @@ describe('guest check-in locales', () => {
     const keys = [
       ...GUEST_LOCALE_OPTIONS.map((option) => option.nameKey),
       ...Object.values(GUEST_ERROR_KEYS),
-      // The identity step (E03/F04/US03/T01): the words of each guidance code of the API, of each problem and of each reason the camera is not there.
       ...GUIDANCE_CODES.map((code) => guidanceKey(code)),
       guidanceKey('a_code_of_the_future'),
       ...IDENTITY_PROBLEMS.map((problem) => problemKey(problem)),
@@ -507,7 +476,6 @@ describe('guest check-in locales', () => {
     ];
 
     expect(keys.filter((key) => !hasKey(itKeys, key) || !hasKey(enKeys, key))).toEqual([]);
-    // The messages of the server the page can translate are in the subset files too.
     expect(Object.values(GUEST_ERROR_KEYS).filter((key) => !guestPageKeys.includes(key))).toEqual([]);
   });
 

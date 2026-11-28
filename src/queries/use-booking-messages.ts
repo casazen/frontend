@@ -11,13 +11,8 @@ export const BOOKING_THREAD_QUERY = 'booking-thread';
 export const HOST_THREADS_QUERY = 'host-threads';
 export const UNREAD_MESSAGES_QUERY = 'booking-messages-unread';
 
-/** How often an open thread is read again while the page is visible (no real-time channel in v1). */
 const THREAD_POLL_MS = 60_000;
 
-/**
- * The thread of a booking for its host (SR-12): the messages, how many the host has not read and whether the guest waits for an answer.
- * A guest writes from outside, so it is read again when the page opens, on return to the window and every minute while it is visible.
- */
 export function useBookingThread(bookingId: string, enabled: boolean = true) {
   return useQuery({
     queryKey: [BOOKING_THREAD_QUERY, bookingId],
@@ -44,7 +39,6 @@ export function useSendBookingMessage(bookingId: string) {
       void queryClient.invalidateQueries({ queryKey: key });
       void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
       void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
-      // The Home and the tab «Messaggi» read the same conversation through the hub (NF-61): the row «Rispondi a…» and the number change at once too.
       invalidateMessageHubLists(queryClient);
       return sent;
     },
@@ -53,7 +47,6 @@ export function useSendBookingMessage(bookingId: string) {
   return useThreadSend<HostThread>(key, send);
 }
 
-/** Marks the guest's messages as read (up to the last one): the unread counters of the booking and of the lists drop. */
 export function useMarkThreadRead(bookingId: string) {
   const queryClient = useQueryClient();
   return useMutation({

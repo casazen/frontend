@@ -3,12 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 
 interface RechargeWaiverConfirmation {
-  /**
-   * Opens the dialog and answers `true` only when the person confirms in it; closing it any other way (the cancel button, Escape, a click outside) answers `false`. A question that is still
-   * open is answered `false` by a new one: there is never more than one dialog, and never a yes that nobody gave.
-   */
   confirm: () => Promise<boolean>;
-  /** The dialog, to be put in the page outside every form (it is a portal, and a dialog in a form would submit it). */
   dialog: ReactNode;
 }
 
@@ -44,7 +39,6 @@ export function useRechargeWaiverConfirmation(): RechargeWaiverConfirmation {
   const dialog = (
     <ConfirmationDialog
       open={open}
-      // The dialog closes itself after a confirmation too, and tells it here: the answer of a yes is already given by then, so this one is a no only for a person who did not confirm.
       onOpenChange={(next) => {
         if (!next) settle(false);
       }}

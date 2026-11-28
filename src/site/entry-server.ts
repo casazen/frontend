@@ -8,17 +8,9 @@ import { isPublicSiteEnabled } from './site-gate';
 import { buildSiteHead } from './site-head';
 import { buildSiteSitemap, SITE_ASSET_DIR, SITE_PAGES, type SitePage } from './site-pages';
 
-/**
- * Build-time render of the public site (SEO-VETRINA), bundled by `vite build --ssr` and run by `scripts/prerender-site.mjs`:
- * the static HTML of every page (Italian, the language of the single URL) and the sitemap. The browser then starts the same
- * tree on it (`entry-client.tsx`), so people and search engines get the same page.
- */
-
 export interface RenderedSitePage {
   page: SitePage;
-  /** Tags for the `<head>`: title, description, canonical, Open Graph, JSON-LD. */
   head: string;
-  /** The `#root` element with the rendered page. */
   root: string;
 }
 
@@ -40,7 +32,6 @@ export function renderSitePages(year: number): RenderedSitePage[] {
       origin,
       legal,
     });
-    // The page and the year travel with the HTML: the browser renders exactly what was rendered here.
     const root = `<div id="root" data-site-page="${page.id}" data-site-year="${year}">${html}</div>`;
     return { page, head, root };
   });
@@ -58,10 +49,6 @@ export function isSiteServed(vercelEnv: string | undefined): boolean {
   });
 }
 
-/**
- * The sitemap of the public site, or null without a public origin (preview and local builds are never indexed) and on
- * production while the site is not served (no company data yet, `site-gate.ts`). `vercelEnv` is `VERCEL_ENV` of the build.
- */
 export function renderSiteSitemap(vercelEnv: string | undefined): string | null {
   const origin = readSiteOrigin((import.meta.env as Record<string, unknown>).VITE_PUBLIC_SITE_URL);
   return origin && isSiteServed(vercelEnv) ? buildSiteSitemap(origin) : null;

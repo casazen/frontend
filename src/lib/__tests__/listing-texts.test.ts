@@ -11,7 +11,6 @@ import {
   textDraftsFromProfile,
 } from '../listing-texts';
 
-/** A site profile as the server gives it: facts of the booking site that the descriptions step does not edit, and translations. */
 const PROFILE: SiteProfile = {
   propertyId: 'p1',
   floorLevel: 2,
@@ -55,23 +54,17 @@ describe('the languages of the descriptions step', () => {
 
 describe('the origin of a text (NF-31)', () => {
   it('originWhenSaved_FollowsTheRuleOfTheBackend', () => {
-    // A new text, or one over a blank, is the person's.
     expect(originWhenSaved('Hello', undefined, undefined)).toBe('UserWritten');
     expect(originWhenSaved('Hello', '  ', 'AutoTranslated')).toBe('UserWritten');
-    // Left as it was: it keeps the origin it had.
     expect(originWhenSaved('Hello', 'Hello', 'AutoTranslated')).toBe('AutoTranslated');
-    // A person's text that is changed stays the person's; a machine translation that is changed becomes «modified after translation», and stays so.
     expect(originWhenSaved('Hello again', 'Hello', 'UserWritten')).toBe('UserWritten');
     expect(originWhenSaved('Hello again', 'Hello', 'AutoTranslated')).toBe('ModifiedAfterTranslation');
     expect(originWhenSaved('Hello once more', 'Hello again', 'ModifiedAfterTranslation')).toBe('ModifiedAfterTranslation');
   });
 
   it('shownOrigin_AMachineTranslationTheHostEdits_ReadsModifiedAtOnce', () => {
-    // As stored: a machine translation.
     expect(shownOrigin(PROFILE, 'fr', 'title', 'Trullo avec piscine')).toBe('AutoTranslated');
-    // The host changes it on screen: the save will call it modified, and so does the screen, before the save.
     expect(shownOrigin(PROFILE, 'fr', 'title', 'Trullo avec piscine privée')).toBe('ModifiedAfterTranslation');
-    // What the host wrote stays theirs; a text with no origin recorded is theirs; a blank text has no origin.
     expect(shownOrigin(PROFILE, 'en', 'description', 'A quiet trullo near the sea.')).toBe('UserWritten');
     expect(shownOrigin(null, 'de', 'title', 'Trullo mit Pool')).toBe('UserWritten');
     expect(shownOrigin(PROFILE, 'fr', 'title', '   ')).toBeNull();
@@ -108,7 +101,6 @@ describe('what the save of the translated texts sends (data rule)', () => {
 
     const request = buildSiteProfileRequest(PROFILE, drafts);
 
-    // The save of the profile replaces it: everything the step does not edit goes back as the server has it, or it would be wiped.
     expect(request).toMatchObject({
       floorLevel: 2,
       renovatedYear: 2021,
@@ -129,7 +121,6 @@ describe('what the save of the translated texts sends (data rule)', () => {
     expect(request).not.toHaveProperty('derivedTags');
     expect(request).not.toHaveProperty('origins');
     expect(request).not.toHaveProperty('propertyId');
-    // The other fields of a language the host edited, the languages they did not touch and the transport of the Italian profile stay.
     expect(request.translations).toEqual({
       it: { transport: 'Fermata a 200 m' },
       en: { title: 'Trullo with a pool', description: 'A quiet trullo.', spaces: 'Garden and terrace' },
@@ -150,7 +141,6 @@ describe('what the save of the translated texts sends (data rule)', () => {
   });
 
   it('buildSiteProfileRequest_Italian_IsNeverWrittenToTheProfile', () => {
-    // The Italian headline and description are the columns of the property; a draft for Italian is ignored, only the transport is kept.
     const drafts = { ...textDraftsFromProfile(PROFILE), it: { title: 'Trullo con piscina', description: 'Un trullo tranquillo.' } };
 
     expect(buildSiteProfileRequest(PROFILE, drafts).translations.it).toEqual({ transport: 'Fermata a 200 m' });

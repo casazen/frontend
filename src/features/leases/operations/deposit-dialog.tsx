@@ -19,10 +19,8 @@ import { LetterSentForm } from './letter-sent-form';
 import { formatPercent, letterState, parseAmount, parsePercent, yearsHeld } from './operations-model';
 import { useLetterDownload } from './use-letter-download';
 
-/** How long the form stands still before the server is asked to work the statement out. */
 const CALCULATION_DELAY_MS = 400;
 
-/** The longest reason of a sum kept the interface lets through (the server bounds it too). */
 const MAX_REASON_LENGTH = 200;
 
 interface DepositDialogProps {
@@ -32,7 +30,6 @@ interface DepositDialogProps {
   onClose: () => void;
 }
 
-/** A sum kept from the deposit as it is typed: the texts are parsed when the statement is asked for, not while the person writes. */
 interface DeductionRow {
   id: number;
   reason: string;
@@ -61,7 +58,6 @@ function DepositBody({ lease, operations, onClose }: Omit<DepositDialogProps, 'o
     isStayDate(paidOn) && isStayDate(returnedOn) && (minPaid === '' || paidOn >= minPaid) && paidOn < returnedOn && (maxReturn === '' || returnedOn <= maxReturn);
   const years = useMemo(() => (datesValid ? yearsHeld(paidOn, returnedOn) : []), [datesValid, paidOn, returnedOn]);
 
-  // The statement asked for: every year has its rate, the sums are sums. An empty row of the sums kept is nothing; half a row is not valid yet.
   const input = useMemo<DepositReturnInput | null>(() => {
     if (!datesValid) return null;
 
@@ -90,7 +86,6 @@ function DepositBody({ lease, operations, onClose }: Omit<DepositDialogProps, 'o
   const settled = useDebouncedValue(input, CALCULATION_DELAY_MS);
   const calculation = useDepositCalculation(lease.id, settled);
 
-  // The statement on screen is the one of the form on screen: while the next answer arrives nothing stale is shown or can be used.
   const fresh = input !== null && JSON.stringify(settled) === JSON.stringify(input);
   const result = fresh ? calculation.data : undefined;
   const refusal = fresh && !result && calculation.error ? getProblemMessage(calculation.error, t) : undefined;
@@ -110,7 +105,7 @@ function DepositBody({ lease, operations, onClose }: Omit<DepositDialogProps, 'o
     try {
       await record.mutateAsync(input);
     } catch {
-      return; // The hook told why.
+      return;
     }
     toast.success(t('leaseOperations.deposit.recorded', { amount: formatCurrency(result.returned), date: longDay(returnedOn, i18n.language) }));
     onClose();

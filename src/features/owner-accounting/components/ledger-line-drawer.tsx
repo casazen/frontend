@@ -9,19 +9,11 @@ import { useOwnerFormat } from '../use-owner-format';
 import { DescriptionItem } from '@/components/shared/description-item';
 
 interface LedgerLineDrawerProps {
-  /** The line to explain; `null` closes the drawer. */
   entry: OwnerLedgerEntry | null;
   onClose: () => void;
-  /** The name of the property of the line, when the page knows it (the line carries its id only). */
   propertyName?: string;
 }
 
-/**
- * One line of the statement, explained (E06/F05/US02/T04, AC-NF110-1): what it is, the steps from the source to the amount in the statement
- * (the source amount, the owner's share, the exchange rate with where it comes from, the result), the dates it counts for, the rule it was made
- * under, and the way to the source (the booking, the payment, the wires, the attachment). It shows ids, amounts and codes only: the ledger of an
- * owner carries no name of a guest, and nothing here asks for one.
- */
 export function LedgerLineDrawer({ entry, onClose, propertyName }: LedgerLineDrawerProps) {
   const { t } = useTranslation();
   const { money, date, dateTime, percent } = useOwnerFormat();
@@ -50,8 +42,6 @@ function LineBody({ entry, propertyName, money, date, dateTime, percent, t }: Li
   const booking = sourcePathOf(entry);
   const payment = paymentPathOf(entry);
   const attachmentUrl = attachmentUrlOf(entry.attachmentReference);
-  // A line for information only (the commission of a portal the agency bears) is not a credit or a debit of the owner: its figures are written as the PDF writes them, positive and quiet, with
-  // the badge that says it is for information, and the steps say what the figures are (the commission, not an amount of the owner's statement).
   const informational = isInformational(entry);
   const shown = (amount: number) => shownAmount(entry, amount);
 

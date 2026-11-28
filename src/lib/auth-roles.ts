@@ -53,7 +53,6 @@ export interface DerivedContext {
   defaultRoute: string;
 }
 
-/** Parse Auth0 roles from an access-token JWT payload (roles live here, not in the ID token profile). */
 export function parseRolesFromAccessToken(token: string | undefined | null): string[] {
   if (!token) return [];
 
@@ -128,10 +127,6 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
         'ota.write',
         'guest.read',
         'guest.write',
-        // Same set as the backend bootstrap (`ContextAccessBootstrap`, AM-03): what the owner holds on top of the ones above. Without
-        // `servicerequest.write` the guided request («Richiedi un intervento») is a reserved page for a person from the token alone, and
-        // without `approval.decide` (E05/F04, NF-68) the queue of the approvals is one too: it asks it and no longer `property.write`. The same
-        // for `verification.decision` (E03/F04/US02/T01): the console of the identity verifications asks the permission the API asks.
         'servicerequest.write',
         'guest.manage',
         'alloggiati.submit',
@@ -148,7 +143,6 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
       contextKey: 'long-rent',
       displayName: i18n.t('shell.longRentSubtitle'),
       roleKey: 'long_term_landlord',
-      // Same set as the backend bootstrap (ContextAccessBootstrap): property.* serves the property core only (A7-06).
       permissions: ['property.read', 'property.write', 'lease.read', 'lease.create', 'lease.sign', 'lease.register'],
       defaultRoute: '/app/long-rent',
     });

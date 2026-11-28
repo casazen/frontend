@@ -8,31 +8,15 @@ import { REVIEW_STEP, SIGN_STEP, leaseEditPath } from '../wizard/wizard-model';
 import type { LeaseTab } from './lease-sheet';
 import { monthOfDate, rentRegisterPath } from './rent-register';
 
-/**
- * What a lease is waiting for, in words and with the button that does it (LR-05). The server decides which step it is (`nextStep`
- * of `GET /leases` and `now` of `GET /long-rent/overview`, LR-01b) and sends a stable code; the sentence, the button and the page
- * where it is done are the interface's, here, once. Nothing about the step is worked out from the other fields of the lease.
- *
- * The overview uses it for its block «Adesso»; the sheet of a lease («Cosa devi fare ora») and the list of leases read the same
- * table. A code this version of the app does not know (a newer backend) gets a neutral sentence and the sheet of the lease.
- */
-
-/** The sheet of a lease, on one of its tabs when the step is done there (the names of the tabs never change). */
 export function leaseSheetPath(leaseId: string, tab?: LeaseTab): string {
   const base = `/app/long-rent/leases/${encodeURIComponent(leaseId)}`;
   return tab ? `${base}?tab=${tab}` : base;
 }
 
-/** The sheet of a lease with the window of one of its operations open on it (`?operazione=disdetta`, LR-OPS-1). */
 export function operationPath(leaseId: string, operation: LeaseOperationId): string {
   return `${leaseSheetPath(leaseId)}?${LEASE_OPERATION_PARAM}=${operation}`;
 }
 
-/**
- * Where a step is done: a tab of the sheet of the lease (or the sheet as it opens), the window of an operation of the guide («Prepara la
- * disdetta»), the wizard that goes on with a draft («Continua il contratto», LR-06a) at a step of the server's numbering (`fromParams`: the
- * step the server names in `params.step`; none: where the draft opens), or the rent register for the rents that are late.
- */
 type StepTarget =
   | { kind: 'sheet'; tab?: LeaseTab }
   | { kind: 'operation'; operation: LeaseOperationId }
@@ -42,13 +26,8 @@ type StepTarget =
 interface StepDefinition {
   titleKey: string;
   actionKey: string;
-  /** A line more, when the step has something to add. */
   detailKey?: string;
   target: StepTarget;
-  /**
-   * The words of the same step for a contract brought in already signed (`params.imported`), when they differ: the registration of such a
-   * contract may be done already, or be done by the guided service that prepared it, so the step is to declare it (CF-END).
-   */
   imported?: { titleKey: string; actionKey: string; detailKey?: string };
 }
 
@@ -154,7 +133,6 @@ const STEPS: Record<LeaseNextStepCode, StepDefinition> = {
   },
 };
 
-/** What a code the app does not know says: the lease has something to do, and its sheet says what. */
 const UNKNOWN_STEP: StepDefinition = {
   titleKey: 'leaseFlow.nextStep.unknown.title',
   actionKey: 'leaseFlow.nextStep.unknown.action',
@@ -198,7 +176,6 @@ function sentenceValues(
 
 const SHORT_DAY = { day: 'numeric', month: 'short' } as const;
 
-/** When the step is due, in the words of the person: «Scaduto da 3 giorni», «Entro domani», «Entro il 5 nov · tra 12 giorni»; `null` without a day. */
 function dueText(dueOn: string | null | undefined, today: string, language: string, t: TFunction): string | null {
   const day = parseStayDate(dueOn);
   if (!day) return null;
@@ -209,7 +186,6 @@ function dueText(dueOn: string | null | undefined, today: string, language: stri
   return t('leaseFlow.due.byIn', { count: ahead, date: formatStayDate(day, language, SHORT_DAY) });
 }
 
-/** Only what is late is red, what is soon or being chased is amber; the rest is the accent of the area. The priorities are the server's. */
 function toneOf(priority: number): CalmTone {
   if (priority <= 0) return 'danger';
   if (priority <= 3) return 'warning';
@@ -219,42 +195,29 @@ function toneOf(priority: number): CalmTone {
 export interface LeaseStepContext {
   t: TFunction;
   language: string;
-  /** Today in Europe/Rome (`YYYY-MM-DD`): `todayInRome()`. */
   today: string;
 }
 
-/** A step as a screen shows it. */
 export interface LeaseStepView {
-  /** What to do, as a short sentence. */
   title: string;
-  /** A line more, when the step has one. */
   detail: string | null;
-  /** Whose turn it is («Tocca a te», «Se ne occupa CasaZen»). */
   who: string;
-  /** When it is due; `null` when it has no day. */
   when: string | null;
   tone: CalmTone;
-  /** The label of the button that does it. */
   action: string;
-  /** Where the button goes: the tab of the sheet or the step of the wizard where it is done, or the rent register. */
   to: string;
-  /** The sheet of the lease, for a screen that has a button for the step and one for the lease (the rent register is not the sheet). */
   leaseTo: string;
-  /** The step is done on the rent register, away from the lease: a screen that has a button for it can offer the lease beside it. */
   leavesTheSheet: boolean;
 }
 
 const ACTORS: readonly LeaseNextStepActor[] = ['Landlord', 'Tenant', 'System'];
 
-/** Whose turn it is: «Tocca a te» for the landlord, «Se ne occupa CasaZen» for the system; nothing for an actor this version does not know. */
 function actorText(actor: LeaseNextStepActor, t: TFunction): string {
   return ACTORS.includes(actor) ? t(`leaseFlow.actor.${actor}`) : '';
 }
 
-/** The sentence, the button and the destination of the step `step` of the lease `leaseId`. */
 export function describeLeaseStep(leaseId: string, step: LeaseNextStep, { t, language, today }: LeaseStepContext): LeaseStepView {
   const definition = definitionOf(step.code);
-  // A contract brought in already signed says «declare the registration» (it may be registered already, or be registered by the service).
   const words = step.params?.imported === true && definition.imported ? definition.imported : definition;
   const values = sentenceValues(step.code, step.params);
   const leaseTo = leaseSheetPath(leaseId);
@@ -272,17 +235,14 @@ export function describeLeaseStep(leaseId: string, step: LeaseNextStep, { t, lan
   };
 }
 
-/** The address where the step is done. */
 function targetPath(leaseId: string, target: StepTarget, step: LeaseNextStep, today: string): string {
   switch (target.kind) {
     case 'rents': {
-      // The oldest installment that is late is in its own month: that is the register to open, with the late ones first.
       const dueDay = parseStayDate(step.dueOn);
       const currentMonth = monthOfDate(today);
       return rentRegisterPath(dueDay ? monthOfDate(dueDay) : currentMonth, currentMonth, 'overdue');
     }
     case 'wizard':
-      // A step the wizard has no screen for opens the draft where it opens by itself.
       return leaseEditPath(leaseId, target.fromParams ? (numberParam(step.params, 'step') ?? undefined) : target.step);
     case 'sheet':
       return leaseSheetPath(leaseId, target.tab);

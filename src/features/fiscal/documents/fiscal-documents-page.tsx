@@ -47,22 +47,18 @@ import {
 const NO_DOCUMENTS: readonly FiscalDocumentEntry[] = [];
 const NO_SELECTION: ReadonlyMap<string, FiscalDocumentEntry> = new Map();
 
-/** What a bulk issue came to and the names of its documents as the page knew them when it was asked (a draft that was issued is not in the list any more). */
 interface BatchReport {
   outcome: BatchOutcome;
   labels: ReadonlyMap<string, string>;
 }
 
 interface ExportActionsProps {
-  /** The files cannot be asked now (a period with a problem, a status that has no file): both buttons wait. */
   blocked: boolean;
-  /** A file is on the way and which one: both buttons wait for it, so a second click cannot start a second file. */
   pending: boolean;
   format: FiscalDocumentExportFormat | undefined;
   onExport: (format: FiscalDocumentExportFormat) => void;
 }
 
-/** The two files of the list, side by side in the header: the buttons of one card wait for each other while a file is on the way. */
 function ExportActions({ blocked, pending, format, onExport }: ExportActionsProps) {
   const { t } = useTranslation();
 
@@ -136,12 +132,10 @@ export function FiscalDocumentsPage() {
     setFilters(filtersFromAddress());
     setPage(1);
   }
-  // The document an address names (`?document=<id>&step=correct`, the «Do now» of a «To do» item) opens at once, with the step it asks for; any other way of opening one has no step.
   const [openId, setOpenId] = useState<string | null>(link.documentId);
   const [intent, setIntent] = useState<DocumentIntent | undefined>(link.intent);
   const [linked, setLinked] = useState<string | null>(link.documentId);
   if (link.documentId !== linked) {
-    // The address names another document while the page is open (a «Do now» from the bell): it opens too.
     setLinked(link.documentId);
     if (link.documentId !== null) {
       setOpenId(link.documentId);
@@ -162,7 +156,6 @@ export function FiscalDocumentsPage() {
   const picker = useSelectDraftsOfPeriod();
   const selectedList = useMemo(() => [...selected.keys()], [selected]);
   const selectedIds = useMemo(() => new Set(selectedList), [selectedList]);
-  // A write that runs on one of the ticked drafts (one made again, one issued from its detail) makes the bulk issue wait, as it makes the buttons of that draft wait.
   const writing = useDocumentsBusy({ documentIds: selectedList });
 
   const read = documentsReadOf({ enabled, isError: documents.isError, status: getHttpStatus(documents.error), hasData: documents.data !== undefined });
@@ -170,7 +163,6 @@ export function FiscalDocumentsPage() {
   const rows = data?.items ?? NO_DOCUMENTS;
   const refused = !canRead || read === 'forbidden';
 
-  // A page past the end (the documents of the filters went down while the page was open) goes to the last one that has any.
   if (data && page > 1 && data.items.length === 0 && data.totalCount > 0 && !documents.isPlaceholderData) {
     setPage(Math.ceil(data.totalCount / DOCUMENTS_PAGE_SIZE));
   }
@@ -178,8 +170,6 @@ export function FiscalDocumentsPage() {
   const change = (next: DocumentFilters) => {
     setFilters(next);
     setPage(1);
-    // What was ticked belongs to the filters it was ticked under: another list never keeps boxes the person can no longer see. A search for the drafts
-    // of the old filters that is still running is dropped too (`reset` detaches its answer): it never ticks, under new filters, drafts it was not asked for.
     setSelected(NO_SELECTION);
     setNote(null);
     picker.reset();
@@ -207,7 +197,6 @@ export function FiscalDocumentsPage() {
     setSelected(NO_SELECTION);
     setNote(null);
   };
-  // The drafts of the stays that the filters show (the status of the filter is not read: only drafts are asked for), at most the 200 a bulk issue takes.
   const selectPeriod = () => {
     setNote(null);
     picker.mutate(criteria, {
@@ -222,7 +211,6 @@ export function FiscalDocumentsPage() {
       onError: () => setNote({ kind: 'failed' }),
     });
   };
-  // Issues the ticked drafts. What was issued leaves the selection; what was not stays ticked, so the person can mend it and ask again.
   const issueSelected = async () => {
     const labels = new Map([...selected].map(([id, draft]) => [id, documentLabelOf(t, draft)] as const));
     const result = await batch.mutateAsync({ documentIds: [...selected.keys()] });
@@ -233,7 +221,6 @@ export function FiscalDocumentsPage() {
     });
     setReport({ outcome: batchOutcomeOf(result), labels });
   };
-  // What a button of a document did to it: an issued or dropped draft is no draft to issue in bulk any more, and a dropped one has no detail to show.
   const changed = (id: string, kind: DocumentChange) => {
     if (kind !== 'credited') {
       setSelected((current) => {
@@ -246,7 +233,6 @@ export function FiscalDocumentsPage() {
     if (kind === 'discarded') setOpenId((current) => (current === id ? null : current));
   };
   const canSelectPeriod = read === 'ok' && problem === null && (filters.status === '' || filters.status === 'Draft');
-  // Opens a document, or closes the detail: the step the address asked for goes with it, and the address stops naming the document (a reload does not open it again).
   const openDocument = (id: string | null) => {
     setOpenId(id);
     setIntent(undefined);
@@ -353,7 +339,6 @@ export function FiscalDocumentsPage() {
                     ? { selected: selectedIds, disabled: picker.isPending || batch.isPending, onToggle: toggle, onTogglePage: togglePage }
                     : undefined
                 }
-                // Whatever the failure, a list that could not be read is never drawn as an empty one, and a 404 is never the rows a query still holds.
                 isLoading={read === 'loading'}
                 isError={read === 'failed' || read === 'notFound'}
                 error={documents.error}

@@ -7,11 +7,6 @@ import { useCancelFromGuestArea, useGuestCancellationPreview } from '@/queries/u
 import type { GuestBookingDetails, GuestBookingStatus, GuestSession } from '@/types';
 import { CancellationClosed, CancellationPanel } from './components/cancellation-panel';
 
-/**
- * The states of a booking in which the section says something: the ones that can be cancelled (a request or a payment that waits, a
- * confirmed booking, a stay in progress, which tells the guest to write to the host), and a cancelled booking, which tells what became of
- * its refund. An expired or declined request, dates that were lost and a stay that is over have nothing to cancel and nothing to refund.
- */
 const CANCELLATION_STATUSES: readonly GuestBookingStatus[] = [
   'Confirmed',
   'AwaitingPayment',
@@ -45,7 +40,6 @@ function GuestCancellation({ session, booking }: GuestCancellationSectionProps) 
   const preview = useGuestCancellationPreview(session);
   const cancel = useCancelFromGuestArea(session);
 
-  // The session ended or the booking is not there: the page itself falls back to the form, nothing to say here.
   const failure = getHttpStatus(preview.error);
   if (preview.isError && (failure === 401 || failure === 404)) return null;
 

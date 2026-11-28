@@ -21,10 +21,8 @@ test('post-stay actions follow the host settings and the original booking channe
   await expect(page.getByRole('link', { name: 'Write a review' })).toBeVisible({ timeout: 30000 });
   reviewAvailable = false;
   await page.reload({ waitUntil: 'domcontentloaded' });
-  // The home is loaded (the documents row is there after the stay) and the review is no longer offered.
   await expect(page.getByRole('link', { name: 'Documents and receipts' })).toBeVisible({ timeout: 30000 });
   await expect(page.getByRole('link', { name: 'Write a review' })).toHaveCount(0);
-  // The chat is a tab of the bar, not a row of the home: that it is closed is said in the chat itself.
   await page.goto(portal + '&page=chat', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('The chat is closed.')).toBeVisible();
   await page.goto(portal + '&page=details', { waitUntil: 'domcontentloaded' });

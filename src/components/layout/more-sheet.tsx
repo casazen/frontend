@@ -17,7 +17,6 @@ import { SheetAccount } from './sheet-account';
 
 interface MoreSheetProps {
   contextKey: AppContextKey;
-  /** The organization of the user, shown under the name of the area. */
   organizationName?: string | null;
 }
 
@@ -49,20 +48,16 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
   const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags, canOpenPath);
   const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags, canOpenPath));
 
-  // No sheet on a tablet or a computer: it would hide a page that has its own sidebar.
   useEffect(() => {
     if (open && isWide) setOpen(false);
   }, [open, isWide, setOpen]);
 
   const sheet = useRef<HTMLDivElement>(null);
-  // The page now, and the page the sheet was opened on: the sheet that closes on the same page gives the focus back, the one
-  // that closes on another has opened it.
   const currentPath = useRef(pathname);
   const pathWhenOpened = useRef(pathname);
   useEffect(() => {
     currentPath.current = pathname;
   }, [pathname]);
-  // Who opened the sheet, noted as it opens (before the focus moves into it).
   const opener = useRef<HTMLElement | null>(null);
   useLayoutEffect(() => {
     if (!open) return;
@@ -71,14 +66,11 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
   }, [open]);
 
   const takeFocus = (event: Event) => {
-    // Radix would pick the first control that is not a link: the close button, which would show its ring at every tap on
-    // "Altro". The focus goes to the sheet itself: a screen reader reads its name, the next Tab reaches the first control.
     event.preventDefault();
     sheet.current?.focus();
   };
 
   const giveFocusBack = (event: Event) => {
-    // Radix would give it to its own trigger, which this sheet does not have: the opener is the bar.
     event.preventDefault();
     if (currentPath.current !== pathWhenOpened.current) return;
     const noted = opener.current;
@@ -95,17 +87,14 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
         ref={sheet}
         side="bottom"
         data-testid="more-sheet"
-        // There is no description to point to: the title names it and the content speaks for itself.
         aria-describedby={undefined}
         className="outline-none md:hidden"
         onOpenAutoFocus={takeFocus}
         onCloseAutoFocus={giveFocusBack}
       >
-        {/* The room on the right is the close button's. */}
         <SheetHeader className="px-4 pb-2 pr-14 pt-0">
           <SheetTitle>{t('nav.more')}</SheetTitle>
         </SheetHeader>
-        {/* Scrolls up and down inside the sheet, never sideways: what is wider than the screen is cut or wrapped, not scrolled. */}
         <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-4">
           <div className="pb-3">
             <AreaSwitcher contextKey={contextKey} organizationName={organizationName} />

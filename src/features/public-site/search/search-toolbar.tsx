@@ -15,35 +15,22 @@ import type { SearchScope } from './search-scope';
 import type { useSearchState } from './use-search-state';
 
 interface SearchToolbarProps {
-  /** Where the homes are searched: one booking site, or all of them. */
   scope: SearchScope;
   state: ReturnType<typeof useSearchState>;
-  /** What the controls offer (the labels, the capacity, the sliders): from every home of the site, whatever is asked, or from the server for the place. */
   facets: SearchFacets;
   destinations: readonly PublicDestination[] | undefined;
-  /** How many homes the guest saved on this device (a site only). */
   favoritesCount: number;
-  /** The guest pressed «Cerca» (or the Enter of the bar): the page moves the reader to the results. */
   onSearch: () => void;
 }
 
-/** A place typed in a form or a link, as the field says it: `lago-di-como` is «Lago di como». */
 function typedPlaceLabel(text: string): string {
   const spaced = text.replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
   return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : text;
 }
 
-/**
- * The bar above the results (DB-07c): the stay (the «Dove · Quando · Chi» of the site, as on the home), the sort, the labels of the
- * homes as chips to press, and the hearts. Everything it changes is the address: the list under it follows. The stay and the place
- * are the `SearchBar` of DB-20, which on a phone is one field that opens a sheet.
- *
- * Inside the frame of an embeddable widget (NF-144) the filters are a panel under the bar and not a dialog, and there are no hearts, so no «only the hearts» chip.
- */
 export function SearchToolbar({ scope, state, facets, destinations, favoritesCount, onSearch }: SearchToolbarProps) {
   const { t } = useTranslation();
   const embed = useEmbed();
-  // The panel of the filters of a frame (see `FiltersPanel`): opened by its button, closed by it or by «Mostra N case», which gives the focus back to the button.
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersButton = useRef<HTMLButtonElement>(null);
   const closeFilters = () => {
@@ -52,7 +39,6 @@ export function SearchToolbar({ scope, state, facets, destinations, favoritesCou
   };
   const { stay, setStay, where, setWhere, search, setSearch } = state;
   const platform = scope.kind === 'platform';
-  // A guest with a pet is always asked (the bar is not told whether the homes take it): the list says which homes do.
   const { maxGuests, tags } = facets;
   const calendar = usePublicSiteCalendar(
     platform ? undefined : scope.slug,
@@ -61,7 +47,6 @@ export function SearchToolbar({ scope, state, facets, destinations, favoritesCou
   );
   const options = useMemo(() => {
     const list = destinationOptions(destinations, (count) => t('siteHome.hero.destinationHomes', { count }));
-    // A place typed in the form of the home (or in a shared link) is not always one of the list: it is still the place chosen, so it shows.
     if (platform && where && !list.some((option) => option.id === where)) list.unshift({ id: where, label: typedPlaceLabel(where) });
     return list;
   }, [destinations, platform, where, t]);
@@ -82,7 +67,6 @@ export function SearchToolbar({ scope, state, facets, destinations, favoritesCou
           onStayChange={setStay}
           calendar={calendar}
           maxGuests={maxGuests}
-          // A site with one place has no «Dove»; across all the sites it is the first field.
           showDestination={platform || options.length > 1}
           onSearch={onSearch}
         />

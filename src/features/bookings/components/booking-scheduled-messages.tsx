@@ -37,10 +37,8 @@ import {
 import { ScheduledMessageEditDialog } from './scheduled-message-edit-dialog';
 import { ScheduledMessageText } from './scheduled-message-text';
 
-/** The links of the app that complete what a blocked message waits for: `null` where the page does not exist for this person (no permission, a flag off, a module the account does not have). */
 type FixLinks = Record<FixPlace, string | null>;
 
-/** A link that is at least 44 px high, on a phone and on a laptop, and underlined at rest: a line of text that leads somewhere must not look like the ones that do not. */
 const LINK_CLASS =
   'inline-flex min-h-11 items-center rounded-sm text-sm font-medium underline decoration-foreground/40 underline-offset-4 hover:decoration-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
@@ -72,7 +70,6 @@ function useFixLinks(booking: Booking): FixLinks {
 
 interface BookingScheduledMessagesProps {
   booking: Booking;
-  /** The person may change the messages (`booking.write`): without it the timeline is only read, whatever the server says each message allows. */
   canWrite: boolean;
 }
 
@@ -89,8 +86,6 @@ export function BookingScheduledMessages({ booking, canWrite }: BookingScheduled
   const { t } = useTranslation();
   const query = useScheduledMessages(booking.id, true);
   const links = useFixLinks(booking);
-  // Which message the host is editing and what they have typed and not saved. It lives in the section and not in the card: when a read fails (the poll, the focus of the window, the bell) the list gives
-  // way to the unknown state and the cards, with their dialogs, are unmounted; the host's words must survive that and be there when the list is back. A closed dialog (saved or cancelled) forgets them.
   const [editingId, setEditingId] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<ReadonlyMap<string, string>>(() => new Map());
   const keepDraft = (id: string, text: string) => setDrafts((current) => new Map(current).set(id, text));
@@ -111,7 +106,6 @@ export function BookingScheduledMessages({ booking, canWrite }: BookingScheduled
     body = (
       <div role="alert" className="space-y-2" data-testid="scheduled-messages-error">
         <p className="text-sm text-destructive">{t(gone ? 'booking.scheduledMessages.loadErrorGone' : 'booking.scheduledMessages.loadError')}</p>
-        {/* The messages are not shown (their state is not known), but what the host was writing is not lost: it comes back with the list. */}
         {draftKept ? (
           <p className="text-sm" data-testid="scheduled-messages-draft-kept">
             {t('booking.scheduledMessages.draftKept')}
@@ -165,10 +159,8 @@ export function BookingScheduledMessages({ booking, canWrite }: BookingScheduled
   );
 }
 
-/** Which of the two confirmations of a message is open (the edit dialog is kept by the section). */
 type ConfirmKind = 'skip' | 'send';
 
-/** The three writes a card can make on its message. */
 type WriteKind = 'edit' | ConfirmKind;
 
 interface ScheduledMessageItemProps {
@@ -177,10 +169,8 @@ interface ScheduledMessageItemProps {
   links: FixLinks;
   /** The host is editing the text of this message (the section keeps it, so that it survives an unknown state of the list). */
   editing: boolean;
-  /** What the host has typed in the dialog and has not saved; `undefined` when nothing. */
   draft: string | undefined;
   onEdit: () => void;
-  /** The dialog was closed (saved, cancelled): the section forgets what was typed. */
   onEditClosed: () => void;
   onDraft: (text: string) => void;
 }
@@ -192,14 +182,12 @@ function ScheduledMessageItem({ message, canWrite, links, editing, draft, onEdit
   const edit = useEditScheduledMessage();
   const skip = useSkipScheduledMessage();
   const sendNow = useSendScheduledMessageNow();
-  // The buttons of a card wait for ANY write of that card, not only the one of the hook that pressed them: an edit that is on its way must not be crossed by a skip or a send.
   const busy = useScheduledMessageIdsBeingWritten().has(message.id);
 
   const view = statusViewOf(message.status);
   const planned = formatOnPropertyClock(message.plannedAtUtc, message.timeZone, i18n.language);
   const sentAt = formatOnPropertyClock(message.sentAt, message.timeZone, i18n.language, false);
   const name = message.routineName.trim() || t('booking.scheduledMessages.routineUnnamed');
-  // What each button is called for a screen reader: the same words as the button, then which message it is about (the buttons of every message say the same).
   const editLabel = t('booking.scheduledMessages.edit.actionLabel', { name, when: planned });
   const skipLabel = t('booking.scheduledMessages.skip.actionLabel', { name, when: planned });
   const sendLabel = t('booking.scheduledMessages.sendNow.actionLabel', { name, when: planned });
@@ -208,7 +196,6 @@ function ScheduledMessageItem({ message, canWrite, links, editing, draft, onEdit
   const missing = missingCodesOf(message);
   const channel = channelLineOf(message);
 
-  // What the server lets a person do with this message, and only for who may write the booking. The dialogs follow it: one that is open on a message that can no longer change closes with it.
   const may = { edit: canWrite && message.canEdit, skip: canWrite && message.canSkip, send: canWrite && message.canSendNow };
   const editOpen = editing && may.edit;
   const confirmOpen: ConfirmKind | null = confirm === 'skip' && may.skip ? 'skip' : confirm === 'send' && may.send ? 'send' : null;
@@ -244,10 +231,8 @@ function ScheduledMessageItem({ message, canWrite, links, editing, draft, onEdit
     inFlight.current = { kind, running };
     return running;
   };
-  // A confirmation that was not started must not close its dialog as if it had worked: it fails, and the dialog stays open.
   const notStarted = () => Promise.reject(new Error('Another write of this message is on its way'));
 
-  // Each write lets go of its mutation when it is over (`reset`): a hook keeps the last one it ran, with the text that was sent, for as long as the card is on the page.
   const saveText = (text: string | null): Promise<void> =>
     once('edit', async () => {
       setProblem(null);
@@ -261,7 +246,6 @@ function ScheduledMessageItem({ message, canWrite, links, editing, draft, onEdit
       }
     }) ?? Promise.resolve();
 
-  // A refusal is said inside the dialog, which stays open (a failed confirmation closes nothing), and again on the card when the dialog was closed while the request was on its way.
   const confirmSkip = (): Promise<void> =>
     once('skip', async () => {
       setProblem(null);
@@ -335,10 +319,8 @@ function ScheduledMessageItem({ message, canWrite, links, editing, draft, onEdit
 
       {ended ? (
         <div className="space-y-1 text-sm" data-testid="scheduled-message-ended">
-          {/* Who ended it: a person of the team says it all with its sentence; CasaZen says so first and then why. */}
           {message.status === 'Skipped' && !ended.byPerson ? <p className="font-medium">{t('booking.scheduledMessages.reason.bySystem')}</p> : null}
           <p>{t(ended.reasonKey)}</p>
-          {/* A skip that landed while the send was under way: the message did go out, so it is never said that the guest will not get it. */}
           {message.status === 'Skipped' && sentAt ? <p>{t('booking.scheduledMessages.sent.skippedAfterSend', { when: sentAt })}</p> : null}
         </div>
       ) : null}
@@ -371,7 +353,6 @@ function ScheduledMessageItem({ message, canWrite, links, editing, draft, onEdit
               );
             })}
           </ul>
-          {/* A planned or a failed message whose booking lacks a datum is held back when its time comes: its text has the datum taken out, so it is said that this is not what the guest will read yet. */}
           {message.status !== 'Blocked' ? (
             <p className="text-sm text-foreground/70" data-testid="scheduled-message-missing-note">
               {t('booking.scheduledMessages.blocked.willHold')}
@@ -504,7 +485,6 @@ function ScheduledMessageItem({ message, canWrite, links, editing, draft, onEdit
   );
 }
 
-/** A message that can still go whose text the server could not give (the template of its routine is gone): it is said, not left as an empty space. */
 function isOpenWithoutText(message: ScheduledMessage): boolean {
   return isOpenStatus(message.status) && !message.text;
 }

@@ -9,10 +9,6 @@ import { BookingLinkDialog } from '../booking-link-dialog';
 
 vi.mock('qrcode', () => ({ default: { toDataURL: vi.fn(() => Promise.resolve('data:image/png;base64,QRCODE')) } }));
 
-/**
- * The link generator of the Vetrina (E27/F01/US02, NF-123): the agency picks what it wants in the link of a home and copies it. What the dialog holds is that the link
- * is on the address of the site the org really has, says where the guest comes from, and carries nothing of a person, whatever was typed.
- */
 const APP = 'https://app.example.test';
 const home = { id: '6f1c2b8e-3a4d-4e5f-8a9b-0c1d2e3f4a5b', name: 'Casa Mare', slug: 'casa-mare', maxGuests: 4 };
 const OWN_HOST = resolveBookingSite({
@@ -68,7 +64,6 @@ describe('BookingLinkDialog', () => {
     expect(link()).toBe(
       'https://www.agenzia.it/property/casa-mare?checkin=2026-12-01&checkout=2026-12-05&guests=3&lang=en&utm_source=agency-site&utm_medium=link&utm_campaign=estate-2026',
     );
-    // What the campaign will be called in the link is said before it is copied.
     expect(screen.getByText('Nel link sarà scritto: estate-2026')).toBeInTheDocument();
   });
 
@@ -176,7 +171,6 @@ describe('BookingLinkDialog', () => {
 
     expect(screen.getByRole('dialog', { name: "Link for your agency's website" })).toBeInTheDocument();
     expect(screen.getByTestId('booking-link-copy')).toHaveTextContent('Copy link');
-    // The language of the link is the one of the screen to begin with.
     expect(query().get('lang')).toBe('en');
   });
 });

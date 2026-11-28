@@ -19,12 +19,10 @@ export function isBillingContext(value: string | null | undefined): value is Bil
  */
 export const ACCOUNT_BILLING_PATH = '/app/account/billing';
 
-/** Plans and Stripe checkout of the org in the shell of `context`. */
 export function planPagePath(context: BillingContextKey): string {
   return `/app/${context}/settings/plan`;
 }
 
-/** Subscription, billing portal and billing profile of the org in the shell of `context`. */
 export function billingPagePath(context: BillingContextKey): string {
   return `/app/${context}/settings/billing`;
 }
@@ -44,7 +42,6 @@ export function toBillingReturnPath(pathname: string): string | undefined {
   return BILLING_RETURN_PATHS.has(path) ? path : undefined;
 }
 
-/** Context segment of an app path (`/app/<context>/...`), `undefined` outside the app. */
 function contextOfPath(pathname: string): string | undefined {
   const [, app, context] = pathname.split('/');
   return app === 'app' ? context : undefined;

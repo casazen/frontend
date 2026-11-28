@@ -23,10 +23,8 @@ import { isCfImportDraft, useCfDeliveredContract } from './lib/cf-import';
 import { LEASE_CONFIRMED_STATE, isLeaseConfirmed } from './lib/upload-link';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-/** Number of a practice of ConcordatoFacile: `P-` and 16 hexadecimal characters (the button «Carica i dati in CasaZen» sends it as `?practice=`). */
 const PRACTICE = /^P-[0-9A-Fa-f]{16}$/;
 
-/** The contracts of the person to choose from; with a practice in the link, the choice goes on to `?leaseId=…&practice=…`. */
 function ChooseLease({ practiceId }: { practiceId?: string }) {
   const { t } = useTranslation();
   const leases = useLeases();
@@ -57,20 +55,11 @@ function ChooseLease({ practiceId }: { practiceId?: string }) {
   </div>;
 }
 
-/**
- * The contract ConcordatoFacile delivered, once it is uploaded to the draft it was made for (CF-IMPORT): where the reading stands and
- * «Completa e importa il contratto». Nothing for any other lease, and nothing before a contract document is there.
- */
 function DeliveredContract({ lease, syncState }: { lease: LeaseDetail; syncState?: CfSyncState }) {
   const reading = useCfDeliveredContract(lease);
   return reading ? <CfImportPanel leaseId={lease.id} reading={reading} syncState={syncState} /> : null;
 }
 
-/**
- * What the documents did to a lease of the guided service (CF-DONE), told where they were uploaded: the contract read and imported as
- * signed (the receipt of the registration is the next file), or the registration declared and the procedure over. Nothing for a lease
- * that is still a draft (the panel above says where the reading stands) and for any other lease.
- */
 function ServiceOutcome({ lease }: { lease: LeaseDetail }) {
   const { t } = useTranslation();
   if (lease.isConcordatoFacileSource !== true) return null;
@@ -79,11 +68,6 @@ function ServiceOutcome({ lease }: { lease: LeaseDetail }) {
   return null;
 }
 
-/**
- * CF-FIX-FU4: a link from outside says which contract the documents are for (the practice of the e-mail, or the old link with only the
- * `leaseId`), and the person has not said it. Before anything can be uploaded, one explicit step: this contract, named by its house, or
- * another one. The confirmation stays in the history entry (a reload does not ask again).
- */
 function ConfirmLease({ lease, practiceId, onChooseOther }: { lease: LeaseDetail; practiceId?: string; onChooseOther: () => void }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -98,16 +82,9 @@ function ConfirmLease({ lease, practiceId, onChooseOther }: { lease: LeaseDetail
   </div>;
 }
 
-/**
- * The documents of a lease the person confirmed as the right one (CF-FIX-FU4). On a lease of the guided service (CF-DONE) an upload moves the
- * lease on without leaving the page: the server reads the file into the draft and, once the practice allows it, imports the contract and
- * declares the registration (`useCfCompletion`), and the page tells what became of the lease. It is only asked after the confirmation: a
- * link from outside decides nothing on its own.
- */
 function ConfirmedDocuments({ lease, practiceLine }: { lease: LeaseDetail; practiceLine?: string }) {
   const { t } = useTranslation();
   const completion = useCfCompletion(lease);
-  // On the draft ConcordatoFacile made, the contract uploaded is read and fills in the draft: the generic line («non modifica i dati del contratto») would be untrue.
   const instructions = isCfImportDraft(lease) ? t('cfDocuments.import.instructions') : t('cfDocuments.instructions');
   return <div className="space-y-6">
     <h2 className="text-lg font-semibold">{lease.property?.name ?? t('cfDocuments.house')}</h2>
@@ -121,10 +98,6 @@ function ConfirmedDocuments({ lease, practiceLine }: { lease: LeaseDetail; pract
   </div>;
 }
 
-/**
- * The documents of one lease. `practiceLine` says where the practice of the link stands in relation to it (when there is one);
- * `confirmed` is false for a contract the link decided (see `ConfirmLease`).
- */
 function LeaseDocuments({ leaseId, practiceId, practiceLine, confirmed }: { leaseId: string; practiceId?: string; practiceLine?: string; confirmed: boolean }) {
   const { t } = useTranslation();
   const [choosing, setChoosing] = useState(false);
@@ -165,7 +138,6 @@ function PracticeDocuments({ practiceId, confirmed }: { practiceId: string; conf
 export function LeaseDocumentsUploadPage() {
   const { t } = useTranslation();
   const [params] = useSearchParams();
-  // A link of the app (the sheet, the Documents tab, the list below) or a confirmation already given: the contract is the person's choice.
   const confirmed = isLeaseConfirmed(useLocation().state);
   const ids = params.getAll('leaseId');
   const leaseId = ids[0] ?? '';

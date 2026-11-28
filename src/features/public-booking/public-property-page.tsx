@@ -31,7 +31,6 @@ import { buildOrgBookingPath } from '@/lib/booking-url';
 import { useSeoMeta } from '@/lib/seo-meta';
 import type { PublicOrgDto, PublicPropertyDetailDto } from '@/types';
 
-// The amenity icons come with the page, not with the app. The gallery is not lazy: it is the first thing on the page.
 const AmenityGrid = lazy(() => import('@/features/public-site/components/AmenityGrid').then((m) => ({ default: m.AmenityGrid })));
 
 interface PublicBookingContext {
@@ -44,7 +43,6 @@ export function PublicPropertyPage() {
   const { org } = useOutletContext<PublicBookingContext>();
   const { data: property, isLoading, isError, error, refetch } = useOrgPublicProperty(orgSlug, propertySlugOrId);
   usePropertySeoMeta(org, property);
-  // The API answers 404 for a home that does not exist and for one that is not bookable online; any other failure is not that.
   const notFound = isError && isAxiosError(error) && error.response?.status === 404;
   useSeoMeta(notFound || (!isLoading && !isError && !property) ? { title: t('publicProperty.notFound.title'), noindex: true } : null);
 
@@ -70,11 +68,6 @@ export function PublicPropertyPage() {
   );
 }
 
-/**
- * The `view_item` of the agency's analytics (NF-149): once per home, on an agency's own domain and with the visitor's consent. It reads the stay itself, as the parts that
- * follow it do, so the page is not drawn again by a change of dates; it renders nothing. With dates in the address it waits for the quote of that stay, and then the total of the
- * server and the currency of the home go with the event; without dates there is nothing to wait for and the event says which home was seen.
- */
 function TrackPropertyView({ property }: { property: PublicPropertyDetailDto }) {
   const { quote } = useBooking();
   const ready = quote.status === 'ready' ? quote.quote : null;
@@ -100,16 +93,10 @@ interface PropertyPageBodyProps {
   hostLabel: string | null;
 }
 
-/**
- * The page of a home that loaded. It does not read the stay: the parts that follow it (the card, the bar, the calendar, the dates of
- * the cancellation) read it themselves, so a change of dates draws them and not the whole page, and the focus stays where it is.
- */
 function PropertyPageBody({ property, org, orgSlug, basePath, hostLabel }: PropertyPageBodyProps) {
   const { t } = useTranslation();
-  // The other homes of the site (the footer reads the same list): «Tutte le case» is offered only when there is more than one.
   const homes = useOrgProperties(orgSlug);
 
-  // Every block below exists only when the host gave it something to say: no empty headings, no invented content.
   const description = property.description?.trim() ?? '';
   const amenities = (property.amenities ?? []).filter((amenity) => amenity.trim() !== '');
   const hasRules = propertyHasRules(property);
@@ -148,13 +135,11 @@ function PropertyPageBody({ property, org, orgSlug, basePath, hostLabel }: Prope
     amenities.length > 0 ? { id: 'servizi', label: t('publicProperty.sections.amenities') } : null,
     hasPlan ? { id: 'planimetria', label: t('publicProperty.sections.plan') } : null,
     { id: 'disponibilita', label: t('publicProperty.sections.availability') },
-    // DB-12b: only a property with reviews has this section (and so its stop in the bar): no stars and no «0 recensioni» before the first.
     property.ratingSummary ? { id: 'recensioni', label: t('publicProperty.sections.reviews') } : null,
     hasZone ? { id: 'zona', label: t('publicProperty.sections.zone') } : null,
     hasRules ? { id: 'regole', label: t('publicProperty.sections.rules') } : null,
   ].filter((section): section is PropertySection => section !== null);
 
-  // A link is a place, not a search: the address to share has no dates and no guests in it.
   const shareUrl = property.canonicalUrl || `${window.location.origin}${window.location.pathname}`;
 
   return (

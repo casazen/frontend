@@ -45,7 +45,6 @@ describe('resolveBookingSite', () => {
   });
 
   it('resolveBookingSite_PathWithNoHost_IsReadAgainstTheAddressOfTheApp', () => {
-    // Where the public site is not configured (development, test) the API gives a path, not an address.
     const site = resolveBookingSite({ orgSlug: SLUG, publicUrls: { pathUrl: `/book/${SLUG}` }, appOrigin: 'http://localhost:5173' });
 
     expect(site).toEqual({ orgSlug: SLUG, baseUrl: `http://localhost:5173/book/${SLUG}`, ownHost: false });
@@ -58,7 +57,6 @@ describe('resolveBookingSite', () => {
   it.each([['/somewhere'], ['ftp://www.agenzia.it'], ['not an address'], ['']])(
     'resolveBookingSite_OwnHostThatIsNotAnAddressOfASite_IsNeverTheSite (%s)',
     (customDomainUrl) => {
-      // A host of its own is an address with a host: anything else would send the agency's guests to the address of the app, said to be the agency's.
       expect(siteOf({ pathUrl: PATH_URL, subdomainUrl: null, customDomainUrl })).toMatchObject({ baseUrl: PATH_URL, ownHost: false });
     },
   );
@@ -74,7 +72,6 @@ describe('the pages of the site', () => {
     const url = propertySiteUrl(siteOf(ALL_THREE), HOME);
 
     expect(url).toBe('https://www.agenzia.it/property/casa-mare');
-    // The same clean address the router shows on an own host (`host-site-window.ts`), so a link and a page never disagree.
     expect(new URL(url).pathname).toBe(toHostPath(buildPropertyBookingPath(SLUG, HOME), SLUG));
   });
 
@@ -111,7 +108,6 @@ describe('buildAgencyBookingLink', () => {
   });
 
   it('buildAgencyBookingLink_NothingChosen_StillSaysItComesFromTheAgencySite', () => {
-    // `utm_source=agency-site` is what makes the host read «Sito dell'agenzia»: it is in every link.
     expect(buildAgencyBookingLink(site, HOME)).toBe('https://www.agenzia.it/property/casa-mare?utm_source=agency-site&utm_medium=link');
     expect(buildAgencyBookingLink(site, HOME, { campaign: '   ' })).toBe('https://www.agenzia.it/property/casa-mare?utm_source=agency-site&utm_medium=link');
   });
@@ -153,7 +149,6 @@ describe('buildAgencyBookingLink', () => {
     for (const campaign of typed) {
       const query = queryOf(buildAgencyBookingLink(site, HOME, { campaign }));
       expect(query.has('utm_campaign'), campaign).toBe(false);
-      // The source and the medium do not depend on what was typed.
       expect(query.get('utm_source')).toBe('agency-site');
       expect(query.get('utm_medium')).toBe('link');
     }
@@ -178,7 +173,6 @@ describe('campaignLabelToken', () => {
   });
 
   it('campaignLabelToken_AddressOfEmail_IsEmptyWhateverIsAroundIt', () => {
-    // In the token the `@` would already be a dash, and the address would pass as a name: it is looked for in what was typed.
     expect(campaignLabelToken('mario.rossi@example.com')).toBe('');
     expect(campaignLabelToken('@estate')).toBe('');
   });
@@ -187,7 +181,6 @@ describe('campaignLabelToken', () => {
     for (const label of ['3331234567', '333-123-4567', '333.123.4567', '+39 333 123 4567', 'RSSMRA80A01H501U', 'rssmra80a01h501u', 'RSS-MRA-80A01-H501U', 'RSSMRA80A01H50LU']) {
       expect(campaignLabelToken(label), label).toBe('');
     }
-    // A year, a number of a flyer or a short code is not a phone number.
     expect(campaignLabelToken('volantino 2026')).toBe('volantino-2026');
     expect(campaignLabelToken('flyer 12345678')).toBe('flyer-12345678');
   });
@@ -268,7 +261,6 @@ describe('carryLinkAttribution', () => {
       address('utm_source=agency-site&utm_term=casa&utm_content=banner&lang=en&step=2&utm_campaign=mario.rossi%40example.com&utm_medium=Link'),
     );
 
-    // The term, the content, the language and the step of the address stay where they are; an address of e-mail is not a campaign; the hash is kept.
     expect(href).toBe('/checkout?guests=2&utm_source=agency-site&utm_medium=link#prezzi');
   });
 
@@ -288,7 +280,6 @@ describe('bookingAttributionOf', () => {
       false,
     );
 
-    // The host of the page the guest came from, never the page, its path or its query; the link that says where the guest comes from is what carries it.
     expect(attribution).toEqual({ source: 'agency-site', medium: 'link', campaign: 'estate-2026', referrer: 'www.agenzia.it' });
   });
 
@@ -305,20 +296,17 @@ describe('bookingAttributionOf', () => {
   });
 
   it('bookingAttributionOf_VisitorWhoDoesNotAllowStatisticsAndFollowsNoLink_SendsNoReferrer', () => {
-    // The site a visitor came from is kept only with the consent to statistics (DB-02b): a search engine or a social network is not sent without it.
     expect(bookingAttributionOf(new URLSearchParams('checkin=2026-12-01&guests=2'), 'https://www.google.com/search?q=casa+mare', APP_ORIGIN, false)).toBeUndefined();
     expect(bookingAttributionOf(new URLSearchParams('utm_term=casa&utm_content=banner'), 'https://l.facebook.com/l.php?u=x', APP_ORIGIN, false)).toBeUndefined();
   });
 
   it('bookingAttributionOf_LinkWithAValueTheBookingDoesNotKeep_DoesNotCarryTheReferrerWithoutTheConsent', () => {
-    // Only a value the booking keeps says where the guest comes from: a source that is not a token is dropped, and the referrer with it.
     expect(bookingAttributionOf(new URLSearchParams('utm_source=agency%20site'), 'https://www.google.com/', APP_ORIGIN, false)).toBeUndefined();
   });
 
   it.each([['http://192.168.1.5/page?x=1'], ['http://10.0.0.7/'], ['http://mario-pc/inbox'], ['http://localhost:3000/'], ['http://[::1]/']])(
     'bookingAttributionOf_ReferrerThatIsNotAHostOfTheInternet_IsNeverSent (%s)',
     (referrer) => {
-      // A machine of a private network may be named after a person: the API keeps no such host (it needs a dot and no IP address), so it is not even sent, consent or not.
       expect(bookingAttributionOf(new URLSearchParams(''), referrer, APP_ORIGIN, true)).toBeUndefined();
       expect(bookingAttributionOf(new URLSearchParams('utm_source=agency-site'), referrer, APP_ORIGIN, true)).toEqual({ source: 'agency-site' });
     },

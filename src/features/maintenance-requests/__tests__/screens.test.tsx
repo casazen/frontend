@@ -92,7 +92,6 @@ describe('tenant maintenance wizard', () => {
     fireEvent.change(await screen.findByTestId('maintenance-what'), { target: { value: 'Rubinetto del bagno' } });
     fireEvent.click(screen.getByTestId('maintenance-next'));
 
-    // The values sent do not change (Normal, High, Emergency): only the words are the ones of the other screens.
     expect(screen.getByRole('radio', { name: /Normale/ })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Alta/ })).toBeInTheDocument();
     expect(screen.queryByRole('radio', { name: /Bassa/ })).not.toBeInTheDocument();

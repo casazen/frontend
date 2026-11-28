@@ -14,7 +14,6 @@ const VARIANTS: Record<FilingLabel, NonNullable<BadgeProps['variant']>> = {
 };
 
 interface FilingStatusProps {
-  /** The tax file; `null` for obligations that are only calculated (no file yet). */
   file: FilingEvidence | null;
 }
 

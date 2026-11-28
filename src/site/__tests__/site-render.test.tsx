@@ -29,7 +29,6 @@ describe('public site render (SEO-VETRINA)', () => {
     for (const lng of ['it', 'en'] as const) {
       const html = render(page, LEGAL, lng);
       expect(html.match(/<h1[\s>]/g), `${page} ${lng}`).toHaveLength(1);
-      // i18next returns the key when a text is missing.
       expect(html, `${page} ${lng}`).not.toMatch(/site\.[a-z]+\.[A-Za-z]/);
     }
   });
@@ -50,10 +49,8 @@ describe('public site render (SEO-VETRINA)', () => {
   it('render_home_offersTheSearchOfHomesAsANativeFormAndLinksItInHeaderAndFooter', () => {
     for (const lng of ['it', 'en'] as const) {
       const html = render('home', LEGAL, lng);
-      // A form of the browser, with no script needed: GET /search with the fields the search of the app reads.
       expect(html, lng).toMatch(/<form[^>]*action="\/search"[^>]*method="get"|<form[^>]*method="get"[^>]*action="\/search"/);
       for (const name of ['where', 'checkin', 'checkout', 'guests']) expect(html, `${lng} ${name}`).toContain(`name="${name}"`);
-      // The link of the header and the one of the footer (the form goes there with `action`, not `href`).
       expect(html.match(/href="\/search"/g), lng).toHaveLength(2);
     }
   });
@@ -77,7 +74,6 @@ describe('public site render (SEO-VETRINA)', () => {
       ['en', 'Short-term rentals in Como', 'Tourist tax in Como'],
     ] as const) {
       const html = render('home', LEGAL, lng);
-      // Plain links with the words of the search, one click from the home page.
       expect(html, lng).toContain(`<a href="/p/affitti-brevi/lombardia/como"`);
       expect(html, lng).toContain(guide);
       expect(html, lng).toContain('AI Agents');
@@ -90,13 +86,11 @@ describe('public site render (SEO-VETRINA)', () => {
   it('seoFeaturedPages_arePathsOfTheHubOfTheGuidesAndOfTheTaxPages', () => {
     for (const page of SEO_FEATURED_GUIDES) expect(page.path).toMatch(/^\/p\/affitti-brevi\/[a-z-]+\/[a-z-]+$/);
     for (const page of SEO_FEATURED_TAX_PAGES) expect(page.path).toMatch(/^\/p\/tassa-soggiorno\/[a-z-]+$/);
-    // One link per page: a repeated path would be a list that lies about its size.
     const paths = [...SEO_FEATURED_GUIDES, ...SEO_FEATURED_TAX_PAGES].map((page) => page.path);
     expect(new Set(paths).size).toBe(paths.length);
   });
 
   it.each(SITE_PAGES.map((page) => page.id))('render_%s_onTheProductionSiteHasNoWayInToTheApp', (page) => {
-    // Production: the app is reached by its address only (product owner, 2026-10-16); the invitation request stays.
     for (const lng of ['it', 'en'] as const) {
       const html = render(page, LEGAL, lng, false);
       expect(html, `${page} ${lng}`).not.toContain('href="/login"');
@@ -105,7 +99,6 @@ describe('public site render (SEO-VETRINA)', () => {
   });
 
   it.each(SITE_PAGES.map((page) => page.id))('render_%s_hasNoSignupNoRegistrationAndNoPrices', (page) => {
-    // CasaZen is on private invitation, with no prices or plans defined yet (product owner, 2026-10-13).
     for (const lng of ['it', 'en'] as const) {
       const html = render(page, LEGAL, lng);
       expect(html, `${page} ${lng}`).not.toMatch(/href="\/(signup|register)/);
@@ -155,14 +148,11 @@ describe('public site render (SEO-VETRINA)', () => {
   });
 
   it.each(SITE_PAGES.map((page) => page.id))('hydrate_%s_matchesTheStaticHtml', async (page) => {
-    // The browser starts on the prerendered HTML: any difference would be a hydration error.
     const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
     const container = document.createElement('div');
     container.innerHTML = render(page);
     document.body.appendChild(container);
 
-    // `act` needs the environment to say it supports it, or React logs it as an error as soon as something re-renders inside it: the
-    // search of the home reads today's date after hydration (useSyncExternalStore), which is exactly such a re-render.
     const actEnvironment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
     const previousActEnvironment = actEnvironment.IS_REACT_ACT_ENVIRONMENT;
     actEnvironment.IS_REACT_ACT_ENVIRONMENT = true;

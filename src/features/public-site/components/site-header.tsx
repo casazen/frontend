@@ -12,7 +12,6 @@ import { LanguageSwitch } from './language-switch';
 import { SiteNav } from './site-nav';
 import { useSiteNavItems, type SiteNavItem } from './use-site-nav-items';
 
-/** The booking widget of the page (desktop) or the button that opens it (phone): where "Verifica disponibilità" leads. */
 function scrollToBookingWidget() {
   const widget = document.getElementById('booking-widget');
   if (widget) {
@@ -28,30 +27,19 @@ function scrollToBookingWidget() {
 }
 
 interface SiteHeaderProps {
-  /** The org whose site this is. Undefined while it loads, and when the site does not exist or could not be read. */
   org?: PublicOrgDto;
   loading?: boolean;
-  /** `/book/{slug}`: the address of the landing page of the site (the router of an own host shows it clean). */
   basePath: string;
-  /** The "Verifica disponibilità" call to action: only where there is something to check (landing, property page). */
   showBookingCta: boolean;
-  /** The theme, the font pair and the color of the host, for the sheet of the phone menu, which is drawn outside the themed root. */
   themeId: string;
-  /** The font pair the host chose; null or left out = the font of the theme. */
   fontId?: string | null;
   colorStyle?: CSSProperties;
 }
 
-/**
- * Header of an org's booking site, in the theme of the host. It sticks to the top (the page makes room for it: the scroll
- * padding of the window is `--header-height`), reads on any theme (the surface of the theme, the text on it) and has one
- * way to act: the call to action where there is something to check, and "Le mie prenotazioni", a desktop link or an item in the compact menu.
- */
 export function SiteHeader({ org, loading = false, basePath, showBookingCta, themeId, fontId, colorStyle }: SiteHeaderProps) {
   const { t } = useTranslation();
   // One of the two exists at a time, so that the link to "Le mie prenotazioni" is in the page once.
   const fromDesktop = useMediaQuery(FROM_DESKTOP_QUERY);
-  // The menu of a site with several homes (DB-07b): the results and the sections of the home.
   const navItems = useSiteNavItems(org?.slug, basePath);
 
   return (
@@ -75,9 +63,7 @@ export function SiteHeader({ org, loading = false, basePath, showBookingCta, the
                 {t('publicSite.mobileBookingCta')}
               </Button>
             ) : null}
-            {/* Below the desktop breakpoint the language switch is in the same menu as the navigation links. */}
             <LanguageSwitch className="hidden lg:inline-flex" />
-            {/* The homes the guest saved with the heart (DB-02b): only on a site with several homes. */}
             {org.slug ? <FavoritesMenu site={org.slug} /> : null}
             {fromDesktop ? (
               <Link
@@ -105,7 +91,6 @@ export function SiteHeader({ org, loading = false, basePath, showBookingCta, the
   );
 }
 
-/** The name of the host: its logo, or its initial and its name. Without a host to name, CasaZen, which answers. */
 function SiteBrand({ org, loading, basePath }: { org?: PublicOrgDto; loading: boolean; basePath: string }) {
   const { t } = useTranslation();
 
@@ -131,7 +116,6 @@ function SiteBrand({ org, loading, basePath }: { org?: PublicOrgDto; loading: bo
       ) : (
         <>
           {initial ? (
-            // The color of the host with the text that its theme puts on it (an AA pair for any color a host picks, BK-13).
             <span
               aria-hidden
               className="public-display grid h-9 w-9 shrink-0 place-items-center rounded-[var(--cz-public-radius)] bg-[var(--cz-public-primary)] text-base text-[var(--cz-public-on-primary)]"
@@ -146,10 +130,6 @@ function SiteBrand({ org, loading, basePath }: { org?: PublicOrgDto; loading: bo
   );
 }
 
-/**
- * The menu of a phone: a sheet from the bottom with the way to "Le mie prenotazioni". It is drawn in a portal, outside
- * the themed root of the site, so it carries the theme and the color of the host itself.
- */
 function PhoneMenu({
   displayName,
   basePath,

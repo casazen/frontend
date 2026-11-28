@@ -22,7 +22,6 @@ import type { OnboardingPartKey } from '@/types/onboarding.types';
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
 interface WizardNextStepProps {
-  /** The part of the plan whose wizard has just ended: the step that holds it is not suggested again. */
   currentPart: OnboardingPartKey;
 }
 
@@ -43,13 +42,11 @@ export function WizardNextStep({ currentPart }: WizardNextStepProps) {
   const pathQuery = useOnboardingPath({ enabled });
   const steps = useMemo(() => knownPathSteps(pathQuery.data), [pathQuery.data]);
   const suggested = enabled && isPathIncomplete(steps) ? stepAfterPart(steps, currentPart) : null;
-  // The plan says which part of the step is still to do, and whether it can be put off: without it the card would guess.
   const plan = useOnboardingPlan({ enabled: suggested !== null });
   const defer = useDeferNextStep();
   const doneRef = useRef<HTMLParagraphElement>(null);
   const putOff = defer.isSuccess;
 
-  // The button that was pressed leaves with the card: the confirmation takes the focus, so the keyboard does not start again from the top.
   useEffect(() => {
     if (putOff) doneRef.current?.focus();
   }, [putOff]);
@@ -84,7 +81,6 @@ export function WizardNextStep({ currentPart }: WizardNextStepProps) {
       className="relative min-w-0 overflow-hidden rounded-lg border bg-card p-4 pl-5 text-left shadow-sm"
       data-testid="wizard-next-step"
     >
-      {/* The next stop of the road, not a notice: the accent is on the edge of a plain card (as `NextStepCard`). */}
       <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-primary" />
       <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{t('onboardingPlan.nextStep.kicker')}</p>
       <h3 id={titleId} className="mt-1 break-words text-base font-semibold">

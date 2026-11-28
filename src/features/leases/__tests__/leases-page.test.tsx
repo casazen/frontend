@@ -6,8 +6,6 @@ import axios from '@/lib/axios';
 import { LeasesPage } from '../leases-page';
 import { buildSummary, HTML_FALLBACK, httpError, renderAt } from './lease-test-utils';
 
-// The real leasesApi and ApiClient run: only the HTTP layer is replaced.
-// The first-steps guide has its own tests and reads other endpoints.
 vi.mock('@/features/onboarding/components/long-rent-guide', () => ({ LongRentGuide: () => null }));
 vi.mock('@/hooks/use-list-views-scope', () => ({ useListViewsScope: () => ({ userId: 'auth0|tester', context: 'long-rent' }) }));
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
@@ -18,7 +16,6 @@ function renderPage() {
   return renderAt('/app/long-rent/leases', '/app/long-rent/leases', createElement(LeasesPage));
 }
 
-/** The table of the page, once it is there (the cards of a phone are in the page too: a media query shows one of the two). */
 const findTable = (name = 'Contratti') => screen.findByRole('table', { name });
 
 describe('LeasesPage', () => {
@@ -49,16 +46,13 @@ describe('LeasesPage', () => {
     const table = within(await findTable());
     expect(table.getByRole('rowheader', { name: /Giulia Verdi/ })).toBeInTheDocument();
     expect(table.getByText(/Casa Trastevere/)).toBeInTheDocument();
-    // Every real status has a label: never the raw key "leases.statusLabel.SentToProvider" (A7-15).
     expect(table.getByText('Inviato al provider')).toBeInTheDocument();
     expect(table.getAllByText(/950,00\s€\/mese/)).toHaveLength(2);
     expect(table.getByText(/In ritardo da 6 giorni/)).toBeInTheDocument();
-    // A lease with no tenant yet and no property that can be read says so, never an id.
     expect(table.getByText('Conduttore da indicare')).toBeInTheDocument();
     expect(table.getByText('Immobile non disponibile')).toBeInTheDocument();
     expect(table.getByText('Firmato parzialmente')).toBeInTheDocument();
     expect(screen.queryByText(/leases\.statusLabel/)).not.toBeInTheDocument();
-    // The plain list asks for no view and no search: it is the same request the guide makes.
     expect(get).toHaveBeenCalledWith('/leases', expect.objectContaining({ params: undefined }));
   });
 
@@ -97,8 +91,6 @@ describe('LeasesPage', () => {
   });
 
   it('render_HtmlFallbackBody_ShowsLoadErrorInsteadOfCrashing', async () => {
-    // Regression: `/api/leases` answered by the SPA index.html crashed the page with
-    // "items.map is not a function" (E2E L2 Vetrina AC12 redirected here).
     get.mockResolvedValue({ data: HTML_FALLBACK });
 
     renderPage();

@@ -53,7 +53,6 @@ import { isAxiosError } from 'axios';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 
 const SERVICE_REQUESTS_KEY = 'service-requests';
-/** What the dashboard reads about the work (the KPIs of every period, the three numbers of the home): a supplier transition changes it (SU-11). */
 const SUPPLIER_DASHBOARD_KEY = ['supplier', 'dashboard'];
 
 /** 422 code of a supplier action refused because the supplier is suspended or not active (SU-12). */
@@ -62,10 +61,6 @@ const SUPPLIER_NOT_ACTIVE_CODE = 'service_request_supplier_not_active';
 /** 422 code of a reminder for the payment refused because one went out less than a day ago (SP-15a): a rule, not a failure. */
 const PAYMENT_REQUEST_TOO_SOON_CODE = 'service_payment_request_too_soon';
 
-/**
- * Toast of a failed supplier action. When the API says the supplier is not active (an admin suspended it while the page
- * was open) the supplier profile is reloaded, so the console shows the suspension banner and disables the actions.
- */
 function onSupplierActionError(queryClient: QueryClient, error: unknown) {
   if (isAxiosError(error) && getProblemCode(error.response?.data) === SUPPLIER_NOT_ACTIVE_CODE) {
     void queryClient.invalidateQueries({ queryKey: ['supplier', 'profile'] });
@@ -73,15 +68,6 @@ function onSupplierActionError(queryClient: QueryClient, error: unknown) {
   toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed'));
 }
 
-/**
- * Short-rent requests (D2): `bookingId` for one stay, `propertyId` for a property, `listAll` for every request in
- * scope. Nothing is fetched without one of them.
- */
-/**
- * Stay or property short-rent requests. Read again when the page opens: the host creates them in the
- * intervention wizard (another screen) and the shared client keeps `refetchOnMount: false`, so without
- * this the stay card would keep an empty list after the wizard returns (GJ L3 pay-at-property).
- */
 export function useServiceRequests(params?: {
   propertyId?: string;
   bookingId?: string;
@@ -98,7 +84,6 @@ export function useServiceRequests(params?: {
   });
 }
 
-/** Long-rent requests (D2) of a property, or of every property in scope without `propertyId`. */
 export function useLongRentServiceRequests(propertyId?: string) {
   return useQuery({
     queryKey: [SERVICE_REQUESTS_KEY, 'long-rent', propertyId ?? null],
@@ -106,14 +91,8 @@ export function useLongRentServiceRequests(propertyId?: string) {
   });
 }
 
-/** How often a request waiting for the payment to be confirmed is read again, in milliseconds. */
 const PAYMENT_POLL_MS = 4000;
 
-/**
- * Every long-rent request in scope (LR-08b): the open ones, the closed ones or all, newest first. The list searches and sorts
- * them itself, so it has them all. Read again when the page opens: the requests change on other screens and the query client does
- * not read a list again on mount by itself.
- */
 export function useAllLongRentServiceRequests(view?: ServiceRequestHostView) {
   return useQuery({
     queryKey: [SERVICE_REQUESTS_KEY, 'long-rent', 'all', view ?? 'all'],
@@ -122,10 +101,6 @@ export function useAllLongRentServiceRequests(view?: ServiceRequestHostView) {
   });
 }
 
-/**
- * One long-rent request (LR-08b). `poll`: read again every few seconds until it is paid, for a payment sent to Stripe that Stripe
- * confirms to the backend a little later.
- */
 export function useLongRentServiceRequest(id: string, options: { poll?: boolean } = {}) {
   return useQuery({
     queryKey: [SERVICE_REQUESTS_KEY, 'long-rent', 'detail', id],
@@ -136,11 +111,6 @@ export function useLongRentServiceRequest(id: string, options: { poll?: boolean 
   });
 }
 
-/**
- * A step the landlord takes on one request (remind, answer a proposed time, confirm the final amount, cancel). The answer is the
- * request as it is now: the page shows it at once and the lists read it again. When the step is refused (the supplier answered
- * meanwhile, another tab acted) the request is read again and the reason is said.
- */
 function useLongRentHostAction<Variables>({ run, doneKey }: { run: (variables: Variables) => Promise<ServiceRequest>; doneKey: string }) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -157,7 +127,6 @@ function useLongRentHostAction<Variables>({ run, doneKey }: { run: (variables: V
   });
 }
 
-/** The landlord cancels a long-rent request, with the reason the supplier is told. */
 export function useCancelLongRentServiceRequest() {
   return useLongRentHostAction({
     run: ({ id, reason }: { id: string; reason: string }) => cancelLongRentServiceRequest(id, reason),
@@ -165,7 +134,6 @@ export function useCancelLongRentServiceRequest() {
   });
 }
 
-/** The landlord reminds the supplier to answer: an e-mail to the supplier, only when this is called. */
 export function useRemindLongRentServiceRequest() {
   return useLongRentHostAction({ run: (id: string) => remindLongRentServiceRequest(id), doneKey: 'longRentRequests.toast.reminded' });
 }
@@ -182,7 +150,6 @@ export function useConfirmLongRentFinalAmount() {
   return useLongRentHostAction({ run: (id: string) => confirmLongRentFinalAmount(id), doneKey: 'longRentRequests.toast.amountConfirmed' });
 }
 
-/** The session to pay a request inside CasaZen: asked when the landlord presses «Paga» and used at once by the Payment Element. */
 export function useCreateLongRentPaymentSession() {
   return useMutation({
     mutationFn: (id: string) => createLongRentPaymentSession(id),
@@ -190,17 +157,9 @@ export function useCreateLongRentPaymentSession() {
   });
 }
 
-// ─── The host's interventions (SR-08a): the list with its chips, one request, and what the host does on it ───
-
-/** 422 code of a reminder asked before the interval has passed; the request is read again and says from when (`hostAction.remindAvailableAt`). */
 const REMIND_TOO_SOON_CODE = 'service_request_remind_too_soon';
-/** 409 code of an action on a request that changed meanwhile (the supplier answered, another tab acted): the xmin of the request. */
 const STATE_CHANGED_CODE = 'service_request_state_changed';
 
-/**
- * The host's list of interventions for the state of the list (chip, filters, order, page), which the server answers. The rows that were
- * there stay, a little dimmed, while the next ones come. Read again when the page opens: the requests change on other screens.
- */
 export function useInterventions(params: InterventionListParams, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [SERVICE_REQUESTS_KEY, 'host', 'list', params],
@@ -211,7 +170,6 @@ export function useInterventions(params: InterventionListParams, options: { enab
   });
 }
 
-/** The numbers on the chips: the same filters, whatever the chip. They follow the list (any action invalidates both). */
 export function useInterventionCounts(params: InterventionFilterParams, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [SERVICE_REQUESTS_KEY, 'host', 'counts', params],
@@ -236,10 +194,6 @@ export function useLatestInterventions() {
   });
 }
 
-/**
- * One request as its host reads it (drawer and page). `poll`: read again every few seconds until it is paid, for a payment sent to Stripe
- * that Stripe confirms to the backend a little later.
- */
 export function useIntervention(id: string, options: { poll?: boolean } = {}) {
   return useQuery({
     queryKey: [SERVICE_REQUESTS_KEY, 'host', 'detail', id],
@@ -250,10 +204,6 @@ export function useIntervention(id: string, options: { poll?: boolean } = {}) {
   });
 }
 
-/**
- * A photo of the work, as an address an image can show (`data:`). Its key is not under the one of the requests: a step on a request
- * reads the request again, not its photos, which do not change.
- */
 export function useWorkPhoto(url: string) {
   return useQuery({
     queryKey: ['service-request-photo', url],
@@ -263,11 +213,6 @@ export function useWorkPhoto(url: string) {
   });
 }
 
-/**
- * A step the host takes on one request (remind, answer a proposed time, confirm the final amount, cancel). The answer is the request as it
- * is now: the drawer and the page show it at once and the lists read it again. A step that is refused (the supplier answered meanwhile,
- * another tab acted: 409) says so in the words of the page and reads the request again, so the person sees the state as it is.
- */
 function useInterventionAction<Variables>({ run, doneKey }: { run: (variables: Variables) => Promise<ServiceRequest>; doneKey: string }) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -284,7 +229,6 @@ function useInterventionAction<Variables>({ run, doneKey }: { run: (variables: V
         toast.error(i18n.t('interventions.errors.stateChanged'));
         return;
       }
-      // A reminder that came too soon: the server says how often it can be done, and the row shows from when.
       toast.error(
         getProblemMessage(error, i18n.t) ?? i18n.t(code === REMIND_TOO_SOON_CODE ? 'interventions.errors.remindTooSoon' : 'serviceRequest.actionFailed'),
       );
@@ -292,7 +236,6 @@ function useInterventionAction<Variables>({ run, doneKey }: { run: (variables: V
   });
 }
 
-/** The host cancels a request up to the work in progress, with the reason the supplier reads. Always free. */
 export function useCancelIntervention() {
   return useInterventionAction({
     run: ({ id, reason }: { id: string; reason: string }) => cancelServiceRequest(id, reason),
@@ -300,7 +243,6 @@ export function useCancelIntervention() {
   });
 }
 
-/** The host reminds the supplier to answer: an e-mail to the supplier, only when this is called. */
 export function useRemindIntervention() {
   return useInterventionAction({ run: (id: string) => remindServiceRequest(id), doneKey: 'interventions.toast.reminded' });
 }
@@ -317,12 +259,10 @@ export function useConfirmInterventionAmount() {
   return useInterventionAction({ run: (id: string) => confirmServiceRequestFinalAmount(id), doneKey: 'interventions.toast.amountConfirmed' });
 }
 
-/** The host marks a finished request paid (outside CasaZen): irreversible, so the page asks first; the answer is the request as it is. */
 export function useMarkInterventionPaid() {
   return useInterventionAction({ run: (id: string) => markServiceRequestPaid(id), doneKey: 'serviceRequest.markedPaid' });
 }
 
-/** The session to pay a request inside CasaZen: asked when the host presses «Paga» and used at once by the Payment Element. */
 export function useCreateInterventionPaymentSession() {
   return useMutation({
     mutationFn: (id: string) => createServiceRequestPaymentSession(id),
@@ -330,7 +270,6 @@ export function useCreateInterventionPaymentSession() {
   });
 }
 
-/** Active suppliers for a property, searched in the long-rent context. */
 export function useLongRentSuppliers(propertyId?: string, category?: string) {
   return useQuery({
     queryKey: ['suppliers', 'long-rent', propertyId, category],
@@ -339,10 +278,6 @@ export function useLongRentSuppliers(propertyId?: string, category?: string) {
   });
 }
 
-/**
- * `fresh`: the list is read again every time a screen asks for it, also when it was read a moment ago and also when the query is switched on after the screen is there (the cleaner of a property
- * asks for it only once the person starts to choose): a supplier is suspended or covers another comune, and a picker must not offer what was true minutes ago.
- */
 export function useSuppliersByProperty(propertyId?: string, category?: string, options: { fresh?: boolean } = {}) {
   return useQuery({
     queryKey: ['suppliers', 'property', propertyId, category],
@@ -418,7 +353,6 @@ export function useCreateIntervention() {
   });
 }
 
-/** Long-rent request for a property (D2). */
 export function useCreateLongRentServiceRequest() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -445,10 +379,6 @@ export function useTakeServiceRequest() {
   });
 }
 
-/**
- * A backup supplier says it would take the job if the primary supplier does not (SP-BKP): the request stays new and holds nothing of the
- * agenda. If the group closed meanwhile (the primary took the job) the server says so (409) and the lists are read again.
- */
 export function useAcceptServiceRequestAsBackup() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -489,7 +419,6 @@ export function useRejectServiceRequest() {
   });
 }
 
-/** The supplier cancels a job it took (before it starts), with the reason the other party sees. */
 export function useCancelServiceRequest() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -504,17 +433,12 @@ export function useCancelServiceRequest() {
   });
 }
 
-/** What a step of the supplier on a request reads again: the request and its lists, the home, the numbers. */
 function refreshSupplierRequests(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
   void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
   void queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
 }
 
-/**
- * The supplier answers a new request with a quote (SP-04b), or replaces the one that waits. Nothing goes to the customer before this
- * is called: the host or the customer of the showcase is told by the server when the quote is saved.
- */
 export function useSendServiceRequestQuote() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -527,7 +451,6 @@ export function useSendServiceRequestQuote() {
   });
 }
 
-/** The supplier takes its quote back: the request is «da rispondere» again and nobody is told. */
 export function useWithdrawServiceRequestQuote() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -540,10 +463,6 @@ export function useWithdrawServiceRequestQuote() {
   });
 }
 
-/**
- * The supplier asks the payer for the payment of a completed job, or reminds them (SP-15a, behind `SupplierOnlinePayments`): one e-mail
- * with a new link, and only when this is called. «Once a day» is told as a notice, not as a failure.
- */
 export function useRequestServiceRequestPayment() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -553,7 +472,6 @@ export function useRequestServiceRequestPayment() {
       toast.success(i18n.t('supplier.requests.payment.remindedToast'));
     },
     onError: (error) => {
-      // The payment may have moved meanwhile (paid from another tab, a reminder already sent): the panel shows it as it is now.
       void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
       if (isAxiosError(error) && getProblemCode(error.response?.data) === PAYMENT_REQUEST_TOO_SOON_CODE) {
         toast.info(getProblemMessage(error, i18n.t) ?? i18n.t('supplier.requests.payment.tooSoon'));
@@ -564,10 +482,6 @@ export function useRequestServiceRequestPayment() {
   });
 }
 
-/**
- * The supplier records that the job was paid outside CasaZen (SP-15a, not behind the flag): the request becomes paid, with no commission,
- * and the host is told. A request paid inside CasaZen needs the reason, which the server checks too.
- */
 export function useRecordOfflineServiceRequestPayment() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -592,7 +506,6 @@ export function useMarkServiceRequestPaid() {
       toast.success(i18n.t('serviceRequest.markedPaid'));
     },
     onError: (error) => {
-      // A 409/422 means the request changed meanwhile (already paid from another tab): show it as it is now.
       void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed'));
     },
@@ -608,7 +521,6 @@ export function useMarkLongRentServiceRequestPaid() {
       toast.success(i18n.t('serviceRequest.markedPaid'));
     },
     onError: (error) => {
-      // A 409/422 means the request changed meanwhile (already paid from another tab): show it as it is now.
       void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed'));
     },

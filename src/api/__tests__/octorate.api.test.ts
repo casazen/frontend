@@ -46,7 +46,6 @@ describe('octorateApi (E02/F01 endpoints of api/octorate)', () => {
     const result = await octorateApi.completeConnect('the-code', 'the-state');
 
     expect(ApiClient.post).toHaveBeenCalledWith('/octorate/connect/complete', { code: 'the-code', state: 'the-state' });
-    // Single-use secrets: not in the URL, where a log or a history would keep them.
     const [url] = vi.mocked(ApiClient.post).mock.calls[0];
     expect(url).not.toContain('the-code');
     expect(url).not.toContain('the-state');

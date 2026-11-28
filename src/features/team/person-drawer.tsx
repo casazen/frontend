@@ -23,16 +23,10 @@ import { orgRoleDescription } from './team-labels';
 import { personPreviewPath } from './team-paths';
 import { dayOf } from './team-dates';
 
-/** What the address calls the drawer of a person of the page: `?detail=org-person:<key of the row>`. */
 export const PERSON_DRAWER_KIND = 'org-person';
 
-/**
- * The person of the drawer, read from the list of the people: the same queries as the page, so there is no second request, and what
- * changes in one changes in both.
- */
 function useRowOfTheList(key: string) {
   const { rows, isLoading, isError, error, refetch } = usePeopleRows();
-  // The one who looks is the row that is itself: the owner or an administrator, which decides what it may do to the others.
   const callerRole = rows?.find((candidate) => candidate.isMe && candidate.kind === 'member')?.role ?? null;
   return { row: rows?.find((candidate) => candidate.key === key), callerRole, isLoading, isError, error, refetch };
 }
@@ -42,11 +36,9 @@ export function PersonDrawerTitle({ id }: DetailTitleProps) {
   return <>{row?.name ?? ''}</>;
 }
 
-/** Which properties the person reaches: all of them, or the ones it was given (named when the member's own list can be read). */
 function PropertiesValue({ row }: { row: PersonRow }) {
   const { t } = useTranslation();
   const someOfThem = row.propertyScope === 'Selected';
-  // Only a member with «Solo alcuni» has a list of its own to read; an invitation carries the ids, not the names.
   const own = useOrgMemberProperties(row.id, row.kind === 'member' && someOfThem);
 
   if (!someOfThem) return <>{t('team.drawer.allProperties')}</>;
@@ -60,7 +52,6 @@ function PropertiesValue({ row }: { row: PersonRow }) {
   return <>{granted.length > 0 ? granted.join(', ') : t('team.drawer.noProperties')}</>;
 }
 
-/** «Cosa vede»: the matrix of the roles tells what the role does, the areas of the person tell where. */
 function PreviewBody({ row }: { row: PersonRow }) {
   const { t } = useTranslation();
   const roles = useOrgRoles();
@@ -191,8 +182,6 @@ export function PersonDrawerContent({ id, close }: DetailContentProps) {
   return <PersonDetails row={row} callerRole={callerRole} close={close} />;
 }
 
-// Registered when this module is loaded, which the list of the people does (it imports this file): the drawer opens from the list and
-// from a shared address (`?detail=org-person:<key>`) on that page.
 registerDetail(PERSON_DRAWER_KIND, {
   title: PersonDrawerTitle,
   Content: PersonDrawerContent,

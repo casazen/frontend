@@ -10,7 +10,6 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
 import { settingsSectionId } from './settings-sections';
 
-/** The day in the name of the file (`2026-10-29`), in the time of the person who downloads. */
 function dayStamp(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');

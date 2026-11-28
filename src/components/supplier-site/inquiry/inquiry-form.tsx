@@ -21,7 +21,6 @@ import { useInquiryDraft } from './use-inquiry-draft';
 
 type Notice = InquiryFailure | { kind: 'unavailable' } | { kind: 'preview' };
 
-/** A problem the server (or the page) found while sending, said above the button where the person is looking. */
 function NoticeBox({ notice, comuneName, supplierName }: { notice: Notice; comuneName: string; supplierName: string }) {
   const { t } = useTranslation();
   let text: string;
@@ -69,7 +68,6 @@ export function InquiryForm() {
   const trapId = useId();
   const comuneId = useId();
 
-  // What the buttons of the site already told (the service, the comune): read once, over what the device remembered.
   const [seed] = useState(() => parseBookingParams(search));
   const { draft, update, discard } = useInquiryDraft(slug, { service: seed.service, comune: seed.comune });
   const [consent, setConsent] = useState(false);
@@ -144,7 +142,6 @@ export function InquiryForm() {
     setTried(true);
     setNotice(null);
     if (Object.keys(problems).length > 0) {
-      // The first field at fault takes the focus, once the page has drawn what is wrong with it.
       window.requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"], [data-invalid="true"] input')?.focus());
       return;
     }
@@ -278,7 +275,6 @@ export function InquiryForm() {
               ) : null}
             </div>
 
-            {/* The trap for robots: hidden by the stylesheet, not by `type="hidden"`, out of the tab order and out of the reading order. */}
             <div className="vb-trap" aria-hidden="true">
               <label htmlFor={trapId}>{t('supplierSite.booking.details.trap')}</label>
               <input
@@ -287,7 +283,6 @@ export function InquiryForm() {
                 name="website"
                 tabIndex={-1}
                 autoComplete="off"
-                // A password manager or an autofill must not fill the trap for a person: the request would be answered and dropped.
                 data-lpignore="true"
                 data-1p-ignore=""
                 data-form-type="other"

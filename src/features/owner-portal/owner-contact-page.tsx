@@ -37,7 +37,6 @@ function WaitingCard({ title }: { title: string }) {
   );
 }
 
-/** A link that does not work, and why when the server said. The only way on is CasaZen itself: a contact who already accepted finds the portal there. */
 function UnusableCard({ reason }: { reason: OwnerContactUnusable }) {
   const { t } = useTranslation();
   return (
@@ -62,7 +61,6 @@ function SupportLink() {
   );
 }
 
-/** Not signed in: the page says what the invitation is and offers the sign-up and the sign-in. Back to this page without the secret in the address: it travels in the `appState`. */
 function SignedOutCard({ token }: { token: string }) {
   const { t } = useTranslation();
   const { login } = useAuth();
@@ -86,7 +84,6 @@ function SignedOutCard({ token }: { token: string }) {
   );
 }
 
-/** What the page shows once the server answered and the invitation is not (yet) in use: every state says what is not done and what to do, never a bare success. */
 type Stage = 'opening' | 'claimsPending' | 'tokenPending';
 
 /**
@@ -107,10 +104,8 @@ export function OwnerContactPage() {
   useNoReferrer();
   useSeoMeta({ title: t('ownerContactInvitation.pageTitle'), noindex: true });
 
-  // Read once, when the page opens: the link of the e-mail, or the one handed over after the sign-in.
   const [token] = useState(() => (searchParams.has('token') ? normalizeOwnerContactToken(searchParams.get('token')) : peekOwnerContactToken()));
 
-  // The secret leaves the address bar (and the history entry) as soon as the page has it. It waits in memory for the sign-in.
   useEffect(() => {
     if (!searchParams.has('token')) return;
     if (token) stashOwnerContactToken(token);
@@ -119,7 +114,6 @@ export function OwnerContactPage() {
     setSearchParams(rest, { replace: true });
   }, [searchParams, setSearchParams, token]);
 
-  // `mutateAsync` and not `mutate`: the answer is read from the promise, so it does not depend on the observer of the mutation.
   const { mutateAsync, reset } = useAcceptOwnerContact();
   const started = useRef(false);
   const [stage, setStage] = useState<Stage | null>(null);
@@ -136,7 +130,6 @@ export function OwnerContactPage() {
     };
   }, []);
 
-  /** A new token from Auth0 (the old one has no owner claims) and the portal in place of this address; a failure of either is told, not hidden. */
   const openPortal = useCallback(async () => {
     setStage('opening');
     try {
@@ -150,10 +143,8 @@ export function OwnerContactPage() {
 
   const finish = useCallback(
     (accepted: OwnerContactAccepted) => {
-      // The variables of the mutation (the secret) are dropped with every answer.
       reset();
       if (!claimsArePublished(accepted.claimsRefresh)) {
-        // Accepted, but the portal would refuse the person (no claims in the token): not a success. The secret is kept, in memory only, for the «Riprova» that accepts again.
         keepsSecret.current = onPage.current;
         if (!onPage.current) clearOwnerContactToken();
         setStage('claimsPending');
@@ -171,8 +162,6 @@ export function OwnerContactPage() {
       started.current = true;
       mutateAsync(secret).then(finish, (error: unknown) => {
         reset();
-        // A link that does not work is final: the secret is forgotten. It is kept (in memory, until the person leaves) for a request worth sending again, for an account whose
-        // e-mail is not verified yet and for an account that is not the invited one: the link is good, and the person can sign in with the right account and come back with it.
         const refused = ownerContactFailureOf(error);
         const kept = (refused.kind === 'retry' || refused.kind === 'other' || refused.kind === 'emailNotVerified' || refused.kind === 'emailMismatch') && onPage.current;
         if (!kept) clearOwnerContactToken();
@@ -240,14 +229,12 @@ interface FailureCardProps {
   onNewLogin: () => void;
 }
 
-/** The refusal of the acceptance, by what the person has to do about it. */
 function FailureCard({ failure, onRetry, onSwitchAccount, onNewLogin }: FailureCardProps) {
   const { t } = useTranslation();
 
   if (failure.kind === 'unusable') return <UnusableCard reason={failure.reason} />;
 
   if (failure.kind === 'notFound') {
-    // The owner portal is off: the page is «not found», never an error that invites to try again.
     return <InviteAcceptCard tone="broken" title={t('ownerContactInvitation.notFound.title')} description={t('ownerContactInvitation.notFound.description')} />;
   }
 

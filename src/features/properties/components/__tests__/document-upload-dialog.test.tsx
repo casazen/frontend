@@ -39,7 +39,6 @@ describe('APE document upload', () => {
     const input = screen.getByLabelText(i18n.t('documentPages.select'));
     expect(input).toHaveAttribute('accept', '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png');
     expect(input).toHaveAttribute('multiple');
-    // The window has a place to drop the files on, not only the button of the browser.
     expect(screen.getByTestId('document-drop-zone')).toHaveTextContent(i18n.t('documentPages.dropHere'));
     expect(screen.getByText(i18n.t('shared.documentUpload.apeScanNotice'))).toBeInTheDocument();
     const pdf = new File(['%PDF-1.7'], 'APE.pdf', { type: 'application/pdf' });
@@ -67,7 +66,6 @@ describe('APE document upload', () => {
   });
 
   it('says the code and the class it read, and where the code came from, with nothing to type', async () => {
-    // A photocopy whose code is not legible: the class from the file, the code from the register of the region (CENED).
     upload.mockResolvedValue({
       ...APE,
       apeCheck: 'Verified',
@@ -83,7 +81,6 @@ describe('APE document upload', () => {
       i18n.t('shared.documentUpload.apeReadRegistry', { code: '1610800012345/17', energyClass: 'F' }),
     );
     expect(screen.queryByLabelText(i18n.t('property.documents.apeCode'))).not.toBeInTheDocument();
-    // Nothing left to type: the window does not say "type them as printed".
     expect(screen.getByText(i18n.t('shared.documentUpload.apeDataReadDescription'))).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('ape-saved-done'));
 

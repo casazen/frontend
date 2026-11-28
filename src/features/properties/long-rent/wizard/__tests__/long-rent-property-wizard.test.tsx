@@ -17,7 +17,6 @@ vi.mock('@/queries/use-users', async (importOriginal) => ({
 vi.mock('@/api/properties.api', () => ({
   propertiesApi: { create: vi.fn(), updateCadastral: vi.fn(), uploadDocument: vi.fn(), getDocuments: vi.fn() },
 }));
-// The comune list and the pages of a document have their own tests: here a button stands for each, and it does what the person would.
 vi.mock('@/components/shared/comune-picker', () => ({
   ComunePicker: ({ id, onChange }: { id: string; onChange: (comune: { istatCode: string; name: string }) => void }) => (
     <button type="button" id={id} data-testid="fake-comune" onClick={() => onChange({ istatCode: '015146', name: 'Milano' })}>
@@ -82,7 +81,6 @@ async function onStep(step: string) {
   await waitFor(() => expect(screen.getByTestId('long-rent-property-wizard')).toHaveAttribute('data-step', step), WAIT);
 }
 
-/** Fills the four steps: the place, the cadastral data (all of them) and the APE; stops on the summary. */
 async function fillEverything() {
   fireEvent.change(screen.getByTestId('long-rent-wizard-name'), { target: { value: 'Bilocale Monza' } });
   fireEvent.click(screen.getByTestId('fake-comune'));
@@ -120,7 +118,6 @@ describe('LongRentPropertyWizard: "Aggiungi immobile" (LR-07c)', { timeout: 3000
     finish();
 
     await screen.findByTestId('long-rent-wizard-done', undefined, WAIT);
-    // The section decides the mode: always `Long`, with only what the API cannot do without.
     expect(propertiesApi.create).toHaveBeenCalledTimes(1);
     expect(propertiesApi.create).toHaveBeenCalledWith({
       name: 'Bilocale Monza',
@@ -138,7 +135,6 @@ describe('LongRentPropertyWizard: "Aggiungi immobile" (LR-07c)', { timeout: 3000
     });
     expect(propertiesApi.updateCadastral).toHaveBeenCalledWith(PROPERTY_ID, { sheet: '12', parcel: '345', subaltern: null, category: 'A/2', income: 450.5 });
     expect(propertiesApi.uploadDocument).toHaveBeenCalledWith(PROPERTY_ID, expect.any(File), 'Ape');
-    // Everything the contract needs is there: it is the way on, and nothing is left to do.
     expect(screen.getByTestId('wizard-done-primary')).toHaveAttribute('href', `/app/long-rent/leases/new?propertyId=${PROPERTY_ID}`);
     expect(screen.getByTestId('wizard-done-secondary')).toHaveAttribute('href', `/app/long-rent/properties/${PROPERTY_ID}`);
     expect(screen.queryByTestId('long-rent-wizard-todo')).not.toBeInTheDocument();
@@ -152,12 +148,10 @@ describe('LongRentPropertyWizard: "Aggiungi immobile" (LR-07c)', { timeout: 3000
     finish();
 
     await screen.findByTestId('long-rent-wizard-done', undefined, WAIT);
-    // The property exists and was created once: what failed after it never asks to create it again.
     expect(propertiesApi.create).toHaveBeenCalledTimes(1);
     const todo = screen.getByTestId('long-rent-wizard-todo');
     expect(todo).toHaveTextContent(i18n.t('longRentProperties.wizard.done.todo.cadastralFailed'));
     expect(todo).toHaveTextContent(i18n.t('longRentProperties.wizard.done.todo.apeFailed'));
-    // The contract cannot be made yet: the way on is the property, where the data are added.
     expect(screen.getByTestId('wizard-done-primary')).toHaveAttribute('href', `/app/long-rent/properties/${PROPERTY_ID}`);
   });
 

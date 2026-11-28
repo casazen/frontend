@@ -6,7 +6,6 @@ import { AppToaster } from '@/components/shared/app-toaster';
 import { expectNoAxeViolations } from '@/test/axe';
 import { toastUndo } from '../toast-undo';
 
-/** `toastUndo` with the real `sonner` and the real `AppToaster` of the app, the way a user meets it. */
 describe('toastUndo in the toaster of the app (UI-07)', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
@@ -31,7 +30,6 @@ describe('toastUndo in the toaster of the app (UI-07)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
 
     await waitFor(() => expect(undo).toHaveBeenCalledTimes(1));
-    // The toast goes away after the action is taken.
     await waitFor(() => expect(screen.queryByText('Immobile messo in pausa')).not.toBeInTheDocument(), { timeout: 3000 });
   });
 

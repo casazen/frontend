@@ -22,7 +22,6 @@ vi.mock('@/queries/use-properties', () => ({ useProperty: vi.fn() }));
 vi.mock('@/queries/use-fiscal', () => ({ useFiscalRegime: vi.fn() }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
 
-// The sheet reads only these fields: partial objects are cast to the full hook results.
 type Hook<T extends (...args: never[]) => unknown> = ReturnType<T>;
 
 function item(code: SafetyItemCode, patch: Partial<SafetyChecklistItem> = {}): SafetyChecklistItem {
@@ -121,7 +120,6 @@ describe('SafetyQuickSheet', () => {
     expect(screen.getByTestId('safety-quick-item-FireExtinguishers')).toBeChecked();
     expect(screen.getByTestId('safety-quick-item-BdsrDeclaration')).toBeChecked();
     expect(screen.getByTestId('safety-quick-prefill-BdsrDeclaration')).toHaveTextContent('Hai già il CIN');
-    // A flame in the home and a business: the detectors and the compliant systems are asked.
     expect(screen.getByTestId('safety-quick-item-GasDetector')).not.toBeChecked();
     expect(screen.getByTestId('safety-quick-item-CoDetector')).toBeInTheDocument();
     expect(screen.getByTestId('safety-quick-item-SystemsCompliance')).toBeInTheDocument();

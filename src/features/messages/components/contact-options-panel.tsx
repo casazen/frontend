@@ -24,11 +24,9 @@ const REASONS: Record<string, { messageKey: string }> = {
 
 interface ContactOptionsPanelProps {
   bookingId: string;
-  /** Writing asks `booking.write`: without it the panel only says how the guest could be reached. */
   canWrite: boolean;
 }
 
-/** The sentence for the e-mail that did not go: one for a channel that does not release the contact, one for a limit, one for anything else. */
 function startProblem(error: unknown, t: TFunction): string {
   const code = isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
   if (getHttpStatus(error) === 409 && code === 'contact_info_unavailable') return t('messages.contact.unavailable');
@@ -99,7 +97,6 @@ function ContactChoice({ bookingId, options, canWrite }: { bookingId: string; op
   );
 }
 
-/** The first message by e-mail: a text of up to 2,000 characters, sent once however many times the button is pressed. */
 function EmailMessage({ bookingId, canWrite }: { bookingId: string; canWrite: boolean }) {
   const { t } = useTranslation();
   const fieldId = useId();

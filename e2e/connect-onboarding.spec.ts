@@ -89,7 +89,6 @@ test.describe('Stripe Connect onboarding (#222)', () => {
         return;
       }
 
-      // BK-09 (A3-42): the API builds the return and refresh pages; the client sends no URL.
       expect(route.request().postData() ?? '').not.toContain('returnUrl');
       onboardingUrl = 'https://connect.stripe.test/onboard/acct_test_new';
 

@@ -16,7 +16,6 @@ vi.mock('@/api/invoice-data.api', () => ({
   saveInvoiceData: vi.fn(),
 }));
 
-// ...and «Incassi» (FIS-05), which reads the ledger of the booking (its own tests are in booking-ledger-section.test.tsx): kept off the network as well.
 vi.mock('@/api/payment-ledger.api', () => ({
   getBookingLedger: vi.fn().mockResolvedValue({ bookingId: 'b0c1d2e3-0000-4000-8000-000000000002', bookingCode: '', channel: '', currency: 'EUR', lines: [], degraded: false }),
   listLedger: vi.fn(),
@@ -44,7 +43,6 @@ const booking = (overrides: Partial<Booking> = {}): Booking => ({
   ...overrides,
 });
 
-/** A booking the channel manager brought in, as the API answers it to who may read payments. */
 const channelBooking = (overrides: Partial<Booking> = {}): Booking =>
   booking({
     source: 'Expedia',
@@ -80,17 +78,14 @@ describe('BookingOtaAmounts', () => {
 
     const section = within(screen.getByTestId('booking-ota-amounts'));
     expect(section.getByRole('heading', { name: 'Importi del canale' })).toBeInTheDocument();
-    // Each figure is the stored one, to the cent, in the currency of the booking.
     expect(section.getByTestId('booking-ota-total')).toHaveTextContent('462,00 €');
     expect(section.getByTestId('booking-ota-commission')).toHaveTextContent('69,30 €');
     expect(section.getByTestId('booking-ota-net')).toHaveTextContent('392,70 €');
     expect(section.getByTestId('booking-ota-paid')).toHaveTextContent('462,00 €');
     expect(section.getByTestId('booking-ota-balance')).toHaveTextContent('0,00 €');
-    // The state in the words of the list, and who collects.
     expect(section.getByTestId('booking-ota-payment-state')).toHaveTextContent('Incassato');
     expect(section.getByTestId('booking-ota-collector')).toHaveTextContent('Il canale incassa il pagamento');
     expect(section.getByTestId('booking-ota-commission-included')).toHaveTextContent('Già inclusa');
-    // Every figure says where it comes from, in words and with an icon (never by color alone), the net with an entry of its own.
     const tags = section.getAllByTestId('booking-amount-source');
     expect(tags).toHaveLength(5);
     for (const tag of tags) {
@@ -118,15 +113,12 @@ describe('BookingOtaAmounts', () => {
       expect(figure).toHaveTextContent('Non disponibile');
       expect(figure).not.toHaveTextContent('0');
     }
-    // A figure that was not sent has no source either, and nothing in the section is a zero.
     expect(section.getAllByTestId('booking-amount-source')).toHaveLength(2);
     expect(screen.getByTestId('booking-ota-amounts')).not.toHaveTextContent('0,00');
     expect(section.getByTestId('booking-ota-some-missing')).toBeInTheDocument();
   });
 
   it('BookingOtaAmounts_FigureWithNoEntryInTheSources_IsDrawnWithNoTag', () => {
-    // The tag of a figure is the entry of that figure and no other: a net with no `net` entry is not tagged with the source of the
-    // commission or of the total.
     render(
       <BookingOtaAmounts
         booking={channelBooking({ amountSources: { total: 'ChannelManager', commission: 'ChannelManager', paid: 'ChannelManager', balance: 'ChannelManager' } })}
@@ -150,8 +142,6 @@ describe('BookingOtaAmounts', () => {
   });
 
   it('BookingOtaAmounts_TotalOfZero_SaysNotAvailableWithoutASourceAndNeverZero', () => {
-    // The column of the total cannot be null: a channel that sent no price leaves the 0 of the column, and the API still gives the total
-    // the source "channel manager". The section does not draw that 0 as a figure.
     render(<BookingOtaAmounts booking={channelBooking({ totalPrice: 0 })} />);
 
     const section = within(screen.getByTestId('booking-ota-amounts'));
@@ -159,11 +149,9 @@ describe('BookingOtaAmounts', () => {
     expect(total).toHaveAttribute('data-missing', 'true');
     expect(total).toHaveTextContent('Non disponibile');
     expect(total).not.toHaveTextContent('0');
-    // The total has no tag of its source, the four figures the channel did send keep theirs, and the section says one is missing.
     expect(total.closest('div')?.querySelector('[data-testid="booking-amount-source"]')).toBeNull();
     expect(section.getAllByTestId('booking-amount-source')).toHaveLength(4);
     expect(section.getByTestId('booking-ota-some-missing')).toBeInTheDocument();
-    // A settled balance next to it stays a real 0.
     expect(section.getByTestId('booking-ota-balance')).toHaveTextContent('0,00 €');
   });
 
@@ -214,7 +202,6 @@ describe('BookingOtaAmounts', () => {
   });
 
   it.each([[undefined], [null]])('BookingOtaAmounts_AnswerWithoutAmounts_DrawsNothing (%s)', (otaAmounts) => {
-    // Not a channel booking, or whoever asks may not read payments: the API leaves the amounts out and the section is not drawn.
     const { container } = render(<BookingOtaAmounts booking={channelBooking({ otaAmounts, collection: undefined, amountSources: undefined })} />);
 
     expect(container).toBeEmptyDOMElement();
@@ -225,18 +212,15 @@ describe('BookingPaymentTab (amounts of the channel)', () => {
   it('BookingPaymentTab_ChannelBooking_KeepsTheSummaryAndAddsTheSectionOfTheChannel', () => {
     renderTab(channelBooking());
 
-    // The summary is as it was: the price, the state of the payment and what came in.
     expect(screen.getByTestId('booking-price-total')).toHaveTextContent('462,00 €');
     expect(screen.getByTestId('booking-payment-state')).toHaveAttribute('data-state', 'Paid');
     expect(screen.getByTestId('booking-paid-amount')).toHaveTextContent('462,00 €');
-    // Under it, the amounts of the channel, and only there the sources: the same numbers are not tagged twice.
     const section = within(screen.getByTestId('booking-ota-amounts'));
     expect(section.getAllByTestId('booking-amount-source')).toHaveLength(5);
     expect(screen.getAllByTestId('booking-amount-source')).toHaveLength(5);
   });
 
   it('BookingPaymentTab_PaymentsNotReadable_ShowsTheStateAndNoAmountAtAll', () => {
-    // What the API answers to who may not read payments: the state, and no amount, no collection, no source (permission and privacy rule).
     renderTab(booking({ source: 'Expedia', otaSource: 'Expedia', paymentState: 'Paid' }));
 
     expect(screen.getByTestId('booking-payment-state')).toHaveTextContent('Soggiorno saldato');

@@ -8,11 +8,6 @@ import type { OwnerInvoice, OwnerInvoiceCriteria, OwnerInvoiceListItem } from '@
 
 const PATH = '/owner-invoices';
 
-/**
- * The invoices of the property manager to the owners (E13/F02/US01/T03, NF-114; backend `api/owner-invoices`). Paths are relative to the API base URL, which already ends in `/api`.
- * The list needs `agency.statement.view`, the writes `agency.statement.manage`: the owner and the administrators of an org on the agency plan. Everything answers 404 while the flag
- * `OwnerInvoicing` is off. Every write is an explicit call: nothing here makes, issues or discards an invoice by itself.
- */
 export const ownerInvoicesApi = {
   /**
    * The invoices of the org, the newest period first: `period` (`yyyy-MM`) and `ownerId` narrow them. `null` when the server refuses the list to this caller (403): a refused read would
@@ -57,6 +52,5 @@ export const ownerInvoicesApi = {
    */
   issue: (invoiceId: string) => ApiClient.post<OwnerInvoice>(`${PATH}/${encodeURIComponent(invoiceId)}/issue`, { confirm: true }),
 
-  /** The PDF of an invoice, through CasaZen as every document of the fiscal chain (the refusal of that read is an error of the call, not a trip to the page of no access). */
   downloadPdf: (invoiceId: string): Promise<DownloadedFile> => downloadPdf({ id: invoiceId, source: 'CasaZen' }),
 };

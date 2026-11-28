@@ -11,18 +11,10 @@ import {
   type PublicSiteThemePalette,
 } from '@/lib/public-site-themes';
 
-/**
- * The lists of themes and font pairs (BK-12, DB-01) and the quality bar of the tokens (BK-13): the CSS is parsed, so a theme
- * added or recolored in one place only, or a pair of colors under WCAG AA, fails here.
- */
 const read = (relativePath: string) => readFileSync(resolve(process.cwd(), relativePath), 'utf8');
 
 type Tokens = Record<string, string>;
 
-/**
- * Declarations of every rule of a stylesheet by selector. Comments and `@import` are dropped; a selector list is split (each
- * selector gets the declarations); the copies of a rule in a media query add to, and override, the first.
- */
 function parseRules(css: string): Map<string, Tokens> {
   const rules = new Map<string, Tokens>();
   const plain = css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/@import[^;]*;/g, '');
@@ -50,7 +42,6 @@ const fontPairs: Record<string, Tokens> = Object.fromEntries(
   PUBLIC_SITE_FONTS.map((id) => [id, tokenRules.get(`.public-site-root[data-font='${id}']`) ?? {}]),
 );
 
-/** The CSS token each field of the palette of `public-site-themes.ts` mirrors. */
 const PALETTE_TOKENS: Record<keyof PublicSiteThemePalette, string> = {
   primary: '--cz-public-primary',
   onPrimary: '--cz-public-on-primary',
@@ -68,7 +59,6 @@ const PALETTE_TOKENS: Record<keyof PublicSiteThemePalette, string> = {
   lineStrong: '--cz-public-line-strong',
 };
 
-/** Tokens of the states every page shows: the same on the three themes, set once for all of them. */
 const STATE_TOKENS = [
   '--cz-public-ok',
   '--cz-public-ok-soft',
@@ -79,7 +69,6 @@ const STATE_TOKENS = [
   '--cz-public-star',
 ];
 
-/** Tokens every theme (and the brand block of `public-brand.css`) defines: the pages never depend on a default. */
 const LAYOUT_TOKENS = [
   '--cz-public-font-display',
   '--cz-public-font-body',
@@ -181,8 +170,6 @@ describe('public-tokens.css', () => {
   });
 
   it('Brand_TheBlockOfCasazenPages_DefinesEveryTokenOfTheThemes', () => {
-    // The brand pages (`public-brand.css`) set their own look on a root that also carries a theme: they must not inherit
-    // any of the theme's colors by omission. The states (ok, warn, err, star) are the same everywhere and come from the theme.
     const brand = parseRules(read('src/styles/public-brand.css')).get(".public-site-root[data-brand='casazen']") ?? {};
     expect(LAYOUT_TOKENS.filter((token) => !brand[token])).toEqual([]);
   });
@@ -251,7 +238,6 @@ describe('fixed palette colors in the public site', () => {
   });
 
   it('FixedColors_ListedFile_StillHasThem', () => {
-    // A cleaned file must leave the list, or the list stops saying what is left to do.
     expect(Object.keys(FIXED_COLOR_EXCEPTIONS).filter((file) => !withFixedColors.includes(file))).toEqual([]);
   });
 

@@ -44,7 +44,6 @@ describe('FocusBlock (UI-16)', () => {
     renderBlock();
 
     const region = screen.getByRole('region');
-    // In reading order. Nothing else: no "Poi:", no "Adesso", no label of the tone, no hidden text.
     expect(region.textContent).toBe(
       ['Adesso', 'Registra il contratto di Elisa Rossi', 'Scade tra due giorni: dopo si paga una sanzione.', 'Tocca a te', 'Circa 5 minuti', 'Poi: il conduttore riceve la copia', 'Registra ora', 'Vedi il contratto'].join(''),
     );
@@ -90,7 +89,6 @@ describe('FocusBlock (UI-16)', () => {
       unmount();
     }
 
-    // Five tones, five different icons and five different tints.
     expect(icons.size).toBe(CALM_TONES.length);
     expect(new Set(CALM_TONES.map((tone) => TONE_STYLES[tone].badge)).size).toBe(CALM_TONES.length);
   });
@@ -154,7 +152,6 @@ describe('FocusBlock (UI-16)', () => {
     expect(primary).toHaveClass('bg-primary');
     expect(secondary).toHaveClass('border');
     expect(secondary).not.toHaveClass('bg-primary');
-    // The main action first, in the order of reading and of the Tab key.
     expect(primary.compareDocumentPosition(secondary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 

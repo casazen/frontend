@@ -53,7 +53,6 @@ describe('CalmActionButton (UI-16)', () => {
     expect(link).toHaveAttribute('data-testid', 'open');
     fireEvent.click(link);
 
-    // The page changed without a reload, and the next page received the state.
     expect(screen.getByTestId('arrived')).toHaveTextContent('/app/long-rent/contracts?tab=dati|{"completeStep":true}');
   });
 

@@ -19,7 +19,6 @@ interface FlowStateBadgeProps {
   'data-testid'?: string;
 }
 
-/** Where a flow stands on a property: «Attivo», «Da completare» or «Non disponibile», with an icon and a tint (UX-09). */
 export function FlowStateBadge({ state, className, 'data-testid': testId }: FlowStateBadgeProps) {
   const { t } = useTranslation();
   const known = normalizeFlowState(state);

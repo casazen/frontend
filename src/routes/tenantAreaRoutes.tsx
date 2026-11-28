@@ -11,10 +11,6 @@ import {
   TenantMaintenanceListPage,
 } from '@/features/tenant-area/tenant-maintenance-pages';
 
-/**
- * Tenant area (CondoLedger phase 1B). Authenticated, and limited by the API to the contracts of the signed-in tenant.
- * It is not a context of the landlord console.
- */
 export const tenantAreaRoutes: RouteObject[] = [
   {
     path: '/portale-conduttore',

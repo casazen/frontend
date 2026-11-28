@@ -68,7 +68,6 @@ describe('UserMenu trigger (UI-03, a11y)', () => {
     renderMenu();
 
     const trigger = screen.getByRole('button', { name: /Menu utente/ });
-    // `focus:outline-none` alone, as before, left the keyboard user without any sign of where the focus is.
     expect(trigger).toHaveClass('focus-visible:ring-2', 'focus-visible:ring-ring');
     expect(trigger).toHaveClass('min-h-11', 'min-w-11');
   });

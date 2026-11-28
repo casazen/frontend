@@ -6,7 +6,6 @@ import { GuestName } from './components/guest-name';
 import { formatDate } from '@/lib/utils';
 import type { GuestSummary } from '@/types';
 
-/** The guest's page: the row opens it, from the name and from the action. */
 const guestPath = (guest: GuestSummary) => `/app/short-rent/guests/${guest.id}`;
 const fullName = (guest: GuestSummary) => `${guest.firstName} ${guest.lastName}`.trim();
 
@@ -44,7 +43,6 @@ export function useGuestsList() {
         primaryAction: (guest) => ({ id: 'details', label: t('guests.viewDetails'), href: guestPath(guest) }),
         rowHref: guestPath,
         bulk: ['export'],
-        // With the sidebar open (from `lg`) the table of five columns is not seen whole under 1280 px: cards until then.
         cardsUntil: 'xl',
         csv: { fileName: 'ospiti' },
         empty: { icon: Users, title: t('guests.title'), description: t('guests.empty') },

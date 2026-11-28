@@ -22,10 +22,6 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-/**
- * What a screen reader and a keyboard need, found by axe in jsdom: names, roles, labels, the structure of tables and lists.
- * (The colors and the widths of a phone are checked in a browser by the Playwright spec.)
- */
 describe('ListView, accessibility', () => {
   it('has no violation with rows, in the table and as cards', async () => {
     const { container } = renderList({ initial: '/app/short-rent/bookings?chip=all' });

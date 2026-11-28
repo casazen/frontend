@@ -1,9 +1,7 @@
 import { useEffect, useState, type ComponentType } from 'react';
 
 export interface LazyCanvas<P> {
-  /** The component once its chunk has loaded; `failed` if loading failed; `null` while it loads. */
   canvas: { Component: ComponentType<P> } | 'failed' | null;
-  /** Tries again after a failure. */
   retry: () => void;
 }
 

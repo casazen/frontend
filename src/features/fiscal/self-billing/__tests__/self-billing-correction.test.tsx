@@ -27,7 +27,6 @@ vi.mock('@/api/fiscal-documents.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/fiscal-documents.api')>();
   return { ...actual, getDocumentSdi: vi.fn() };
 });
-// The administrator of the account (the role that opens the page), and a predicate for the permission of the organization's administrator that each test sets: no hasPermission that says yes to everything.
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({
     contexts: [{ contextKey: 'account', roleKey: 'org_admin' }],
@@ -58,7 +57,6 @@ function renderPage() {
   return render(createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(SelfBillingPage))));
 }
 
-/** The row of a TD17 once the list is on the page. */
 async function rowOf(id: string): Promise<HTMLElement> {
   const rows = await screen.findAllByTestId('self-billing-row');
   const row = rows.find((candidate) => candidate.getAttribute('data-id') === id);
@@ -66,7 +64,6 @@ async function rowOf(id: string): Promise<HTMLElement> {
   return row;
 }
 
-/** Opens the confirmation of «Correggi e rimanda» from a button and gives the dialog back, with its confirm button on. */
 async function openCorrection(button: HTMLElement) {
   fireEvent.click(button);
   const dialog = await screen.findByRole('dialog', { name: i18n.t('selfBilling.correct.title') });
@@ -98,7 +95,6 @@ describe('«Correggi e rimanda» is offered only to who may, with the flags it n
     expect(screen.queryByTestId('self-billing-correct')).toBeNull();
     cleanup();
 
-    // The flag is on, and the predicate of the workspace says that the person lacks the permission of the organization's administrator.
     env.flags = {};
     env.permissions = new Set();
     renderPage();
@@ -112,7 +108,6 @@ describe('«Correggi e rimanda» is offered only to who may, with the flags it n
 
   it('SelfBillingCorrection_ForWhoMayWithTheFlagsOn_IsOnlyOnARowThatSaysCanCorrect_AndTheCallGoesOutOnceAfterTheConfirmationForThatInvoice', async () => {
     const delivered = item({ id: 'c0000000-0000-4000-8000-000000000003', status: 'Issued', number: 'AF-2026/2', issueDate: '2026-11-10', sdiStatus: 'delivered' });
-    // Rejected too, but the server says no (it has an issued credit note): the client does not work it out.
     const creditNoted = rejected({ id: 'e0000000-0000-4000-8000-000000000004', number: 'AF-2026/3', canCorrect: false });
     list.mockResolvedValue([rejected(), delivered, creditNoted, item()]);
     correct.mockResolvedValue(detail(replacement()));
@@ -134,7 +129,6 @@ describe('«Correggi e rimanda» is offered only to who may, with the flags it n
 
     await waitFor(() => expect(correct).toHaveBeenCalledTimes(1));
     expect(correct).toHaveBeenCalledWith(REJECTED_ID);
-    // The replacement is shown at once, in the detail: it says what it replaces, is issued with the issue of the page, and cannot be discarded.
     expect(await screen.findByTestId('self-billing-replaces')).toHaveTextContent(NUMBER);
     expect(screen.getByTestId('self-billing-issue')).toBeEnabled();
     expect(screen.queryByTestId('self-billing-discard')).toBeNull();
@@ -205,7 +199,6 @@ describe('the original a correction discarded is history, and the draft that rep
     expect(within(history).getByTestId('self-billing-status')).toHaveAttribute('data-status', 'Replaced');
     for (const testId of ['self-billing-row-correct', 'self-billing-row-open']) expect(within(history).queryByTestId(testId)).toBeNull();
 
-    // The draft says which invoice it replaces, and the reference of the original leads to it.
     expect(within(await rowOf(REPLACEMENT_ID)).getByTestId('self-billing-row-replaces')).toHaveTextContent(NUMBER);
     fireEvent.click(within(history).getByTestId('self-billing-row-replacement'));
     expect(await screen.findByTestId('self-billing-detail')).toBeInTheDocument();
@@ -214,7 +207,6 @@ describe('the original a correction discarded is history, and the draft that rep
   });
 
   it('SelfBillingCorrection_TheDetailOfTheDiscardedOriginal_SaysItWasReplaced_HasNoActionButTheWayToItsReplacement', async () => {
-    // The answer of the correction cannot be read, so the detail stays on the invoice, which the server now holds as the original that was replaced (the same happens when another administrator corrected it).
     let corrected = false;
     list.mockImplementation(async () => (corrected ? [original(), replacement()] : [rejected()]));
     read.mockImplementation(async (id) => detail(id === REPLACEMENT_ID ? replacement() : corrected ? original() : rejected()));
@@ -231,7 +223,6 @@ describe('the original a correction discarded is history, and the draft that rep
     const replaced = await screen.findByTestId('self-billing-replaced');
     expect(toast.warning).toHaveBeenCalledWith(i18n.t('selfBilling.correct.unreadable'));
     expect(replaced).toHaveTextContent(i18n.t('selfBilling.detail.replaced.title'));
-    // History, as in its row: «Sostituita», its rejection, and no action but the way to its replacement.
     const body = screen.getByTestId('self-billing-detail');
     expect(body).toHaveAttribute('data-status', 'Discarded');
     expect(within(body).getByTestId('self-billing-status')).toHaveAttribute('data-status', 'Replaced');
@@ -289,7 +280,6 @@ describe('a kept draft says why, in words, for each of the four reasons (and is 
     const row = await rowOf(REPLACEMENT_ID);
     const sentence = i18n.t(`selfBilling.kept.${code}`);
     expect(within(row).getByTestId('self-billing-row-kept')).toHaveTextContent(sentence);
-    // It cannot be issued: the row opens it («Apri»), it does not invite to review and issue.
     expect(within(row).getByTestId('self-billing-row-open')).toHaveTextContent(i18n.t('selfBilling.row.open'));
 
     fireEvent.click(within(row).getByTestId('self-billing-row-open'));
@@ -367,14 +357,12 @@ describe('a draft refused as outdated (409) is told as «rifai le bozze del mese
     await waitFor(() => expect(confirm).toBeEnabled());
     fireEvent.click(confirm);
 
-    // Told with its own words (not the sentence of the guest documents), and the issue is not offered again: it would be refused in the same way.
     expect(await within(dialog).findByTestId('self-billing-issue-problem')).toHaveTextContent(i18n.t('selfBilling.detail.issue.outdated'));
     expect(within(dialog).getByRole('button', { name: i18n.t('selfBilling.detail.issue.confirm') })).toBeDisabled();
     expect(prepare).not.toHaveBeenCalled();
 
     fireEvent.click(within(dialog).getByTestId('self-billing-redo-drafts'));
     await waitFor(() => expect(prepare).toHaveBeenCalledTimes(1));
-    // The drafts of the month of THAT draft, whatever the month the page was on, and the person lands on the report.
     expect(prepare).toHaveBeenCalledWith('2026-10');
     expect(await screen.findByTestId('self-billing-report')).toBeInTheDocument();
     expect(screen.getByTestId('self-billing-period')).toHaveValue('2026-10');

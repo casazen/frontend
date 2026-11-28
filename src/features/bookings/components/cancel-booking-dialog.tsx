@@ -43,12 +43,9 @@ export function CancelBookingDialog({ bookingId, open, onOpenChange }: CancelBoo
 function CancelBookingBody({ bookingId, onClose }: { bookingId: string; onClose: () => void }) {
   const { t } = useTranslation();
   const watch = useSyncWatch();
-  // The booking says whether it is one of a channel (`changeOptions`) and whether it is mirrored on the channel manager (`octorateSync`); the line of the channel manager is read
-  // again while its answer is to come. A booking that cannot be read is taken for one CasaZen holds: the server decides the path anyway.
   const booking = useBooking(bookingId, { fresh: true, refetchInterval: (current) => watch.interval(current?.octorateSync) });
   const options = booking.data?.changeOptions;
   const isChannel = !!options?.channel;
-  // The dialog stopped asking for a cancellation that never answered: «Check again» reads the booking once more and waits for one more minute.
   const checkAgain = () => {
     watch.ask();
     void booking.refetch();
@@ -85,11 +82,6 @@ interface ChannelCancelProps {
   onClose: () => void;
 }
 
-/**
- * The cancellation of a booking that came from a channel (NF-76): the host asks the channel manager, which asks the channel, and the booking is cancelled in CasaZen only when it
- * confirmed (the API answers 200 only then). No money moves from here and there is no refund to choose. Where the channel is closed there is no button, only the sentence that says
- * how to ask the guest or the channel; a refusal (the channel is closed, the channel manager refused, it did not answer) leaves the booking as it was and says so, with that sentence.
- */
 function ChannelCancel({ bookingId, options, onClose }: ChannelCancelProps) {
   const { t } = useTranslation();
   const cancel = useCancelBooking();
@@ -100,7 +92,6 @@ function ChannelCancel({ bookingId, options, onClose }: ChannelCancelProps) {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    // A dialog rendered inside a form must not submit it (the portal passes the event on).
     event.stopPropagation();
     cancel.mutate({ id: bookingId, data: { reason: reason.trim() || undefined } }, { onSuccess: () => setDone(true) });
   };
@@ -121,7 +112,6 @@ function ChannelCancel({ bookingId, options, onClose }: ChannelCancelProps) {
     );
   }
 
-  // Closed for the cancellation (or not cancellable at all): no action, only what to do.
   if (!options.canCancel) {
     return (
       <div className="space-y-3 py-2">
@@ -178,12 +168,9 @@ function ChannelCancel({ bookingId, options, onClose }: ChannelCancelProps) {
 
 interface MoneyCancelProps {
   bookingId: string;
-  /** The booking as it was read; `undefined` when it could not be. */
   booking: Booking | undefined;
   watch: ReturnType<typeof useSyncWatch>;
-  /** The booking is being read again (what «Check again» asked for). */
   checking: boolean;
-  /** «Check again» for a cancellation the channel manager has not answered: read the booking once more and wait for one more minute. */
   onCheckAgain: () => void;
   onClose: () => void;
 }
@@ -220,9 +207,7 @@ function MoneyCancel({ bookingId, booking, watch, checking, onCheckAgain, onClos
 
   const handleSubmit = (event: FormEvent, data: BookingCancellationQuote) => {
     event.preventDefault();
-    // A dialog rendered inside a form must not submit it (the portal passes the event on).
     event.stopPropagation();
-    // The host's cancellation refunds everything that was paid by card (BK-02, PO 2026-10-08): the whole refundable amount is what is asked, and nothing else can be.
     const refundAmount = data.requiresRefundDecision ? data.refundableAmount : undefined;
 
     cancel.mutate(
@@ -230,7 +215,6 @@ function MoneyCancel({ bookingId, booking, watch, checking, onCheckAgain, onClos
       {
         onSuccess: (cancelled) => {
           setResult(cancelled);
-          // The cancellation is sent to the channel manager after it is made: the page asks for its answer.
           if (mirrored) watch.ask();
         },
       },
@@ -307,7 +291,6 @@ function MoneyCancel({ bookingId, booking, watch, checking, onCheckAgain, onClos
               <p className="text-xs text-muted-foreground">{t('booking.cancel.guestNotified')}</p>
             </div>
 
-            {/* The channel manager is told after the cancellation, and the refunds above do not wait for it. */}
             {mirrored && (
               <p className="text-muted-foreground" data-testid="cancel-sync-note">
                 {t('booking.cancel.sync.willUpdate')}
@@ -335,10 +318,6 @@ function MoneyCancel({ bookingId, booking, watch, checking, onCheckAgain, onClos
   );
 }
 
-/**
- * What the cancellation of the host gives back: the whole of what was paid by card, said in numbers and in words, and that it cannot be undone. There is nothing to choose: the
- * server refunds everything refundable whatever the cancellation policy says and whatever amount is sent (BK-02, PO 2026-10-08).
- */
 function FullRefund({ data }: { data: BookingCancellationQuote }) {
   const { t } = useTranslation();
   const money = (value: number) => formatCurrency(value, data.currency);

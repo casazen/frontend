@@ -40,7 +40,6 @@ function SummaryRow({ label, value, testId }: { label: string; value: string; te
   );
 }
 
-/** Step 1: the stay being closed and the confirmation that the guest left. */
 export function StaySummaryStep({
   state,
   draft,
@@ -143,10 +142,6 @@ export function AlloggiatiStep({ state, onCompleteGuestData }: { state: Checkout
   );
 }
 
-/**
- * Step 3: cleaning request to a supplier active in the property's comune for the category, or "skip". The request is
- * created with the check-out, tied to the stay (SU-07); the requests already sent for the stay are listed.
- */
 export function CleaningStep({
   state,
   draft,
@@ -278,10 +273,6 @@ export function CleaningStep({
   );
 }
 
-/**
- * Step 4: the tourist tax recorded on the booking (BK-03) and how it was collected. Without an amount CasaZen says so
- * and never invents one; the host declares the collection anyway.
- */
 export function TouristTaxStep({
   state,
   draft,
@@ -337,7 +328,6 @@ export function TouristTaxStep({
   );
 }
 
-/** Step 5: the property is ready for the next guest, or not yet (it stays in the cockpit), with notes. */
 export function PropertyReadyStep({ draft, onChange }: { draft: CheckoutAnswers; onChange: DraftChange }) {
   const { t } = useTranslation();
 

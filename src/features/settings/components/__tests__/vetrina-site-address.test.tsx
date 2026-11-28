@@ -58,7 +58,6 @@ describe('the copy of the address of the site', () => {
     await waitFor(() => expect(toast[toastKind]).toHaveBeenCalledWith(text));
     expect(writeText).toHaveBeenCalledWith(copied);
     expect(onSelect).not.toHaveBeenCalled();
-    // «URL copiato» alone is said only for the address of the site: one message, the one of the state.
     expect(toast.success).toHaveBeenCalledTimes(toastKind === 'success' ? 1 : 0);
     expect(toast.warning).toHaveBeenCalledTimes(toastKind === 'warning' ? 1 : 0);
   });

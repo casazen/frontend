@@ -27,15 +27,10 @@ const PAYMENT_MODE_KEYS: Readonly<Record<string, string>> = {
   Manual: 'longRentRequests.detail.paymentMode.Manual',
 };
 
-/** From the take on, the request has the way it is paid fixed; before it, `Manual` is only the default of the API. */
 const PAYMENT_MODE_KNOWN = new Set(['PresoInCarico', 'InCorso', 'Completato', 'Pagato']);
 
 const STAY_DAY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
 
-/**
- * What an intervention says (SR-08), one fact per row: the job, the property and its city, the stay it is for (the guest is the host's),
- * when, how urgent, the price and what it is, how it is paid, the notes. In the drawer (`compact`) the secondary ones are left out.
- */
 export function InterventionFacts({ request, compact = false }: { request: ServiceRequest; compact?: boolean }) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
@@ -93,7 +88,6 @@ export function InterventionFacts({ request, compact = false }: { request: Servi
   );
 }
 
-/** The supplier and, from the moment it took the request, how to reach it. Before it, the name only: the contact is given at the take. */
 export function InterventionSupplier({ request }: { request: ServiceRequest }) {
   const { t } = useTranslation();
   const contact = request.supplierContact;
@@ -122,7 +116,6 @@ export function InterventionSupplier({ request }: { request: ServiceRequest }) {
   );
 }
 
-/** The steps of the request, with their dates and who made them (the supplier's team members are never named to the host). */
 export function InterventionHistory({ request, limit = Infinity }: { request: ServiceRequest; limit?: number }) {
   const { t } = useTranslation();
   return (
@@ -137,7 +130,6 @@ export function InterventionHistory({ request, limit = Infinity }: { request: Se
   );
 }
 
-/** One photo of the work: the file is private, so it is read with the token and shown from the object URL of what came. */
 function WorkPhotoButton({ photo, index, count, onOpen }: { photo: ServiceRequestWorkPhoto; index: number; count: number; onOpen: (src: string) => void }) {
   const { t } = useTranslation();
   const { data: src, isError } = useWorkPhoto(photo.url);
@@ -165,7 +157,6 @@ function WorkPhotoButton({ photo, index, count, onOpen }: { photo: ServiceReques
   );
 }
 
-/** The photos the supplier left of the work (at most six): thumbnails, and each one larger in a window. Nothing when there are none. */
 export function InterventionPhotos({ request }: { request: ServiceRequest }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState<string | null>(null);

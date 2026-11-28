@@ -27,13 +27,8 @@ import type {
   PublicCheckInSubmitRequest,
 } from '@/types/public-checkin.types';
 
-/**
- * The anonymous upload of a picture: `multipart/form-data` must be said, or the instance (JSON by default) turns the form into JSON and the API
- * gets no file. The browser adds the boundary.
- */
 const PUBLIC_MULTIPART: ApiRequestOptions = { public: true, headers: { 'Content-Type': 'multipart/form-data' } };
 
-/** How long the upload of the sequence of the presence is given: the frames of a recording are a few megabytes, and a phone on a mobile network sends slowly. */
 const PRESENCE_UPLOAD_TIMEOUT_MS = 45_000;
 
 export interface SelfiePose { turnedSelfie: Blob; challengeToken: string }
@@ -49,7 +44,6 @@ export const publicCheckinApi = {
   getContext: (token: string) =>
     ApiClient.get<PublicCheckInContextDto>(`/public/checkin/${token}`, undefined, { public: true }),
 
-  /** Saves the language the guest chose on the page (`it`, `en`, `de`, `fr` or `es`); the page and the emails of the session use it. */
   setLanguage: (token: string, language: string) =>
     ApiClient.put<PublicCheckInLanguageResponse>(`/public/checkin/${token}/language`, { language }, { public: true }),
 
@@ -60,57 +54,31 @@ export const publicCheckinApi = {
   submit: (token: string, data: PublicCheckInSubmitRequest) =>
     ApiClient.post<{ sessionId: string; message: string }>(`/public/checkin/${token}`, data, { public: true }),
 
-  /** Official Alloggiati codes matching `q` (empty until an admin imports the tables). */
   searchCodes: (token: string, list: AlloggiatiCodeList, q: string) =>
     ApiClient.get<AlloggiatiCodeEntryDto[]>(`/public/checkin/${token}/codes`, { list, q }, { public: true }),
 
-  /**
-   * Reads one identity-document photo. The photo is not stored. With the self-hosted flow on (E71/F01/US03/T01, NF-190) the answer also carries `fields` (the values read by zone, each with its side, zone,
-   * confidence and source), `missing` (the fields the guest has still to type) and `source: "local"`; with it off none of the three is in the answer. The values go only to the guest who sent the photo:
-   * the caller keeps them in memory for the step and nowhere else.
-   */
   readDocument: async (token: string, file: File) => {
     const body = new FormData();
     body.append('file', file);
     const response = await axios.post<CheckInDocumentReadResult>(`/public/checkin/${token}/read-document`, body, {
       public: true,
-      // The vision provider, MRZ and printed-field readers each have a separate deadline.
       timeout: 60_000,
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   },
 
-  /**
-   * The guest's answer to the biometric consent (E03/F04/US03/T01, ADR-013-R9): explicit, separate from the privacy notice, refusable. A refusal, or a
-   * verification that is not offered, answers `result: operator`: a person verifies and the operators are told at once.
-   */
   postBiometricConsent: (token: string, request: BiometricConsentRequest) =>
     ApiClient.post<BiometricConsentResponse>(`/public/checkin/${token}/biometric-consent`, request, { public: true }),
 
-  /**
-   * The opening of the identity step of the self-hosted verification (E70/F02/US01/T01, NF-188): `noticeVersion` is the version of the text of the consent the page shows, as `getLegalTexts` served it. The server
-   * records the opening once (the time, the version and the browser family), binds the verification to the guest who verifies and answers `{ state }`; later calls change nothing, so the page may repeat it.
-   * 422 `notice_version_unknown` when the version is not the one in force (nothing is recorded), 409 `identity_already_closed` (with the state in the body) when the verification is over, 404 for a link that is
-   * not open or while the flags are off. Only for a state that says `selfHosted`.
-   */
   openIdentity: (token: string, noticeVersion: string) => {
     const request: IdentityOpenRequest = { noticeVersion };
     return ApiClient.post<IdentityOpenResponse>(`/public/checkin/${token}/identity/open`, request, { public: true });
   },
 
-  /**
-   * The legal texts of the identity step for the stay of the link (E22/F01/US02/T02): the consent to the face check and, for a property that keeps no document (Ticino), the notice, each with
-   * the `version` the consent posts back and `isDraft` (a draft is served outside production only). `language` is the one of the page (`it`, `en`, `de`, `fr`, `es`); the server serves the closest
-   * language it has and says which. 404 for a link that is not open. Behind the flag `checkInIdentityVerification`.
-   */
   getLegalTexts: (token: string, language: string) =>
     ApiClient.get<CheckInLegalTextsResponse>(`/public/checkin/${token}/legal-texts`, { lang: language }, { public: true }),
 
-  /**
-   * The guest at the door of the property (E22/F01/US02/T01): the booking code (or the surname of the main guest) and the arrival date find the stay and answer the token of its check-in link.
-   * The one answer for everything that does not open is the 404 `door_checkin_not_found`; 429 over five attempts a minute. The data is in the body, never in the address.
-   */
   openDoor: (doorToken: string, request: DoorCheckInRequest) =>
     ApiClient.post<DoorCheckInResponse>(`/public/checkin/door/${encodeURIComponent(doorToken)}`, request, { public: true }),
 

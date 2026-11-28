@@ -19,7 +19,6 @@ import type { GuestMarketing as Marketing, GuestMarketingChange, GuestMarketingR
 
 type Channel = 'email' | 'whatsapp';
 
-/** The codes of the change that say the address or the number the guest gave (or the booking has) cannot be used: the field for it is asked for. */
 const EMAIL_INVALID_CODE = 'guest_marketing_email_invalid';
 const PHONE_INVALID_CODE = 'guest_marketing_phone_invalid';
 const CONSENT_OUTDATED_CODE = 'guest_marketing_consent_outdated';
@@ -34,9 +33,7 @@ const STATES: Record<GuestMarketingState, { labelKey: string; detailKey: string 
   withdrawn: { labelKey: 'publicBooking.guestMarketing.state.withdrawn', detailKey: 'publicBooking.guestMarketing.stateDetail.withdrawn' },
 };
 
-/** The states in which a channel receives (or is about to receive) offers: the guest can say they do not want them. */
 const ACTIVE_STATES: readonly GuestMarketingState[] = ['pending', 'confirmed', 'soft_opt_in'];
-/** The states in which a channel receives nothing and the guest has not objected: the guest can switch it on. */
 const OFFERABLE_STATES: readonly GuestMarketingState[] = ['none', 'service_only'];
 
 interface GuestMarketingSectionProps {
@@ -62,19 +59,15 @@ interface ChannelRowProps {
   channel: Channel;
   name: string;
   state: GuestMarketingState;
-  /** The address or number the choice is about, masked; null when there is none to show. */
   masked: string | null;
-  /** The guest can switch it on: the channel is off, not objected to, and the server has a version of the consent text. */
   canTurnOn: boolean;
   ticked: boolean;
   busy: boolean;
   onTick: (ticked: boolean) => void;
   onWithdraw: () => void;
-  /** Under the state: the field to type an address or a number, the resend of the confirmation. */
   children?: ReactNode;
 }
 
-/** One channel: its name, where it stands, and what the guest can do about it. */
 function ChannelRow({ channel, name, state, masked, canTurnOn, ticked, busy, onTick, onWithdraw, children }: ChannelRowProps) {
   const { t } = useTranslation();
   const switchId = useId();
@@ -92,8 +85,6 @@ function ChannelRow({ channel, name, state, masked, canTurnOn, ticked, busy, onT
           ) : (
             <p className="text-sm font-medium">{name}</p>
           )}
-          {/* Always shown, whatever the state: `service_only` is also what the server gives to a real address or number the stay was booked
-              with, and the guest must see which one the offers would go to before switching the channel on. */}
           {masked ? (
             <p className="break-all font-mono text-xs text-muted-foreground" data-testid={`guest-marketing-${channel}-value`}>
               {masked}
@@ -181,14 +172,12 @@ interface GuestMarketingFormProps {
 function GuestMarketingForm({ marketing, save, withdraw, resend }: GuestMarketingFormProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
-  // What the guest switched on and typed here, not yet sent: nothing starts ticked, whatever the server knows.
   const [ticked, setTicked] = useState<Record<Channel, boolean>>({ email: false, whatsapp: false });
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [attempted, setAttempted] = useState(false);
   const [withdrawing, setWithdrawing] = useState<Channel | null>(null);
 
-  // No choices for this booking (it is not the guest's, or there is nothing to show): nothing, not even a placeholder.
   if (marketing.isError && getHttpStatus(marketing.error) === 404) return null;
 
   const data = marketing.data;
@@ -211,7 +200,6 @@ function GuestMarketingForm({ marketing, save, withdraw, resend }: GuestMarketin
   const wantWhatsapp = whatsappOffered && ticked.whatsapp;
   const addressMissing = wantEmail && needsAddress && address.trim() === '';
   const phoneMissing = wantWhatsapp && needsPhone && phone.trim() === '';
-  // The server puts its own calling code in front of a number that does not say its country (`+` or `00`): the consent would be for a stranger's number.
   const phoneWithoutPrefix = wantWhatsapp && needsPhone && phone.trim() !== '' && !hasInternationalPrefix(phone);
 
   const clearTicks = () => {
@@ -235,7 +223,6 @@ function GuestMarketingForm({ marketing, save, withdraw, resend }: GuestMarketin
       },
       {
         onSuccess: clearTicks,
-        // The text changed while the guest was reading: what they switched on was for the old one. The new one is shown, switched off.
         onError: (error) => {
           if (isAxiosError(error) && getProblemCode(error.response?.data) === CONSENT_OUTDATED_CODE) clearTicks();
         },
@@ -331,7 +318,6 @@ function GuestMarketingForm({ marketing, save, withdraw, resend }: GuestMarketin
               ) : null}
               {data.email.state === 'pending' ? (
                 <div className="space-y-1">
-                  {/* Once a message is sent the limits may not allow another for a while: the button goes, what the call said stays. */}
                   {data.email.canResend ? (
                     <Button
                       type="button"

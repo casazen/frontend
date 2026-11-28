@@ -4,37 +4,26 @@ import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 
-/** A finger (or a pointer) must travel this far sideways, and more sideways than up or down, to count as a swipe. */
 const SWIPE_DISTANCE = 48;
 
-/** The round 44 px buttons over the black: close and the two arrows. */
 const CONTROL =
   'inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 
 interface PhotoViewerProps {
   photos: string[];
-  /** The photo on show. */
   index: number;
-  /** Name of the property: the text alternative of every photo and the title of the viewer. */
   name: string;
   onIndexChange: (index: number) => void;
   onClose: () => void;
-  /** The element that takes the focus back when the viewer closes (the photo that opened it). */
   restoreFocusTo?: () => HTMLElement | null;
 }
 
-/**
- * Full-screen viewer of the photos of a property: arrows, Home and End, swipe, the counter and Esc. It is a modal dialog
- * (`Dialog`): the focus stays inside while it is open, the page behind is inert and the focus goes back to the photo that
- * opened it.
- */
 export function PhotoViewer({ photos, index, name, onIndexChange, onClose, restoreFocusTo }: PhotoViewerProps) {
   const { t } = useTranslation();
   const total = photos.length;
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const go = useCallback((to: number) => onIndexChange(((to % total) + total) % total), [onIndexChange, total]);
 
-  // The two neighbours are fetched before they are asked for, so the arrows answer at once.
   useEffect(() => {
     if (total < 2) return;
     for (const neighbour of [index - 1, index + 1]) {
@@ -82,7 +71,6 @@ export function PhotoViewer({ photos, index, name, onIndexChange, onClose, resto
           event.preventDefault();
           target.focus();
         }}
-        // Over the whole screen, black; the default close button of the dialog is left out for the 44 px one of the bar.
         className="left-0 top-0 flex h-dvh w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 bg-black p-0 font-sans text-white sm:rounded-none [&>button]:hidden"
       >
         <DialogTitle className="sr-only">{t('publicProperty.viewer.title', { name })}</DialogTitle>

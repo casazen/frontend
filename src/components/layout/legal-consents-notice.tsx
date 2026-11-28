@@ -6,12 +6,6 @@ import { isAdmin } from '@/lib/auth-roles';
 import { lacksCurrentConsents } from '@/lib/onboarding';
 import { useCurrentUser } from '@/queries/use-users';
 
-/**
- * A quiet line at the top of the shell for a platform administrator who also has an organization of their own, when the legal documents
- * changed and the current ones are not accepted yet (LR-WIZ-1): the backend withholds the host features until they are (PL-02), so their
- * workspaces as an owner disappear without a word, and the app does not send an administrator to the consents (they work in the admin
- * area). Nothing is forced: the line says what happened and links to the page where the documents are accepted.
- */
 export function LegalConsentsNotice() {
   const { t } = useTranslation();
   const { user: signedIn } = useAuth();

@@ -115,7 +115,6 @@ describe('Dialog responsive (UI-07)', () => {
         'max-sm:border-b-0',
       );
       expect(dialog()).toHaveClass('max-sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]');
-      // Nothing above the bar with the grip and the close button: it is the top of the sheet.
       expect(dialog()).toHaveClass('max-sm:pt-0');
     });
 
@@ -159,7 +158,6 @@ describe('Dialog responsive (UI-07)', () => {
       const close = screen.getAllByRole('button', { name: 'Chiudi' });
       expect(close).toHaveLength(1);
       expect(close[0]).toHaveClass('max-sm:h-11', 'max-sm:w-11');
-      // Where it has always been from `sm` up.
       expect(close[0]).toHaveClass('absolute', 'right-4', 'top-4');
     });
 
@@ -175,7 +173,6 @@ describe('Dialog responsive (UI-07)', () => {
     it('Dialog_DarkDialog_TheTopBarTakesItsBackgroundNotAWhiteOne', () => {
       render(<Harness className="bg-black" />);
 
-      // The photo viewer of the public site is black: its sheet has a black bar too, whatever the background of the dialog is.
       const bar = handle().parentElement;
       expect(dialog()).toHaveClass('bg-black');
       expect(bar).toHaveClass('max-sm:bg-inherit', 'max-sm:sticky');
@@ -222,7 +219,6 @@ describe('Dialog responsive (UI-07)', () => {
       expect(document.activeElement).not.toBe(close);
     });
 
-    // Radix gives the focus back on its own only to a DialogTrigger; most dialogs of the app are opened by a button that sets state.
     it('Dialog_OpenedByAButtonThatSetsState_TheFocusGoesBackToThatButtonWhenItCloses', async () => {
       function OpenedByState() {
         const [open, setOpen] = useState(false);
@@ -309,7 +305,6 @@ describe('Dialog responsive (UI-07)', () => {
       const onOpenChange = vi.fn();
       render(<Harness onOpenChange={onOpenChange} />);
 
-      // 20 px is less than a flick needs, however fast.
       fireEvent.pointerDown(handle(), { pointerId: 1, pointerType: 'touch', clientY: 400 });
       fireEvent.pointerMove(handle(), { pointerId: 1, pointerType: 'touch', clientY: 420 });
       fireEvent.pointerUp(handle(), { pointerId: 1, pointerType: 'touch', clientY: 420 });

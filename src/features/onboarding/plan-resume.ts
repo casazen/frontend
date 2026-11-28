@@ -14,7 +14,6 @@ function scopeKey(userId: ScopeId, orgId: ScopeId) {
   return userId && orgId ? `casazen:onboarding-plan:${encodeURIComponent(userId)}:${encodeURIComponent(orgId)}` : null;
 }
 
-/** Only the place the person paused. Form values and organization preferences belong to their own flows. */
 export function savePlanResume(userId: ScopeId, orgId: ScopeId, step: PlanResumeStep): void {
   const key = scopeKey(userId, orgId);
   if (!key || (step !== 'mittente' && !isOnboardingPartKey(step))) return;

@@ -12,10 +12,6 @@ type GuideButtonProps = {
   | { onClick: () => void; loading?: boolean; href?: undefined }
 );
 
-/**
- * The one gesture of an advice or of a tool of the guide: a link of the router when it goes to a page or a tab of the sheet, a button
- * when it runs something or opens a window. The same look for both, and the same size for a finger.
- */
 export function GuideButton(props: GuideButtonProps) {
   if (props.href !== undefined) {
     return (

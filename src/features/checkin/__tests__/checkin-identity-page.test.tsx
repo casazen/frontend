@@ -25,7 +25,6 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const TOKEN = 'tok-identity-page';
 
-/** Filling a guest over three steps takes a few seconds in jsdom, more on a loaded CI runner. */
 const FORM_TEST_TIMEOUT_MS = 30_000;
 
 configure({ asyncUtilTimeout: 15_000 });
@@ -119,7 +118,6 @@ async function formReady() {
   await waitFor(() => expect(guestCard(0).getByLabelText(/^Nome/)).toHaveValue('Mario'));
 }
 
-/** From the first screen to the step after the document: the guest fills in the data and the document of the head. */
 async function goToTheStepAfterTheDocument() {
   await formReady();
   fillGuest(0, 'Giulia');
@@ -158,9 +156,7 @@ describe('CheckInPage with the identity verification (E03/F04/US03/T01)', () => 
     expect(stepLabel()).toBe('Passo 4 di 5');
     expect(screen.getByTestId('checkin-progress').children).toHaveLength(5);
     expect(screen.getByRole('heading', { name: i18n.t('checkin.stepIdentity') })).toBeInTheDocument();
-    // One consent, once: whatever the guests of the stay are, only the guest who leaves the document does this step.
     expect(screen.getAllByTestId('checkin-biometric-consent')).toHaveLength(1);
-    // The page does not go on while the step is open (the way to a person is always there).
     expect(screen.getByTestId('checkin-next')).toBeDisabled();
     expect(screen.getByTestId('checkin-biometric-decline')).toBeEnabled();
   });
@@ -213,13 +209,11 @@ describe('CheckInPage with the identity verification (E03/F04/US03/T01)', () => 
     fireEvent.click(screen.getByTestId('checkin-next'));
     await screen.findByTestId('checkin-privacy-notice');
 
-    // Back to the identity step: it is where the guest left it, not asked again.
     fireEvent.click(screen.getByRole('button', { name: /Indietro/ }));
     await screen.findByTestId('checkin-identity-step');
     expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'operator');
     expect(publicCheckinApi.postBiometricConsent).toHaveBeenCalledTimes(1);
 
-    // And back to the document: what the guest typed is still there.
     fireEvent.click(screen.getByRole('button', { name: /Indietro/ }));
     await screen.findByTestId('stay-guest-0-document');
     expect(within(screen.getByTestId('stay-guest-0-document')).getByLabelText(/^Numero documento/)).toHaveValue('CA12345AB');
@@ -240,7 +234,6 @@ describe('CheckInPage with the identity verification (E03/F04/US03/T01)', () => 
     fillGuest(2, 'Anna', '1950-01-02');
     fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
     await screen.findByTestId('stay-guest-0-document');
-    // Only the head carries the document.
     expect(screen.queryByTestId('stay-guest-1-document')).not.toBeInTheDocument();
     fillDocument(0);
     fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
@@ -312,14 +305,12 @@ describe('CheckInPage opened through the door of the property (E22/F02/US01/T01)
       state: identityState({ step: 'operator', consentRefused: true, operatorRequested: true, biometricOffered: false }),
     });
     renderPage('?step=identity');
-    // The guest asks for a person at the door, goes on to the invoice and the consents, and sends: nothing of the data of the stay was ever typed here.
     fireEvent.click(await screen.findByTestId('checkin-biometric-decline'));
     await waitFor(() => expect(screen.getByTestId('checkin-next')).toBeEnabled());
     fireEvent.click(screen.getByTestId('checkin-next'));
     fireEvent.click(within(await screen.findByTestId('checkin-privacy-notice')).getByRole('checkbox'));
     fireEvent.click(await screen.findByTestId('checkin-submit'));
 
-    // The page does not stay at a button that seems to do nothing: it takes the guest to the first step with a field to correct.
     await screen.findByTestId('stay-guest-0');
     expect(stepLabel()).toBe('Passo 2 di 5');
     expect(publicCheckinApi.submit).not.toHaveBeenCalled();

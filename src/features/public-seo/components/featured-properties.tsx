@@ -21,9 +21,6 @@ function PropertyCard({ property }: { property: FeaturedProperty }) {
   const { t, i18n } = useTranslation();
   const bookingPath = buildPropertyBookingPath(property.orgSlug, property);
 
-  // The item of the list and its card are subgrids of the list, five rows: the photo, the name, what it has, the price and the button.
-  // A name on three lines pushes down the facts, the price and the button of all the cards of the row, not only of its own. The
-  // card has no padding (the photo runs edge to edge): the parts carry theirs, and the space between them is their top margin.
   return (
     <li data-testid="featured-property" className="row-span-5 grid grid-rows-subgrid gap-y-0">
       <AlignedCard rows={5} className="overflow-hidden p-0">

@@ -2,7 +2,6 @@ import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { DEMO_ORG } from './helpers/org-api-mock';
 
-// The org of the demo user (`GET /api/users/me` mock): the page asks for the domain of that org.
 const DEMO_ORG_ID = DEMO_ORG.id;
 
 test.describe('Custom domain settings (#298)', () => {
@@ -21,8 +20,6 @@ test.describe('Custom domain settings (#298)', () => {
         customDomainUrl: null,
       },
     };
-    // The page reloads the configuration after a save (it does not trust the POST body): the mock keeps what was saved,
-    // as the backend does.
     let currentConfig: Record<string, unknown> = initialConfig;
 
     await page.route(`**/api/orgs/${DEMO_ORG_ID}/domain`, async (route) => {

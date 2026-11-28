@@ -8,7 +8,6 @@ import '@/features/public-booking/property-page.css';
 
 interface Fact {
   icon: LucideIcon;
-  /** What is said in big: a number, or a word when a number would not do («Terra»). */
   value: string;
   label: string;
   key: string;
@@ -58,7 +57,6 @@ export function PropertyFacts({ property }: { property: FactsProperty }) {
     add('elevator', ArrowUpDown, t('publicProperty.facts.yes'), t('publicProperty.facts.elevator'));
   }
 
-  // One night is no minimum at all: only a real minimum is worth a tile.
   const minNights = positive(property.minNights);
   if (minNights !== null && minNights > 1) {
     add('minNights', Moon, number(minNights), t('publicProperty.facts.minNights', { count: minNights }));

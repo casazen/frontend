@@ -23,7 +23,6 @@ describe('fiscal report: the period of a lease', () => {
 
   it('fiscalTermText_TwoLeasesOfOneTenantOnOneProperty_TellsThemApart', () => {
     const t = i18n.getFixedT('it');
-    // The lease ended early on the day it started, and the one that replaced it: two rows that used to look the same.
     const ended = { startDate: '2026-11-01', currentTermEndDate: '2026-11-01' };
     const running = { startDate: '2026-11-01', currentTermEndDate: '2029-10-31' };
 

@@ -4,7 +4,6 @@ import { cancellationPolicyLine } from '../rules/policy-line';
 
 const t = i18n.getFixedT('it');
 
-// The five policies of the catalog as the API serves them (migration SeedCancellationPolicyCatalog): hours before the arrival and %.
 const CATALOG = {
   ampia: { fullRefundHours: 24, partialRefundPercent: 0, partialRefundHours: 0 },
   intermedia: { fullRefundHours: 120, partialRefundPercent: 50, partialRefundHours: 0 },
@@ -15,8 +14,6 @@ const CATALOG = {
 
 describe('cancellationPolicyLine', () => {
   it('cancellationPolicyLine_FivePoliciesOfTheCatalog_SaysWhatTheNumbersDoAndNothingMore', () => {
-    // The line is made of the numbers and of the calculation of the refund (100% from the first, the percent from the second,
-    // nothing after): never of the description of the catalog.
     expect(cancellationPolicyLine(CATALOG.ampia, t)).toBe("Rimborso totale fino a 1 giorno prima dell'arrivo; poi nessun rimborso.");
     expect(cancellationPolicyLine(CATALOG.intermedia, t)).toBe("Rimborso totale fino a 5 giorni prima dell'arrivo; poi il 50% fino all'arrivo.");
     expect(cancellationPolicyLine(CATALOG.contenuta, t)).toBe(

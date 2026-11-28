@@ -15,7 +15,6 @@ import { EMPTY_QUESTURA_CREDENTIALS, validateQuesturaCredentials, type QuesturaC
 
 interface QuesturaCredentialsCardProps {
   propertyId: string;
-  /** The caller may set, replace or remove them (owner of the property or org admin; the API checks again). */
   canEdit: boolean;
   embedded?: boolean;
 }
@@ -52,7 +51,6 @@ export function QuesturaCredentialsCard({ propertyId, canEdit, embedded = false 
     if (invalid) return;
     const data = profile === 'preserve' ? values : { ...values, apartmentId: profile === 'single' ? 0 : apartment };
     save.mutate(data, {
-      // Write-only: the values leave the page as soon as the API has them.
       onSuccess: () => {
         setValues(EMPTY_QUESTURA_CREDENTIALS);
         setProfile('preserve');

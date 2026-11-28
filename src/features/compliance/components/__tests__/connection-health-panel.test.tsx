@@ -52,7 +52,6 @@ function problem(status: number): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: {}, statusText: '', headers: {}, config });
 }
 
-/** What the server answers to «Verifica nel tuo Cassetto Compliance» (the compliance drawer of E03/F05/US02 asks it): where to go, what to look at there. */
 const handoff = (topic: ComplianceHandoff['topic']): ComplianceHandoff => ({
   handoffId: 'hf_5b0e2c9a41d94c63a8d1',
   startedAt: '2026-11-13T10:00:00Z',
@@ -90,7 +89,6 @@ beforeEach(async () => {
 
 afterEach(cleanup);
 
-// E03/F03/US02/T01 (NF-52, AC-NF52-11, CHK-12 point 7).
 describe('ConnectionHealthPanel', () => {
   it('ConnectionHealthPanel_ActiveChannelManager_ShowsSenderStateAndLastRunInThePropertyTimeZone', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health());
@@ -113,7 +111,6 @@ describe('ConnectionHealthPanel', () => {
     expect(await screen.findByTestId('connection-health-Alloggiati-last-run')).toHaveTextContent('08:05');
   });
 
-  // AC 2: an unreadable connection shows «cannot verify» with instructions, never a green state.
   it('ConnectionHealthPanel_UnknownConnection_SaysCasaZenCannotVerifyWithInstructionsAndNeverGreen', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(
       health({ alloggiati: line({ state: 'Unknown', connectionValid: null, autorun: null, lastAutomaticRunAt: null, reason: 'octorate_police_not_exposed' }), istat: line({ state: 'Unknown', lastAutomaticRunAt: null }) }),
@@ -125,7 +122,6 @@ describe('ConnectionHealthPanel', () => {
     expect(state('Alloggiati')).not.toHaveTextContent('Attivo');
     expect(screen.getByTestId('connection-health-Alloggiati-instructions')).toHaveTextContent("Controlla nel pannello del tuo channel manager");
     expect(screen.getByTestId('connection-health-Alloggiati')).toHaveTextContent('Il channel manager non ci lascia leggere questo stato.');
-    // Nothing is told as a run it did not read.
     expect(screen.queryByTestId('connection-health-Alloggiati-last-run')).not.toBeInTheDocument();
   });
 
@@ -215,8 +211,6 @@ describe('ConnectionHealthPanel', () => {
     expect(screen.getByText("Fuori dall'Italia i dati degli ospiti non si inviano a Polizia e ISTAT da qui.")).toBeInTheDocument();
   });
 
-  // AC 4: the «activate or reconnect» button is rendered only when the wizard exists in the ROUTE_MANIFEST and the person may open it. The wizard of the sender
-  // (E03/F01/US02/T02) is in the manifest and asks `property.write`: who may only read the property gets the instructions and no button that would be refused.
   it('ConnectionHealthPanel_PersonWhoMayNotOpenTheSenderWizard_ShowsTheInstructionsAndNoActivateButton', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health({ alloggiati: line({ state: 'Inactive' }) }));
     renderPanel(false);
@@ -234,7 +228,6 @@ describe('ConnectionHealthPanel', () => {
 
     await screen.findByTestId(`connection-health-${topic}`);
     expect(screen.getByTestId(`connection-health-${topic}-activate`)).toHaveAttribute('href', `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
-    // The button replaces the instructions: one way on, not both.
     expect(screen.queryByTestId(`connection-health-${topic}-instructions`)).not.toBeInTheDocument();
   });
 
@@ -244,12 +237,9 @@ describe('ConnectionHealthPanel', () => {
 
     await screen.findByTestId('connection-health-Istat');
     expect(screen.getByTestId('connection-health-Istat-verify')).toHaveTextContent('Verifica nel tuo Cassetto Compliance');
-    // Active needs no verification.
     expect(screen.queryByTestId('connection-health-Alloggiati-verify')).not.toBeInTheDocument();
   });
 
-  // The button is the one of the compliance drawer: it asks the server for that property and that communication (the topic of the line) and the route of the page of
-  // the property the host comes from, then opens the dialog. The verification is the channel manager's to tell, never a result of CasaZen's.
   it.each(['Alloggiati', 'Istat'] as const)('ConnectionHealthPanel_VerifyPressedOnThe%sLine_AsksTheHandoffOfThatPropertyAndComesBackToThePropertyPage', async (topic) => {
     const unknown = line({ state: 'Unknown', lastAutomaticRunAt: null });
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health({ alloggiati: unknown, istat: unknown }));
@@ -313,7 +303,6 @@ describe('ConnectionHealthPanel', () => {
     await screen.findByTestId('connection-health-Alloggiati');
   });
 
-  // A 404 is «not found» even with the older answer still in the cache (the query keeps the last data on an error).
   it('ConnectionHealthPanel_404AfterAnAnswer_IsNotFoundNeverTheOlderState', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValueOnce(health());
     renderPanel(false);

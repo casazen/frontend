@@ -26,7 +26,6 @@ describe('site pages (SEO-VETRINA)', () => {
   it('buildSiteSitemap_listsEveryPageOnThePublicOriginAndTheSearchOfHomes', () => {
     const sitemap = buildSiteSitemap('https://site.example.test');
     const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
-    // The search of homes (SEARCH-GLOBAL) is a page of the app, listed after the prerendered pages.
     expect(locs).toEqual([...SITE_PAGES.map((page) => sitePageUrl('https://site.example.test', page)), 'https://site.example.test/search']);
     expect(locs[0]).toBe('https://site.example.test/');
     expect(sitemap).toContain('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"');
@@ -41,12 +40,10 @@ describe('site links (SEO-VETRINA)', () => {
   });
 
   it('inviteHref_withoutAContactAddress_isNull', () => {
-    // No address is invented: the site only says that the access is by invitation.
     expect(inviteHref(null, 'x')).toBeNull();
   });
 
   it('sitePages_doNotIncludeThePricingPageOrAnySignupPath', () => {
-    // CasaZen is on private invitation and prices are not defined (product owner, 2026-10-13).
     expect(SITE_PAGES.map((page) => page.path)).toEqual(['/', '/affitti-brevi', '/affitti-lunghi', '/funzionalita', '/per-i-fornitori', '/chi-siamo']);
   });
 });

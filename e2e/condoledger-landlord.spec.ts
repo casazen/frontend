@@ -74,7 +74,6 @@ async function exerciseDocuments(page: Page): Promise<string> {
   const upload = page.getByRole('link', { name: 'Carica i documenti in CasaZen' });
   if (await upload.isVisible()) {
     await upload.click();
-    // The documents tab opens /documents/upload?leaseId=…, so the contract id is no longer in the path.
     await expect(page).toHaveURL(/\/documents\/upload\?/);
     await expect(page.getByTestId('lease-documents-panel')).toBeVisible();
     await page.locator('input[type="file"]').first().setInputFiles({
@@ -85,7 +84,6 @@ async function exerciseDocuments(page: Page): Promise<string> {
     await page.getByRole('button', { name: 'Carica documento' }).click();
   }
 
-  // The chosen file is named on the picker before the upload finishes. Wait for its delete control.
   const remove = page.getByRole('button', { name: 'Elimina prova-condoledger.pdf' });
   await expect(remove, 'An uploaded document must have a delete control next to Scarica').toBeVisible({ timeout: 60_000 });
   await expect(page.getByRole('button', { name: 'Scarica' }).first()).toBeVisible();

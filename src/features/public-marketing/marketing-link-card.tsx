@@ -3,7 +3,6 @@ import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-/** How the card feels: the question the person answers, the thing that was done, a link that does not work. */
 export type MarketingCardTone = 'ask' | 'done' | 'broken';
 
 const DISCS: Record<MarketingCardTone, string> = {
@@ -13,7 +12,6 @@ const DISCS: Record<MarketingCardTone, string> = {
 };
 
 interface MarketingLinkCardProps {
-  /** Where the page is now (`ask`, `done`, `expired`...): written in `data-state`; when it changes the title takes the focus. */
   state: string;
   tone: MarketingCardTone;
   icon: LucideIcon;
@@ -32,8 +30,6 @@ export function MarketingLinkCard({ state, tone, icon: Icon, title, description,
   const heading = useRef<HTMLHeadingElement>(null);
   const shown = useRef(state);
 
-  // The button the person pressed goes away with the state it belonged to: the title of the new state takes the focus, and is read, so
-  // neither the keyboard nor the screen reader is left on nothing.
   useEffect(() => {
     if (shown.current === state) return;
     shown.current = state;

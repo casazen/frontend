@@ -30,7 +30,6 @@ describe('LanguageSwitcher (UI-05)', () => {
   it('LanguageSwitcher_EachButton_IsAtLeast44PixelsTallAndWideForAFinger', () => {
     render(<LanguageSwitcher />);
 
-    // They were `h-7` (28 px).
     for (const button of [italian(), english()]) {
       expect(button).toHaveClass('min-h-11', 'min-w-11');
       expect(button).not.toHaveClass('h-7');

@@ -12,7 +12,6 @@ import {profile, policy, OWNER_ID} from '../../src/features/owner-accounting/__t
 import axios, { setApiAuthHandlers } from '../../src/lib/axios';
 setApiAuthHandlers({ getAccessToken: async () => 'owner-profile-fixture-token' });
 
-// Isolated browser fixture for the production page. These synthetic responses never reach an external service.
 const query = new URLSearchParams(window.location.search);
 const blocked = query.get('scenario') === 'blocked';
 const masked = query.get('scenario') === 'masked';

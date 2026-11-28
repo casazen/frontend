@@ -64,7 +64,6 @@ function renderPage() {
   return render(createElement(MemoryRouter, null, createElement(QueryClientProvider, { client }, createElement(FiscalDocumentsPage))));
 }
 
-/** Ticks the three drafts, asks to issue them and confirms: the dialog of the answer is what comes next. */
 async function issueAll() {
   renderPage();
   await screen.findByRole('table');
@@ -94,15 +93,12 @@ describe('a bulk issue says what happened to every document and never that all w
 
     expect(api.issueBatch).toHaveBeenCalledWith([A, B, C]);
     expect(dialog).toHaveAttribute('data-verdict', 'some');
-    // How many were issued out of how many, and the one that was not.
     expect(within(dialog).getByTestId('fiscal-documents-batch-summary')).toHaveTextContent(i18n.t('fiscalDocuments.batch.result.some', { issued: 2, asked: 3, failed: 1 }));
     const failures = within(dialog).getAllByTestId('fiscal-documents-batch-failure');
     expect(failures).toHaveLength(1);
-    // The failure is named by what the person knows of it and told in plain words, never as a bare code.
     expect(failures[0]).toHaveTextContent('Bruno Neri');
     expect(within(failures[0]).getByTestId('fiscal-documents-batch-failure-reason')).toHaveTextContent(i18n.t('apiErrors.codes.documentDraftOutdated'));
     expect(failures[0].textContent).not.toContain('document_draft_outdated');
-    // Never the sentence that says it all went well.
     expect(dialog.textContent).not.toContain(i18n.t('fiscalDocuments.batch.result.all', { count: 3 }));
     expect(dialog.textContent).not.toMatch(/tutti/i);
   });
@@ -113,7 +109,6 @@ describe('a bulk issue says what happened to every document and never that all w
     const dialog = await issueAll();
     fireEvent.click(within(dialog).getByTestId('fiscal-documents-batch-close'));
 
-    // What was issued left the selection; what was not is still ticked: one draft is selected.
     await waitFor(() => expect(screen.getByTestId('fiscal-documents-batch-count')).toHaveTextContent(i18n.t('fiscalDocuments.batch.selected', { count: 1 })));
   });
 
@@ -156,7 +151,6 @@ describe('a bulk issue says what happened to every document and never that all w
 
     expect(await screen.findByTestId('fiscal-documents-batch-problem')).toBeInTheDocument();
     expect(screen.queryByTestId('fiscal-documents-batch-result')).not.toBeInTheDocument();
-    // Nothing is told as issued and the three drafts stay ticked.
     expect(screen.getByTestId('fiscal-documents-batch-count')).toHaveTextContent(i18n.t('fiscalDocuments.batch.selected', { count: 3 }));
   });
 });
@@ -174,13 +168,11 @@ describe('what is ticked belongs to the filters it was ticked under (data rule)'
 
     fireEvent.click(screen.getByTestId('fiscal-documents-select-period'));
     await waitFor(() => expect(api.listDraftsForBatch).toHaveBeenCalledTimes(1));
-    // The person changes a filter while the search is still running, and the search of the old filters answers afterwards.
     fireEvent.change(screen.getByTestId('fiscal-documents-kind'), { target: { value: 'Receipt' } });
     await act(async () => {
       answerTheSearch({ drafts: DRAFTS, more: false });
     });
 
-    // Nothing is ticked under the new filters and nothing is told of the old search; the button is free to ask again for the new filters.
     await waitFor(() => expect(screen.getByTestId('fiscal-documents-select-period')).toBeEnabled());
     expect(screen.queryByTestId('fiscal-documents-batch-bar')).not.toBeInTheDocument();
     expect(screen.queryByTestId('fiscal-documents-select-note')).not.toBeInTheDocument();
@@ -202,7 +194,6 @@ describe('a bulk issue never starts a second write on a draft that is being writ
 
     fireEvent.click(within(firstRow).getByTestId('fiscal-document-refresh'));
 
-    // The draft is being made again: its own buttons wait, and so does the bulk issue that has it ticked.
     await waitFor(() => expect(screen.getByTestId('fiscal-documents-issue-selected')).toBeDisabled());
     expect(within(firstRow).getByTestId('fiscal-document-issue')).toBeDisabled();
 
@@ -223,12 +214,10 @@ describe('a correction is issued one by one, never ticked for the host (data rul
 
     fireEvent.click(screen.getByTestId('fiscal-documents-select-page'));
 
-    // The drafts of the stays are ticked and the credit note is not.
     expect(screen.getByTestId('fiscal-documents-batch-count')).toHaveTextContent(i18n.t('fiscalDocuments.batch.selected', { count: 2 }));
     const boxes = within(table).getAllByTestId('fiscal-document-select');
     expect(boxes.map((box) => (box as HTMLInputElement).checked)).toEqual([true, true, false]);
 
-    // Its own box is ticked by hand, and the head then clears every box of the page, that one included.
     fireEvent.click(boxes[2] as HTMLElement);
     expect(screen.getByTestId('fiscal-documents-batch-count')).toHaveTextContent(i18n.t('fiscalDocuments.batch.selected', { count: 3 }));
     fireEvent.click(screen.getByTestId('fiscal-documents-select-page'));
@@ -253,7 +242,6 @@ describe('a call that is on its way keeps its confirmation open, so that a failu
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('fiscalDocuments.issue.confirm') }));
     await waitFor(() => expect(api.issueDocument).toHaveBeenCalledTimes(1));
 
-    // Escape while the call is on its way: the dialog stays, and the failure that comes is told in it.
     fireEvent.keyDown(dialog, { key: 'Escape' });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await act(async () => {
@@ -263,7 +251,6 @@ describe('a call that is on its way keeps its confirmation open, so that a failu
     expect(await screen.findByTestId('fiscal-document-issue-problem')).toBeInTheDocument();
   });
 
-  // The dialog that stays while its call runs must still close by itself when the call is done.
   it.each([
     ['IssueDocument', 'fiscal-document-issue', 'fiscalDocuments.issue.confirm'],
     ['DiscardDraft', 'fiscal-document-discard', 'fiscalDocuments.discard.confirm'],
@@ -313,7 +300,6 @@ describe('batchOutcomeOf (the verdict is read from the rows)', () => {
     ['every row issued but drafts left over', result([issuedRow(A, '1'), issuedRow(B, '2')], 5), 'some'],
     ['every row failed', result([failedRow(A, 'x'), failedRow(B, 'y')]), 'none'],
     ['no row at all', result([]), 'none'],
-    // The counts of the answer are not trusted over its rows: a total that says «all» over a row that failed is still not «all».
     ['a count that says all over a failed row', { ...result([issuedRow(A, '1'), failedRow(B, 'x')]), issued: 2, failed: 0 }, 'some'],
   ] as const)('BatchOutcomeOf_%s_IsTold_%s', (_case, answer, verdict) => {
     expect(batchOutcomeOf(answer).verdict).toBe(verdict);

@@ -208,7 +208,6 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
     expect(within(head).getByTestId('alloggiati-field-gender')).toHaveTextContent('Maschio');
     expect(within(head).getByTestId('alloggiati-field-birthCountry')).toHaveTextContent('Italia');
     expect(within(head).getByTestId('alloggiati-field-documentType')).toHaveTextContent("Carta d'identita'");
-    // CO-09: masked like on the guest portal; without guest.read there is no "show" action.
     expect(within(head).getByTestId('alloggiati-field-documentNumber')).toHaveTextContent('*****5AB');
     expect(within(head).queryByTestId('alloggiati-guest-0-reveal-document')).not.toBeInTheDocument();
     expect(within(head).getByTestId('alloggiati-guest-0-entered-by')).toHaveTextContent("Inseriti dall'host il");
@@ -217,7 +216,6 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
     expect(within(head).getByTestId('alloggiati-field-citizenship')).toHaveTextContent('Codice da completare');
     expect(screen.getByTestId('alloggiati-guest-0-status')).toHaveTextContent('1 dato mancante');
 
-    // Family member: no document, born abroad, minor, codes found in the (synthetic) tables.
     const member = screen.getByTestId('alloggiati-guest-1');
     expect(within(member).queryByTestId('alloggiati-field-documentNumber')).not.toBeInTheDocument();
     expect(within(member).queryByTestId('alloggiati-field-birthComune')).not.toBeInTheDocument();
@@ -279,7 +277,6 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
 
     fireEvent.click(await screen.findByTestId('alloggiati-edit-guests'));
     const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
-    // Opening the form is the explicit request for the full numbers (audited by the API).
     expect(await dialog.findByLabelText(/^Numero documento/)).toHaveValue('CA12345AB');
     expect(alloggiatiApi.getDocumentNumbers).toHaveBeenCalledWith(BOOKING_ID);
     expect(dialog.getByTestId('stay-guest-1-type')).toHaveTextContent('Familiare');
@@ -296,7 +293,6 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
   });
 
   it('editGuests_Host_SavingKeepsTheResidenceTheDocumentDatesAndTheTaxExemptionThatTheSummaryDoesNotCarry', { timeout: 30_000 }, async () => {
-    // The server takes the list as the whole truth: a save that left these out would erase them.
     vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(summary);
     vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([{ position: 0, stayGuestId: 'g1', documentNumber: 'CA12345AB' }]);
     vi.mocked(alloggiatiApi.replaceStayGuests).mockResolvedValue(summary);
@@ -318,16 +314,13 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
       documentExpiresOn: '2030-05-09',
       taxExemptionCode: 'resident',
     });
-    // The statistical fields the guest holds travel back too, though no region asks for them: left out, the save would erase them.
     expect(guests[1]).toMatchObject({ tourismType: 'holiday' });
-    // An Italian stay sends what it always has: no home and no plate, so the stored plate (none) stays as it is.
     expect(guests[0]).not.toHaveProperty('residenceStreet');
     expect(vi.mocked(alloggiatiApi.replaceStayGuests).mock.calls[0]).toHaveLength(2);
     expect(dialog.queryByLabelText(/^Targa/)).not.toBeInTheDocument();
   });
 
   it('editGuests_ItalianStay_ADocumentOnAFamilyMemberOfTheWizardIsNeitherAskedNorSent', { timeout: 30_000 }, async () => {
-    // The document of a member is read from the wizard only to be asked in a Swiss stay: in an Italian one the record has none for a member.
     const stray = {
       ...wizardState,
       guests: [wizardState.guests[0], wizardGuest(1, { type: 'FamilyMember', documentType: 'IdentityCard', documentNumberMasked: '*****5AB' })],
@@ -350,10 +343,8 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
   });
 
   describe('a property in Switzerland (NF-132, E30/F01/US02)', () => {
-    /** What the API names for a property in canton Ticino. */
     const ticinoFields = ['DocumentType', 'DocumentNumber', 'ResidenceStreet', 'ResidencePostalCode', 'ResidenceCityName', 'ResidenceCountryName'];
 
-    /** A family of two adults: the head and an adult member, who has no document in the Italian record. */
     const swissSummary: AlloggiatiGuestSummaryDto = {
       ...summary,
       guests: [summary.guests[0], { ...summary.guests[1], isMinor: false, dateOfBirth: '1984-02-02T00:00:00Z' }],
@@ -387,14 +378,12 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
       const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
       const head = within(await dialog.findByTestId('stay-guest-0'));
 
-      // The home on file starts the form; the state of residence is the one of the stay, and no Italian residence is asked.
       expect(head.getByLabelText(/^Via e numero civico/)).toHaveValue('Via Nassa 5');
       expect(head.getByLabelText(/^CAP/)).toHaveValue('6900');
       expect(head.getByLabelText(/^Località/)).toHaveValue('Lugano');
       expect(head.getByLabelText(/^Stato di residenza/)).toHaveValue('Svizzera');
       expect(head.queryByLabelText(/^Residenza/)).not.toBeInTheDocument();
       expect(dialog.getByLabelText(/^Targa/)).toHaveValue('TI123456');
-      // The head gives the whole document, the adult member its type and number.
       expect(within(dialog.getByTestId('stay-guest-0-document')).getByLabelText(/^Luogo di rilascio/)).toBeInTheDocument();
       const memberDocument = within(dialog.getByTestId('stay-guest-1-document'));
       expect(memberDocument.getByLabelText(/^Numero documento/)).toBeInTheDocument();
@@ -402,7 +391,6 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
     });
 
     it('editGuests_SwissStay_SavingSendsTheHomeBackTheMembersDocumentAndThePlate', { timeout: 30_000 }, async () => {
-      // The server takes the list as the whole truth: a save that left the home out would erase it.
       vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(swissSummary);
       vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([{ position: 0, stayGuestId: 'g1', documentNumber: 'CA12345AB' }]);
       vi.mocked(alloggiatiApi.replaceStayGuests).mockResolvedValue(swissSummary);
@@ -431,12 +419,10 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
         residenceCountryName: 'Svizzera',
         taxExemptionCode: 'resident',
       });
-      // The home the host never entered for the member is sent as null: the whole truth, never a key that is left out.
       expect(guests[1]).toMatchObject({ residenceStreet: null, documentType: 'Passport', documentNumber: 'X1234567' });
     });
 
     it('editGuests_SwissStay_AnAdultMemberWithADocumentOnFile_StartsWithItsKindAndItsMaskedNumberAndOnlyTheNumberIsTypedAgain', { timeout: 30_000 }, async () => {
-      // The row of the summary and the audited numbers answer for the heads only: the document of the member is in the guest of the wizard state.
       const onFile = {
         ...swissState,
         guests: [swissState.guests[0], wizardGuest(1, { type: 'FamilyMember', documentType: 'IdentityCard', documentNumberMasked: '*****5AB' })],
@@ -451,12 +437,10 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
       const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
       const memberDocument = within(await dialog.findByTestId('stay-guest-1-document'));
 
-      // The host sees that the document is on file, of what kind, and the end of its number; the full number is not in any answer for a member.
       expect(memberDocument.getByLabelText(/^Tipo documento/)).toHaveValue('IdentityCard');
       expect(dialog.getByTestId('stay-guest-1-document-on-file')).toHaveTextContent('*****5AB');
       expect(memberDocument.getByLabelText(/^Numero documento/)).toHaveValue('');
 
-      // Typing the number again is all the member needs: the kind is already there, and the plate goes with the same save.
       fireEvent.change(await dialog.findByLabelText(/^Targa/), { target: { value: 'zh 99 99' } });
       fireEvent.change(within(dialog.getByTestId('stay-guest-0-document')).getByLabelText(/^Luogo di rilascio/), { target: { value: 'Milano' } });
       fireEvent.change(memberDocument.getByLabelText(/^Numero documento/), { target: { value: 'ca 54321 ab' } });
@@ -506,7 +490,6 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
     expect(await dialog.findByLabelText(/^Numero documento/)).toHaveValue('CA12345AB');
     fireEvent.change(dialog.getByLabelText(/^Luogo di rilascio/), { target: { value: 'Milano' } });
 
-    // The page is focused again and the read of the guests of the wizard fails: the data are still there, and so is the form.
     vi.mocked(checkInWizardApi.getState).mockRejectedValue(httpError(403, { code: 'forbidden' }));
     await act(async () => {
       await view.client.refetchQueries({ queryKey: ['checkin-wizard', BOOKING_ID] });
@@ -574,7 +557,6 @@ describe('AlloggiatiGuestSummary record file (CO-13)', () => {
     await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(blob, 'alloggiati-2026-10-10.txt'));
     expect(alloggiatiApi.downloadRecordFile).toHaveBeenCalledWith(BOOKING_ID);
     expect(toast.success).toHaveBeenCalledWith(i18n.t('alloggiati.recordFile.downloaded'));
-    // Downloading is not sending: the host still declares the submission himself.
     expect(alloggiatiApi.markSentManually).not.toHaveBeenCalled();
     expect(button).toBeEnabled();
   });

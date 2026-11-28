@@ -13,7 +13,6 @@ export function LeaseStateBadge({ lease }: { lease: LeaseSummary }) {
   return lease.stage ? <StatusBadge kind="leaseStage" status={lease.stage} /> : <StatusBadge kind="lease" status={lease.status} />;
 }
 
-/** The bar and the words that say what it measures («3 di 8 passi», «Anno 4 di 8»). Nothing without a progress from the server. */
 export function LeaseProgressCell({ lease }: { lease: LeaseSummary }) {
   const { t } = useTranslation();
   const progress = lease.progress;
@@ -28,7 +27,6 @@ export function LeaseProgressCell({ lease }: { lease: LeaseSummary }) {
   );
 }
 
-/** What the lease waits for, in a sentence, with whose turn it is (icon and words) and when; only what is late is red. */
 export function LeaseNextStepCell({ lease }: { lease: LeaseSummary }) {
   const { t, i18n } = useTranslation();
   if (!lease.nextStep) return <span aria-hidden="true">—</span>;

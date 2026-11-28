@@ -10,10 +10,6 @@ const NOTIFICATION_PREFERENCES_KEY = ['notification-preferences'] as const;
 /** One id for the confirmation: a run of quick changes replaces the message instead of piling up a toast for each switch. */
 const SAVED_TOAST_ID = 'notification-preferences-saved';
 
-/**
- * The alert settings of the caller (E05/F03, NF-65). They can change on another device, so they are read again whenever the page opens
- * and the window comes back: the page builds the channels of a row from them, and a stale row would write over a change made elsewhere.
- */
 export function useNotificationPreferences() {
   return useQuery({
     queryKey: NOTIFICATION_PREFERENCES_KEY,

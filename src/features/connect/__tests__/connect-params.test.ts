@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readConnectRequest, safeRedirectTarget, toAuthorizeRequest } from '../connect-params';
 
-// Made-up values: none of them is a code, a state or a credential of anyone.
 const SITE = 'https://www.quokka360.test';
 const RETURN = 'https://www.quokka360.test/wp-admin/options-general.php?page=casazen';
 const STATE = 'test-state-0123456789';
@@ -71,20 +70,17 @@ describe('readConnectRequest (PLG-FE-CONSOLE, NF-201)', () => {
   });
 
   it('readConnectRequest_TheHostIsShownInFull_SubdomainsAndPortIncluded', () => {
-    // The part of the address that decides who the site is: «quokka360.test» at the front of a longer name is another site.
     expect(readConnectRequest(params({ site: 'https://www.quokka360.test.evil.example' }))?.siteHost).toBe('www.quokka360.test.evil.example');
     expect(readConnectRequest(params({ site: 'http://localhost:8080', return: 'http://localhost:8080/wp-admin' }))?.siteHost).toBe('localhost:8080');
   });
 
   it('readConnectRequest_ANameWithLettersOfAnotherAlphabet_ShowsItsPunycodeForm', () => {
-    // A look-alike name does not pass for another site: the page shows the form the name has on the network.
     expect(readConnectRequest(params({ site: 'https://münchen.example', return: 'https://münchen.example/wp-admin' }))?.siteHost).toBe('xn--mnchen-3ya.example');
   });
 
   it('readConnectRequest_TheValuesGoToTheServerAsTheyCame', () => {
     const request = readConnectRequest(params({ site: 'https://www.quokka360.test/', state: 'a_b-C' }));
 
-    // The server normalizes the origin and judges the rest: the page does not rewrite what the plugin wrote.
     expect(request?.siteUrl).toBe('https://www.quokka360.test/');
     expect(request?.state).toBe('a_b-C');
   });

@@ -12,12 +12,9 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 
 interface ConnectionTestStepProps {
   read: PropertySender;
-  /** The answer of the last test of this visit, or `undefined` when the host has not run one. */
   result: SenderConnectionTest | undefined;
-  /** What the last test, or the last declaration, failed with (`null` when nothing failed): a failure is told as one and never as a result. */
   testError: unknown;
   declareError: unknown;
-  /** A request of the wizard is in flight (the test, the declaration or another): nothing on this card can be pressed again meanwhile. */
   busy: boolean;
   onTest: () => void;
   onDeclare: () => void;

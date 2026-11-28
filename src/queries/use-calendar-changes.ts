@@ -5,20 +5,13 @@ import { retryTransientErrors } from '@/lib/query-client';
 import type { CalendarChange, CalendarChangeRequest } from '@/types/calendar-changes.types';
 import { useRestartOnNewWaiting, useWatchWindow } from './use-watch-window';
 
-/** The calendar views of the bookings: a change of price or rules, like a block, makes every one of them (and the list of the changes under them) stale. */
 const CALENDAR_KEY = ['bookings', 'calendar'] as const;
 const CHANGES_KEY = [...CALENDAR_KEY, 'changes'] as const;
 
-/** How often a change that is waiting or being sent is read again. */
 export const CHANGE_POLL_MS = 5_000;
 
-/**
- * How long a screen keeps asking by itself for a change that is waiting or being sent. After it the screen stops (no endless polling) and says, in neutral words, that no
- * answer has come yet, with a button that asks again: the channel manager may be slow, and the host is not told that something went wrong that did not.
- */
 export const CHANGE_WATCH_MS = 180_000;
 
-/** The change is waiting to be sent or being sent: the only states that are still on their way. */
 const isChangeWaiting = (change: Pick<CalendarChange, 'state'> | undefined): boolean => change?.state === 'Queued' || change?.state === 'Sending';
 
 /**
@@ -32,7 +25,6 @@ export function useCalendarChange(id: string | undefined, options: { enabled?: b
     queryKey: [...CHANGES_KEY, 'detail', id],
     queryFn: () => calendarChangesApi.get(id!),
     enabled: !!id && (options.enabled ?? true),
-    // What the answer of the application already says (the process the API has just made): it is on screen at once, and read again at once.
     initialData: options.initial,
     staleTime: 0,
     refetchOnMount: 'always',
@@ -53,11 +45,6 @@ export function useCalendarChange(id: string | undefined, options: { enabled?: b
   };
 }
 
-/**
- * The changes of the calendar the caller may see, newest first (E08/F05/US02/T02): the line above the calendar and its list. Read again whenever the calendar is shown, and
- * every five seconds while one is waiting or being sent, up to `CHANGE_WATCH_MS` from when the screen opened, from the moment a change starts to wait (the one the host has just sent
- * or sent again: the calendar may have been open for hours) or from the last `checkAgain` (then `watchOver`). `enabled: false` reads nothing: the list needs `property.read`.
- */
 export function useCalendarChanges(options: { enabled?: boolean } = {}) {
   const watch = useWatchWindow(CHANGE_POLL_MS, CHANGE_WATCH_MS);
   const query = useQuery({
@@ -83,10 +70,6 @@ export function useCalendarChanges(options: { enabled?: boolean } = {}) {
   };
 }
 
-/**
- * What a change would do, and nothing else (E08/F05/US02/T03): nothing is saved or sent. The mutation is not kept once nothing observes it (`gcTime: 0`) and a refusal is
- * kept without the request that was sent (`withoutRequest`: it holds the access token of the call).
- */
 export function usePreviewCalendarChange() {
   return useMutation({
     gcTime: 0,
@@ -100,11 +83,6 @@ export function usePreviewCalendarChange() {
   });
 }
 
-/**
- * Applies a change of price or rules, all or nothing, and answers the process that sends it to the channel manager (E08/F05/US02/T03). A success makes every calendar view
- * and the list of the changes stale. No toast: the panel and the wizard say in words what happened to each property. Not kept once nothing observes it (`gcTime: 0`), and a
- * refusal is kept without the request (`withoutRequest`).
- */
 export function useApplyCalendarChange() {
   const queryClient = useQueryClient();
 

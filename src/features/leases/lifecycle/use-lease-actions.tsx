@@ -28,11 +28,8 @@ import { SwitchToShortDialog } from './switch-to-short-dialog';
 import { TerminateLeaseDialog } from './terminate-lease-dialog';
 
 export interface LeaseActions {
-  /** The entries of the menu «⋯» of the sheet, for the stage the lease is in; the one that destroys comes last, apart. */
   menu: PageHeaderMenuItem[];
-  /** The windows of the actions: put them once on the sheet. They open from the menu and from the address (`?azione=`). */
   dialogs: ReactNode;
-  /** Opens the request to erase the data of the people of the lease; `undefined` for who may not make it. */
   requestErasure: (() => void) | undefined;
 }
 
@@ -59,12 +56,10 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
   const removeNotice = useRemoveLeaseNotice();
   const requestErasure = useRequestLeaseErasure();
   const [erasureResult, setErasureResult] = useState<LeaseErasureResult | null>(null);
-  // Once the draft is on its way to deletion the person is taken to the list: closing its window must not take them back to the sheet.
   const leftTheSheet = useRef(false);
 
   const available = availableLeaseActions(lease, {
     stage,
-    // Without a workspace (a page rendered on its own) nothing is hidden: the server decides.
     canManage: workspace ? workspace.hasPermission('long-rent', 'lease.create') : true,
     canChangeMode: modeEntry.length > 0,
   });
@@ -87,8 +82,6 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
     if (!leftTheSheet.current) go(null);
   }
 
-  // ---- the draft: held back for the six seconds of «Annulla», deleted only when they pass ------------------------------------------------
-
   function deleteDraft() {
     const held = holdForUndo({
       key: leaseDraftDeleteKey(lease.id),
@@ -99,7 +92,6 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
         toast.success(t('leaseLifecycle.deleteDraft.done'));
       },
     });
-    // The same draft is already on its way out: say it, and stay.
     if (!held) {
       toast.info(t('leaseLifecycle.alreadyHeld'));
       return;
@@ -108,15 +100,12 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
     navigate(`${longRentPropertyPath(lease.propertyId)}?tab=contracts`, { replace: true });
   }
 
-  // ---- the download for the signature: taken back, and «Annulla» downloads it again when the server would let it ----------------------------
-
   async function takeBackTheDownload() {
-    // Asked first: once taken back, the lease does not say any more whether the download would be let through again.
     const canGoBack = await canMarkLeaseSentAgain(lease.id);
     try {
       await revokeSent.mutateAsync(lease.id);
     } catch {
-      return; // The hook told why and read the lease again.
+      return;
     }
     const message = t('leaseLifecycle.revokeSent.done');
     if (!canGoBack) {
@@ -131,18 +120,14 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
     });
   }
 
-  // ---- the notice taken back later, from the menu (right after it was recorded «Annulla» does the same) ---------------------------------------
-
   async function takeTheNoticeBack() {
     try {
       await removeNotice.mutateAsync(lease.id);
     } catch {
-      return; // The hook told why and read the lease again.
+      return;
     }
     toast.success(t('leaseLifecycle.notice.removed'));
   }
-
-  // ---- the data of the people: the answer is told in words and stays until it is closed ----------------------------------------------------
 
   async function eraseTheData() {
     try {
@@ -151,8 +136,6 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
       // The hook told why.
     }
   }
-
-  // ---- the menu «⋯»: what changes nothing for good first, what destroys last and apart --------------------------------------------------
 
   const gentle: PageHeaderMenuItem[] = [];
   if (available['annulla-firma']) {
@@ -175,8 +158,6 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
     destructive.push({ label: t('leaseLifecycle.menu.terminate'), icon: Ban, danger: true, onClick: () => go('termina'), testId: 'lease-action-termina' });
   }
   const menu: PageHeaderMenuItem[] = [...gentle, ...(gentle.length > 0 && destructive.length > 0 ? [{ separator: true } as const] : []), ...destructive];
-
-  // ---- the windows ---------------------------------------------------------------------------------------------------------------------
 
   const dialogs = (
     <>

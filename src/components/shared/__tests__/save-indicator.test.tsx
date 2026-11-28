@@ -4,7 +4,6 @@ import i18n from "@/i18n/config";
 import type { WizardSaveStatus } from "@/types/wizard";
 import { SaveIndicator } from "../save-indicator";
 
-// 09:30 UTC is 10:30 in Rome in November.
 const SERVER_TIME = Date.UTC(2026, 10, 6, 9, 30);
 
 const show = (status: WizardSaveStatus, savedAt: number | null = SERVER_TIME, onRetry = vi.fn()) => {
@@ -33,7 +32,6 @@ describe("SaveIndicator", () => {
 
     const { indicator } = show("saved");
 
-    // English clocks add AM / PM after the time.
     expect(indicator).toHaveTextContent(/^Saved at 10:30/);
   });
 

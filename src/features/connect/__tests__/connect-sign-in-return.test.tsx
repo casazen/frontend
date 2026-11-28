@@ -16,7 +16,6 @@ vi.mock('@/hooks/use-auth', () => ({ useAuth: () => auth.value }));
 vi.mock('@/hooks/use-user-roles', () => ({ useUserRoles: () => [] }));
 vi.mock('@/config/demo.config', () => ({ isDemoMode: false }));
 
-// Made-up values: none of them is a code, a state or a credential of anyone.
 const PARAMS = {
   site: 'https://www.quokka360.test',
   return: 'https://www.quokka360.test/wp-admin/options-general.php?page=casazen',
@@ -60,7 +59,6 @@ describe('the page of the plugin, signed out and back in (PLG-FE-CONSOLE, AC3)',
 
   it('signedOut_TheProtectedRouteHandsTheWholeAddressToTheLogin_AndShowsNothingOfThePage', () => {
     auth.value = { isAuthenticated: false, isLoading: false, user: undefined, login: vi.fn() };
-    // The login page is the next stop: here only the address it is given is read.
     render(
       <MemoryRouter initialEntries={[ADDRESS]}>
         <Routes>
@@ -81,7 +79,6 @@ describe('the page of the plugin, signed out and back in (PLG-FE-CONSOLE, AC3)',
     expect(login.pathname).toBe('/login');
     const returnTo = login.searchParams.get('returnTo')!;
     expect(returnTo).toBe(ADDRESS);
-    // Every parameter of the plugin travels with it.
     const carried = new URL(returnTo, 'https://console.test').searchParams;
     for (const [name, value] of Object.entries(PARAMS)) expect(carried.get(name)).toBe(value);
     expect(screen.queryByText('connect page')).not.toBeInTheDocument();
@@ -98,7 +95,6 @@ describe('the page of the plugin, signed out and back in (PLG-FE-CONSOLE, AC3)',
   });
 
   it('signedIn_TheAddressTheSignInBringsBackIsAcceptedAsItIs', () => {
-    // `handleAuthRedirect` of the app reads `appState.returnTo` through `safeReturnTo`: an address of this origin, query included, is kept whole.
     expect(safeReturnTo(ADDRESS)).toBe(ADDRESS);
   });
 

@@ -6,7 +6,6 @@ import { getBookingLedger, listLedger } from '../payment-ledger.api';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn() } }));
 
-/** What the shared client resolves with for a read that came back with a status the read accepts. */
 const answer = (data: unknown, status = 200) => ({ status, data });
 
 const BOOKING_ID = 'b0c1d2e3-0000-4000-8000-000000000002';
@@ -41,7 +40,6 @@ describe('getBookingLedger', () => {
     const ledger = await getBookingLedger(BOOKING_ID);
 
     expect(axios.get).toHaveBeenCalledWith(`/payment-ledger/bookings/${BOOKING_ID}`, expect.objectContaining({ validateStatus: expect.any(Function) }));
-    // Money rule: the figures are the ones of the server, untouched (no sum, no rounding, no float arithmetic on the way).
     expect(ledger.lines).toEqual([line()]);
     expect(ledger.lines[0].gross).toBe(100.1);
     expect(ledger.lines[0].providerFee).toBe(2.9);
@@ -80,7 +78,6 @@ describe('getBookingLedger', () => {
     ['a line with no state', { bookingId: BOOKING_ID, lines: [{ ...line(), state: undefined }] }],
     ['a fee as a text', { bookingId: BOOKING_ID, lines: [line({ providerFee: '2.9' as never })] }],
     ['a document that is not one', { bookingId: BOOKING_ID, lines: [line({ document: { id: 1 } as never })] }],
-    // One bad line is a load error for the whole answer: a ledger that silently misses a row could be read as one in order.
     ['one bad line among good ones', { bookingId: BOOKING_ID, lines: [line(), { ...line(), gross: null }] }],
   ])('getBookingLedger_%s_IsALoadErrorAndNeverAnEmptyLedger', async (_case, body) => {
     vi.mocked(axios.get).mockResolvedValueOnce(answer(body));
@@ -124,7 +121,6 @@ describe('listLedger', () => {
 });
 
 describe('a 403 (permission rule: the refusal of the server is an answer of the read, not a move of the whole app to the no-access page)', () => {
-  /** The shared client rejects a 403 on a read and sends the app to the no-access page, so the read has to accept the status for the answer to reach the code. */
   const acceptedStatuses = () => {
     const config = vi.mocked(axios.get).mock.calls[0][1];
     return [200, 204, 401, 403, 404, 422, 500].filter((status) => config?.validateStatus?.(status));

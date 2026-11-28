@@ -4,7 +4,6 @@ import { ApiClient } from "@/api/client";
 import { CONDO_BASE, CONDO_KEY, condominiumAccountingApi } from "@/api/condominium-accounting.api";
 import { useWorkspace } from "@/hooks/use-workspace";
 
-/** The state of the ledger of a property: the properties and the choice of one, of its book, of how to start it, and the creation of the book. */
 export function useCondominiumManagementState(propertyId: string | undefined) {
   const { hasPermission } = useWorkspace();
   const canWrite = hasPermission("long-rent", "property.write");

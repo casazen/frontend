@@ -20,7 +20,6 @@ import { AlloggiatiBookingPanel } from '../components/alloggiati-booking-panel';
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getStatus: vi.fn(), retryOctorateWrite: vi.fn(), markSentManually: vi.fn() } }));
 vi.mock('../components/alloggiati-guest-summary', () => ({ AlloggiatiGuestSummary: () => null }));
-// The layer that corrects the guests is the guests editor of the check-in wizard, tested with it: here only that the page opens it and stays where it is.
 vi.mock('@/features/compliance/components/checkout-guest-data-subflow', () => ({
   CheckoutGuestDataSubflow: ({ open, description }: { open: boolean; description?: string }) =>
     open ? createElement('div', { 'data-testid': 'guests-layer' }, description) : null,
@@ -68,7 +67,6 @@ function statusOf(status: AlloggiatiWebStatus, channelManager: AlloggiatiChannel
   };
 }
 
-/** A stay with a guest the channel manager did not take, and what can be done about it. */
 function failedStatus(guests: AlloggiatiChannelManagerGuestDto[], actions: string[] = ['RetryOctorateWrite']): AlloggiatiStatusDto {
   return statusOf('ChannelManagerWriteFailed', block({ state: 'Failed', guests, light: 'Red', reason: 'alloggiati_failed', actions }));
 }
@@ -81,7 +79,6 @@ function problem(status: number, data: unknown): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
 }
 
-/** The panel on a page whose read of the status answers `status`, or fails with it when it is an error. */
 function renderPanel(
   status: AlloggiatiStatusDto | Error,
   client: QueryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }),
@@ -112,7 +109,6 @@ beforeEach(() => {
 
 afterEach(cleanup);
 
-// E20/F01/US02 (NF-43, NF-52): the stay on the channel manager, told as the server says it.
 describe('AlloggiatiBookingPanel: a stay entrusted to the channel manager', () => {
   it('panel_EntrustedWithoutReceipt_IsYellowAndWaitingForTheReceiptNeverGreenAndNeverAManualSend', async () => {
     renderPanel(statusOf('EntrustedToChannelManager', block()));
@@ -122,7 +118,6 @@ describe('AlloggiatiBookingPanel: a stay entrusted to the channel manager', () =
     expect(label.className).not.toMatch(/green|success/);
     expect(label.className).toMatch(/yellow|warning/);
     expect(screen.getByTestId('alloggiati-entrusted-notice')).toHaveTextContent('solo quando la ricevuta è archiviata');
-    // The channel manager is the sender: nothing to send by hand, no complaint that CasaZen does not transmit.
     expect(screen.queryByTestId('alloggiati-resend-button')).not.toBeInTheDocument();
     expect(screen.queryByTestId('alloggiati-manual-notice')).not.toBeInTheDocument();
     expect(screen.getByTestId('booking-alloggiati-deadline')).toBeInTheDocument();
@@ -183,7 +178,6 @@ describe('AlloggiatiBookingPanel: a stay entrusted to the channel manager', () =
 
 describe('AlloggiatiBookingPanel: a status that cannot be read', () => {
   it('panel_StatusRead404_IsNotFoundWhateverTheCacheStillHoldsAndOffersNoAction', async () => {
-    // The status of an older read is in the cache (a stay to correct, with its actions); the new read answers 404: nothing of the old one may stay on the page.
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     client.setQueryData([ALLOGGIATI_KEY, 'status', BOOKING_ID], failedStatus([PLACE, DOWN]));
     renderPanel(problem(404, {}), client);
@@ -202,14 +196,12 @@ describe('AlloggiatiBookingPanel: a guest the channel manager did not take', () 
 
     expect(await badge()).toHaveTextContent('Da correggere');
     expect((await badge()).className).toMatch(/destructive/);
-    // The position of the guest is the one of the stay (from 0): the page says «Ospite 2» for position 1.
     const place = screen.getByTestId('alloggiati-guest-error-1');
     expect(place).toHaveTextContent('Ospite 2');
     expect(place).toHaveTextContent('il comune di nascita e il comune di residenza');
     const down = screen.getByTestId('alloggiati-guest-error-2');
     expect(down).toHaveTextContent('Ospite 3');
     expect(down).toHaveTextContent('non risponde in questo momento');
-    // No raw code, no supplier name, anywhere in the block.
     const text = screen.getByTestId('alloggiati-channel-manager').textContent ?? '';
     expect(text).not.toMatch(/octorate|place_not_recognized/i);
     expect(screen.queryByTestId('alloggiati-resend-button')).not.toBeInTheDocument();
@@ -230,14 +222,12 @@ describe('AlloggiatiBookingPanel: a guest the channel manager did not take', () 
 
     const layer = await screen.findByTestId('guests-layer');
     expect(layer).toHaveTextContent('il tuo channel manager non riconosce');
-    // Saving sends nothing by itself: the layer says what sends the corrected guest.
     expect(layer).toHaveTextContent('Conferma e invia');
     expect(screen.getByTestId('booking-alloggiati-section')).toBeInTheDocument();
     // A place cannot be mended by asking again: the server offers no retry for it, and the page offers none.
     expect(screen.queryByTestId('alloggiati-retry-write')).not.toBeInTheDocument();
   });
 
-  // With the automatic send of the organization off (the default) saving the corrected guest sends nothing: it goes with the confirmation of the check-in wizard.
   it('panel_PlaceNotRecognized_SaysWhatSendsTheCorrectedGuestAndLeadsToTheCheckInWizard', async () => {
     renderPanel(failedStatus([PLACE], []));
 
@@ -300,17 +290,14 @@ describe('AlloggiatiBookingPanel: a guest the channel manager did not take', () 
     const retry = await screen.findByTestId('alloggiati-retry-write', undefined, WAIT);
     fireEvent.click(retry);
 
-    // The pressed button is busy and ignores a second press; the other one of the card is off too.
     await waitFor(() => expect(retry).toHaveAttribute('aria-busy', 'true'), WAIT);
     fireEvent.click(retry);
     expect(screen.getByTestId('alloggiati-fix-guests')).toBeDisabled();
-    // The way to the check-in wizard waits too: while the request is on its way it is a button that is off, not a link.
     expect(screen.getByTestId('alloggiati-open-check-in')).toBeDisabled();
     expect(alloggiatiApi.retryOctorateWrite).toHaveBeenCalledTimes(1);
 
     refuse(problem(409, { code: 'alloggiati_write_in_progress' }));
 
-    // Another send of the stay is running: nothing was tried, the host is told to ask again in a moment, and the buttons are back.
     expect(await screen.findByTestId('alloggiati-retry-error', undefined, WAIT)).toHaveTextContent('stanno già passando al tuo channel manager');
     await waitFor(() => expect(screen.getByTestId('alloggiati-fix-guests')).toBeEnabled(), WAIT);
     await waitFor(() => expect(screen.getByTestId('alloggiati-open-check-in')).toHaveAttribute('href', CHECK_IN_PATH), WAIT);
@@ -340,7 +327,6 @@ describe('AlloggiatiBookingPanel: a guest the channel manager did not take', () 
     expect(result).toHaveAttribute('data-outcome', 'partlyFailed');
     expect(result.textContent ?? '').not.toMatch(/Fatto/);
     expect(result).toHaveTextContent('altri no');
-    // The stay is what the server answered: still to correct, with the guest of the place in the list.
     expect(await badge()).toHaveTextContent('Da correggere');
     expect(screen.getByTestId('alloggiati-guest-error-1')).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByTestId('alloggiati-guest-error-2')).not.toBeInTheDocument(), WAIT);
@@ -354,10 +340,8 @@ describe('the words of the stay on the channel manager', () => {
     expect(stayChannelViewOf(statusOf('EntrustedToChannelManager', block()))).toBe('entrusted');
     expect(stayChannelViewOf(statusOf('EntrustedToChannelManager', archived))).toBe('receiptArchived');
     expect(stayChannelViewOf(statusOf('EntrustedToChannelManager', block({ light: 'Red' })))).toBe('receiptMissing');
-    // Green is never claimed for an entrusted stay whose block says nothing of a receipt, or has no block at all.
     expect(stayChannelViewOf(statusOf('EntrustedToChannelManager', null))).toBe('entrusted');
     expect(stayChannelViewOf({ status: 'EntrustedToChannelManager' })).toBe('entrusted');
-    // A write that failed is to correct whatever else exists, an archived receipt included.
     expect(stayChannelViewOf(statusOf('ChannelManagerWriteFailed', archived))).toBe('toCorrect');
     expect(stayChannelViewOf(statusOf('DaInviareManualmente', archived))).toBe('receiptArchived');
     expect(stayChannelViewOf(statusOf('Inviato', null))).toBeNull();

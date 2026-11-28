@@ -40,8 +40,6 @@ afterEach(() => {
 });
 
 describe('the standard mandate is applied as the form says it when the person confirms (E11/F02/US01/T01)', () => {
-  // Money rule: the action gives the mandate to EVERY owner that has none, and the fields stay open while the confirmation is up. A percent emptied after the confirmation was
-  // asked for is no mandate: nothing is sent, and above all not a mandate of 0%.
   it('MandateStep_APercentEmptiedAfterTheConfirmationWasAsked_SendsNothingAndSaysWhatIsWrongOnTheField', async () => {
     const { mutateAsync, mutation } = applier();
     render(<Harness apply={mutation} />);

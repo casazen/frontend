@@ -28,7 +28,6 @@ import { DayCellContent } from './day-cell-content';
 import './host-calendar.css';
 import './host-timeline.css';
 
-/** A share of the area of the days, in percent to three decimals: bars and columns line up without a pixel of drift. */
 const percent = (days: number, total: number) => Math.round((days / total) * 100_000) / 1000;
 
 const SERVICE_ICONS = { Cleaning: Sparkles, Maintenance: Wrench, Other: Briefcase } as const;
@@ -43,11 +42,6 @@ interface BarProps {
   onOpen: OpenItem;
 }
 
-/**
- * A stay, a portal's reservation or a block as a bar over its nights. Its kind is told by color, shape and icon; where a stay
- * comes from by the icon and the name of the channel; a night taken twice by a red frame and a flag. The label of the button
- * says all of it in words, so a screen reader gets what the eyes get.
- */
 function StayBar({ bar, propertyName, days, focused, onOpen }: BarProps) {
   const { t, i18n } = useTranslation();
   const { item, span, lane, kind, conflict } = bar;
@@ -100,7 +94,6 @@ interface ChipProps {
   onOpen: OpenItem;
 }
 
-/** An intervention of a supplier as a mark on the day of the work; the dashed edge is a request nobody has taken yet. */
 function ServiceChip({ chip, propertyName, days, focused, onOpen }: ChipProps) {
   const { t, i18n } = useTranslation();
   const { item, index, slot } = chip;
@@ -132,21 +125,14 @@ function ServiceChip({ chip, propertyName, days, focused, onOpen }: ChipProps) {
 
 interface HostTimelineProps {
   rows: readonly TimelineRow[];
-  /** The days of the window, the first one included, one column each. */
   days: readonly string[];
   today: string;
-  /** The id of the item the address points to (`?focus=`); empty for none. */
   focusId: string;
-  /** The window is moving: what is on screen is still the last one. */
   busy: boolean;
   onOpen: OpenItem;
-  /** The price and the rules of every day (E08/F05/US03/T01), when the caller may read them; without it the Timeline is what it always was. */
   dayLayer?: DayLayer;
-  /** The days selected (E08/F05/US03/T02). */
   selection?: DaySelection | null;
-  /** A press on a day (a click, Enter or Space; with `shift` it extends the selection). Without it the days are not controls: they cannot be selected. */
   onPressDay?: (propertyId: string, day: string, shift: boolean, origin?: string) => void;
-  /** Escape on a day: nothing is selected. */
   onClearSelection?: () => void;
 }
 
@@ -160,10 +146,7 @@ interface HostTimelineProps {
 export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLayer, selection = null, onPressDay, onClearSelection }: HostTimelineProps) {
   const { t, i18n } = useTranslation();
   const style = { '--n': days.length } as CSSProperties;
-  // The days are controls only where they can be selected; the one that takes the Tab key is the last the person was on, else today, else the first.
   const selectable = onPressDay !== undefined;
-  // The name in words of every day of every row that has one, worked out once for the rows, the days and the layer on screen: moving the focus from day to day draws the Timeline again
-  // (it holds the day that takes the Tab key), and must not work out fifteen hundred names each time.
   const labels = useMemo(() => {
     const names = new Map<string, string>();
     for (const { property } of rows) {
@@ -180,7 +163,6 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
   const stillThere = active !== null && rows.some((row) => row.property.id === active.propertyId) && days.includes(active.day);
   const tabbable = stillThere ? active : firstRow ? { propertyId: firstRow, day: days.includes(today) ? today : (days[0] ?? '') } : null;
 
-  /** Moves the focus to a day of a row: the controls are found by what they say they are, not by their place in the page. */
   const focusDay = (root: HTMLElement, propertyId: string, day: string) => {
     const key = `${propertyId}|${day}`;
     Array.from(root.querySelectorAll<HTMLElement>('[data-cell]'))
@@ -200,7 +182,6 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
         event.preventDefault();
         const target = days[index + (event.key === 'ArrowLeft' ? -1 : 1)];
         if (!target) return;
-        // Shift plus arrow extends the selection of the row from where it was started (or from this day).
         if (event.shiftKey) onPressDay(propertyId, target, true, day);
         focusDay(root, propertyId, target);
         return;
@@ -256,8 +237,6 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
           {rows.map(({ property, bars, lanes, chips, slots }) => {
             const paused = property.status === 'Paused';
             const rowStyle = { '--lanes': lanes, '--slots': slots } as CSSProperties;
-            // The days of a row are told to a screen reader whenever they say something: they can be selected (a control named in words) or the row has its day layer (a cell named in
-            // words, no control: a caller who may read the prices but not change them still hears what the eyes read). Without either they are decoration.
             const rowLayer = dayLayer?.get(property.id);
             const described = selectable || rowLayer !== undefined;
             return (
@@ -287,7 +266,6 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
                     aria-hidden={described ? undefined : true}
                     data-testid="timeline-cells"
                   >
-                    {/* A row of the grid that takes no box of its own: the cells keep the columns of the days. */}
                     <div role={described ? 'row' : undefined} className="host-timeline__cells-row">
                       {days.map((day) => {
                         const layer = rowLayer;

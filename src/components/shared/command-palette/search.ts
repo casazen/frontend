@@ -8,10 +8,8 @@ import type { CommandItem, CommandKind } from './types';
  * field beats the start of a word, which beats the middle of a word.
  */
 
-/** How many results one group shows when something was typed. */
 export const MAX_RESULTS_PER_GROUP = 5;
 
-/** The order of the groups when their best results are worth the same, and the order of the headings in the empty palette. */
 const KIND_ORDER: readonly CommandKind[] = ['page', 'action', 'property', 'booking', 'guest', 'guide'];
 
 /**
@@ -30,16 +28,13 @@ function pointsFor(field: Field, rank: Rank): number {
   return (rank === 'substring' ? 0 : REAL_MATCH) + FIELD_POINTS[field] + RANK_POINTS[rank];
 }
 
-/** The items of the area the user is in come first among equals. */
 const ACTIVE_AREA_BONUS = 8;
-/** Words that do not help to find anything ("prenotazioni di mario"); dropped when there is something else to look for. */
 const STOP_WORDS = new Set(['di', 'a', 'da', 'in', 'il', 'lo', 'la', 'le', 'i', 'gli', 'un', 'una', 'e', 'per', 'of', 'the', 'to', 'and']);
 const MAX_TOKENS = 6;
 
 const NON_LETTER_OR_DIGIT = /[^\p{L}\p{N}]/gu;
 const COMBINING_MARKS = /\p{M}/gu;
 
-/** `value` without capitals and accents, punctuation as one space, trimmed: the form in which texts are compared. */
 export function normalizeText(value: string): string {
   return value
     .normalize('NFD')
@@ -69,7 +64,6 @@ function tokenize(query: string): Token[] {
   return (meaningful.length > 0 ? meaningful : words).map((text) => ({ text, stem: stemOf(text) }));
 }
 
-/** `probe` starts a word of `text` after the first one (the first word is the `prefix` rank). */
 function startsLaterWord(text: string, probe: string): boolean {
   return text.includes(` ${probe}`);
 }
@@ -79,18 +73,15 @@ function rankOf(text: string, token: Token): Rank | null {
   if (text === token.text) return 'exact';
   if (text.startsWith(token.text) || text.startsWith(token.stem)) return 'prefix';
   if (startsLaterWord(text, token.text) || startsLaterWord(text, token.stem)) return 'word';
-  // Two letters find the start of a word, not any word that has them inside ("im" is not "regime").
   if (token.text.length >= 3 && (text.includes(token.text) || text.includes(token.stem))) return 'substring';
   return null;
 }
 
-/** An item ready to be searched: its texts folded once, not at every key. */
 export interface PreparedCommand {
   item: CommandItem;
   title: string;
   keywords: string[];
   subtitle: string;
-  /** Where the item came in the list: equal scores keep that order. */
   order: number;
 }
 
@@ -119,12 +110,10 @@ function scoreCommand(command: PreparedCommand, tokens: readonly Token[], active
   let total = 0;
   for (const token of tokens) {
     const points = scoreToken(command, token);
-    // Every word of the text has to be found somewhere in the item.
     if (points === 0) return 0;
     total += points;
   }
   const areaBonus = command.item.area === activeArea ? ACTIVE_AREA_BONUS : 0;
-  // Of two equal labels the shorter one is the closer match.
   const shortBonus = Math.max(0, 3 - command.title.length / 20);
   return total + areaBonus + shortBonus;
 }
@@ -134,7 +123,6 @@ export interface TextRange {
   end: number;
 }
 
-/** An item that matched: where in its label and its second line the text was found (to underline it). */
 export interface CommandHit {
   item: CommandItem;
   score: number;
@@ -142,7 +130,6 @@ export interface CommandHit {
   subtitleRanges: TextRange[];
 }
 
-/** One group of the palette: a heading and its rows. `recent` is the group of the items chosen before. */
 export interface CommandGroup {
   id: CommandKind | 'recent';
   hits: CommandHit[];
@@ -173,7 +160,6 @@ function foldWithMap(value: string): { folded: string; starts: number[]; ends: n
 
 function findToken(folded: string, token: Token): { start: number; end: number } | null {
   for (const probe of token.text === token.stem ? [token.text] : [token.text, token.stem]) {
-    // The start of a word first; then, for three letters or more, anywhere.
     let index = folded.indexOf(probe);
     let anywhere = -1;
     while (index !== -1) {
@@ -190,7 +176,6 @@ function isSeparator(char: string | undefined): boolean {
   return char !== undefined && /[^\p{L}\p{N}]/u.test(char);
 }
 
-/** The parts of `text` that the words of `query` found, in the text as it is written, merged and in order. */
 export function highlightRanges(text: string, query: string): TextRange[] {
   const tokens = tokenize(query);
   if (!text || tokens.length === 0) return [];
@@ -204,7 +189,6 @@ export function highlightRanges(text: string, query: string): TextRange[] {
   const merged: TextRange[] = [];
   for (const range of found) {
     const last = merged[merged.length - 1];
-    // Two words found one after the other, with a space or a dot between them, are underlined as one ("Booking.com").
     const touches = last && (range.start <= last.end || (range.start === last.end + 1 && isSeparator(text[last.end])));
     if (last && touches) last.end = Math.max(last.end, range.end);
     else merged.push({ ...range });
@@ -217,10 +201,6 @@ export interface SearchOptions {
   limitPerGroup?: number;
 }
 
-/**
- * The items that match `query`, in groups by kind. The group with the best result comes first, so does the best result in
- * it; at most `limitPerGroup` rows each. An empty list when nothing matches or the text has nothing to look for.
- */
 export function searchCommands(
   commands: readonly PreparedCommand[],
   query: string,
@@ -252,12 +232,10 @@ export function searchCommands(
     .sort((a, b) => b.hits[0].score - a.hits[0].score || KIND_ORDER.indexOf(a.id) - KIND_ORDER.indexOf(b.id));
 }
 
-/** How many of each the empty palette suggests: little, so the first thing on the screen is easy to take in. */
 export const SUGGESTED = { recent: 4, action: 4, page: 6 } as const;
 
 export interface SuggestOptions {
   activeArea: AppContextKey;
-  /** `id`s of the items chosen before, the latest first. */
   recentIds: readonly string[];
 }
 
@@ -265,10 +243,6 @@ function plain(item: CommandItem): CommandHit {
   return { item, score: 0, titleRanges: [], subtitleRanges: [] };
 }
 
-/**
- * What the palette shows before anything is typed: the items chosen before (the ones still there), the actions and the pages
- * of the area the user is in. An item shows once, in the first group that has it.
- */
 export function suggestCommands(items: readonly CommandItem[], { activeArea, recentIds }: SuggestOptions): CommandGroup[] {
   const byId = new Map(items.map((item) => [item.id, item]));
   const recent = recentIds
@@ -279,7 +253,6 @@ export function suggestCommands(items: readonly CommandItem[], { activeArea, rec
 
   const ofKind = (kind: CommandKind, limit: number) => {
     const here = items.filter((item) => item.kind === kind && !item.quiet && !shown.has(item.id));
-    // The area the user is in first, the others after it; inside each, the order the sources gave.
     const sorted = [...here.filter((item) => item.area === activeArea), ...here.filter((item) => item.area !== activeArea)];
     return sorted.slice(0, limit);
   };
@@ -296,7 +269,6 @@ export function suggestCommands(items: readonly CommandItem[], { activeArea, rec
   return groups.filter((group) => group.hits.length > 0);
 }
 
-/** How many rows there are in all the groups. */
 export function countHits(groups: readonly CommandGroup[]): number {
   return groups.reduce((total, group) => total + group.hits.length, 0);
 }

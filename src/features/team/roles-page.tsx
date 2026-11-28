@@ -14,21 +14,13 @@ import { countPeopleByRole } from './roles-matrix-model';
 import { orgRoleDescription } from './team-labels';
 import { ACCOUNT_INVITE_PATH } from './team-paths';
 
-/**
- * «Ruoli e permessi» (AM-04b-FU2), in the Amministrazione: what each of the five roles is for, in a sentence and with the people who
- * have it, and the matrix of what each one can do, area by area. All of it from the answer of `GET /api/orgs/me/roles` (the same one
- * that gives the cards of the invitation); the words are the product's. Nothing here changes anything: the role of a person is changed
- * from its own drawer, and «Cosa vede» tells what a person finds with the role and the areas it has.
- */
 export function RolesPage() {
   const { t } = useTranslation();
   const rolesQuery = useOrgRoles();
   const membersQuery = useOrgMembers(true);
 
-  // An answer that is not a list (the page of the app where an API answer should be) is a failed load, never an empty matrix.
   const roles = Array.isArray(rolesQuery.data?.roles) ? rolesQuery.data.roles : undefined;
   const members = Array.isArray(membersQuery.data?.items) ? membersQuery.data.items : undefined;
-  // Without the people the roles are still worth reading: only the numbers are left out.
   const counts = members ? countPeopleByRole(members) : null;
 
   return (

@@ -13,11 +13,8 @@ import type { OnboardingLaunchTarget, OnboardingPartMissing } from '@/types/onbo
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
 interface PartMissingListProps {
-  /** What the part launches (`launchTarget` of the part): the page each property opens, resolved for that property. */
   target: OnboardingLaunchTarget;
-  /** What the plan lists as missing, property by property (`missing` of the part). */
   items: readonly OnboardingPartMissing[];
-  /** How many properties lack something in all: the plan lists at most 50 of them, so the host is told how many more there are. */
   totalMissing: number;
 }
 

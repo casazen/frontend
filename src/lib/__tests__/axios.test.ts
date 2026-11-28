@@ -9,7 +9,6 @@ vi.mock('@/config/api.config', () => ({
 type Reply = { status: number; data?: unknown };
 type Responder = (config: InternalAxiosRequestConfig, callIndex: number) => Reply;
 
-/** Real axios instance + interceptors; only the transport is replaced. */
 async function load(respond: Responder = () => ({ status: 200, data: { ok: true } })) {
   const axiosModule = await import('@/lib/axios');
   const errors = await import('@/lib/api-errors');
@@ -332,14 +331,12 @@ describe('response interceptor: the host reads of the identity verification keep
     ['theSettingsOfTheIdentityCheck', '/settings/biometrics', async () => (await import('@/api/biometric-settings.api')).biometricSettingsApi.get()],
     ['theStateOfTheModels', '/admin/biometrics/status', async () => (await import('@/api/biometric-settings.api')).biometricSettingsApi.getModelsStatus()],
   ])('response403_%s_isLeftToItsScreenAndNeverOpensNoAccess', async (_name, url, read) => {
-    // A 403 with no code on a protected read opens «no access» for the whole app (above): these three reads sit on pages with other things on them, which say it themselves.
     const ctx = await load(() => ({ status: 403 }));
 
     await expect(read()).rejects.toMatchObject({ response: { status: 403 } });
 
     expect(ctx.calls).toHaveLength(1);
     expect(ctx.calls[0].url).toBe(url);
-    // Still the call of a signed-in person: nothing here is public.
     expect(ctx.authorization(0)).toBe('Bearer cached-token');
     expect(ctx.onForbidden).not.toHaveBeenCalled();
   });
@@ -355,7 +352,6 @@ describe('response interceptor: 403 account_inactive → account disabled page (
     expect(ctx.onAccountInactive).toHaveBeenCalledTimes(1);
     expect(ctx.onForbidden).not.toHaveBeenCalled();
     expect(ctx.onSessionExpired).not.toHaveBeenCalled();
-    // An inactive account takes precedence over the onboarding gate (PL-02).
     expect(ctx.onOnboardingRequired).not.toHaveBeenCalled();
   });
 
@@ -425,7 +421,6 @@ describe('logging (A1-34, A9-36)', () => {
       await ctx.api.get('/properties');
       await ctx.api.get('/bookings');
 
-      // 401, refresh, replay, then a second call: every path that handles the token ran.
       expect(ctx.refreshAccessToken).toHaveBeenCalledTimes(1);
       expect(ctx.calls).toHaveLength(3);
       for (const spy of spies) expect(spy).not.toHaveBeenCalled();

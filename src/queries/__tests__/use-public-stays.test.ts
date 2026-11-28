@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cleanStaysQuery } from '../use-public-stays';
 
-/**
- * What the home and the results of a booking site ask the server. The server refuses a stay with only one of its two dates (422
- * `public_stays_dates_invalid`), and the page used to show that as «Non riusciamo a mostrare le strutture» the moment a guest
- * clicked the arrival in the calendar, before choosing the departure.
- */
 describe('cleanStaysQuery', () => {
   it('cleanStaysQuery_OnlyTheArrivalChosen_AsksWithoutDates', () => {
     const clean = cleanStaysQuery({ checkIn: '2026-11-12', checkOut: '', adults: 2 });

@@ -37,10 +37,6 @@ export const alloggiatiApi = {
   getGuestSummary: (bookingId: string) =>
     ApiClient.get<AlloggiatiGuestSummaryDto>(`/alloggiati/${bookingId}/guest-summary`),
 
-  /**
-   * Full document numbers of the guests of the stay (the summary shows them masked); `position` limits the answer to
-   * one guest. Every request is audited by the API.
-   */
   getDocumentNumbers: (bookingId: string, position?: number) =>
     ApiClient.get<StayGuestDocumentNumberDto[]>(
       `/alloggiati/${bookingId}/stay-guests/document-numbers`,
@@ -62,21 +58,15 @@ export const alloggiatiApi = {
     }
   },
 
-  /**
-   * Replaces the guests of the stay (host entry); answers the updated per-guest summary. The plate of the car of the stay (NF-132) goes with it
-   * where the regime asks it: not sent, the stored one stays; an empty text clears it.
-   */
   replaceStayGuests: (bookingId: string, guests: StayGuestSubmit[], vehiclePlate?: string) =>
     ApiClient.put<AlloggiatiGuestSummaryDto>(
       `/alloggiati/${bookingId}/stay-guests`,
       vehiclePlate === undefined ? { guests } : { guests, vehiclePlate },
     ),
 
-  /** Official Alloggiati codes matching `q` (empty until an admin imports the tables). */
   searchCodes: (list: AlloggiatiCodeList, q: string) =>
     ApiClient.get<AlloggiatiCodeEntryDto[]>('/alloggiati/codes', { list, q }),
 
-  /** The host declares having sent the schedina on the portal (CasaZen does not transmit). */
   markSentManually: (bookingId: string, request: MarkAlloggiatiSentManuallyRequest) =>
     ApiClient.post<AlloggiatiStatusDto>(`/alloggiati/${bookingId}/mark-sent-manually`, request),
 };

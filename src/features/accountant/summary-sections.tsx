@@ -22,7 +22,6 @@ import { hasCurrency, useSummaryFormat, type SummaryFormat } from './use-summary
 
 const NOTE = 'break-words text-sm text-foreground/70';
 
-/** Some row names no currency: the table says so, and its figures are written without a symbol. */
 const lacksCurrency = (rows: readonly { currency: string }[]): boolean => rows.some((row) => !hasCurrency(row.currency));
 
 interface AmountsWithVatProps {
@@ -145,10 +144,6 @@ export function DocumentsSection({ summary }: SectionProps) {
   );
 }
 
-/**
- * What the agency earned from its owners and what it paid them (owner accounting, drawn only for a caller who may read it): the commissions of each owner, the margin, the payouts, the
- * wires, the commissions of the portals the agency bears (for information) and the performance of the properties of each owner. Each row is in its own currency.
- */
 export function OwnersSection({ summary }: SectionProps) {
   const { t } = useTranslation();
   const format = useSummaryFormat();
@@ -192,7 +187,6 @@ export function OwnersSection({ summary }: SectionProps) {
     { id: 'amount', header: t('accountantPackage.columns.amount'), numeric: true, cell: (row) => format.money(row.amount, row.currency) },
   ];
 
-  // The figures of the report by owner carry no currency: the server adds the properties of an owner up as it counts them.
   const performanceColumns: TableColumn<AgencyOwnerRevenue>[] = [
     { id: 'owner', header: t('accountantPackage.columns.owner'), rowHeader: true, cell: (row) => <span className="break-words">{ownerLabel(row, t)}</span> },
     { id: 'properties', header: t('accountantPackage.columns.properties'), numeric: true, cell: (row) => format.count(row.properties) },
@@ -270,16 +264,10 @@ export function OwnersSection({ summary }: SectionProps) {
   );
 }
 
-/** Whether the Italian tourist tax has anything to say: a figure above zero, or stays whose tax nobody recorded (the owed amount may then be incomplete). */
 function hasItalianTouristTax(tax: AgencySummary['touristTax']['italy']): boolean {
   return tax.owed !== 0 || (tax.paid ?? 0) !== 0 || (tax.toRemit ?? 0) !== 0 || tax.staysWithoutAmount > 0;
 }
 
-/**
- * The stays, the collections, the costs of the channels and the tourist tax of the period. The figures of the stays, of what was collected, of the costs of the channels and of the Italian
- * tourist tax carry no currency (the server adds the properties up as it counts them), so they are written without a symbol and the section says it once; the amounts still to collect and the
- * Swiss tourist tax name theirs. The row of the costs that is the server's total is not drawn: it adds the properties up in whatever currency they are, and no total of that kind is shown.
- */
 export function StaysSection({ summary }: SectionProps) {
   const { t } = useTranslation();
   const format = useSummaryFormat();

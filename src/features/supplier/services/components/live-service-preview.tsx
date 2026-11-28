@@ -5,10 +5,6 @@ import { priceInputOf, type ServiceFormValues } from '../lib/service-form';
 import { formatDuration, formatPrice } from '../lib/service-labels';
 import { ServicePreviewCard } from './service-preview-card';
 
-/**
- * The preview card of the form it is in: it follows what is typed, before anything is saved. The cover is the first photo of
- * the saved service (photos are saved as they are added, not with the form).
- */
 export function LiveServicePreview({ photoUrl }: { photoUrl?: string | null }) {
   const { t, i18n } = useTranslation();
   const { control } = useFormContext<ServiceFormValues>();

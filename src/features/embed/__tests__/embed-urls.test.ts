@@ -11,11 +11,6 @@ import {
   embedPropertyHref,
 } from '../embed-urls';
 
-/**
- * The addresses a widget writes (E41/F01/US01/T02, NF-144, NF-145): the links inside the frame, which keep what a reload needs, and the link out of
- * it to the checkout, which carries the stay and where the guest comes from. What costs something when it is wrong is the attribution: the booking
- * says it was made through the widget of the agency's website, and from which page, only through this address and the referrer of the checkout.
- */
 const PARENT = 'https://quokka360.com';
 const PLATFORM = { embedBase: '/embed/villa-rossi', parentOrigin: PARENT, lang: 'it' } as const;
 const HOST = { embedBase: '/embed', parentOrigin: PARENT, lang: 'en' } as const;
@@ -42,7 +37,6 @@ describe('embedHref (links inside the frame)', () => {
   });
 
   it('embedHref_AQueryThatNamesTheFramesOwnParameters_IsOverriddenByTheFrame', () => {
-    // The address of the frame itself is a good source of the query of a link: its own parameters are written again from what the frame knows.
     const here = new URLSearchParams(`checkin=2026-12-01&lang=de&parent=${encodeURIComponent('https://evil.example')}&v=9`);
 
     const href = embedHref(PLATFORM, '/booking', here);
@@ -131,7 +125,6 @@ describe('buildEmbedCheckoutUrl (the exit to the checkout, AC4)', () => {
   });
 
   it('embedCheckoutUrl_carriesEmbedAttribution', () => {
-    // The booking reads the source of the link: `agency-site` is what makes the host read «Sito dell'agenzia», `embed` says it came through a frame.
     for (const url of [agency(), platform()]) {
       expect(queryOf(url).get('utm_source')).toBe('agency-site');
       expect(queryOf(url).get('utm_medium')).toBe('embed');
@@ -162,14 +155,12 @@ describe('buildEmbedCheckoutUrl (the exit to the checkout, AC4)', () => {
     const url = agency({ campaign });
 
     expect(queryOf(url).has('utm_campaign')).toBe(false);
-    // The rest of the attribution is there, and nothing of what was refused is anywhere in the address.
     expect(queryOf(url).get('utm_source')).toBe('agency-site');
     expect(url).not.toContain('example.com');
     expect(url).not.toContain('3331234567');
   });
 
   it('buildEmbedCheckoutUrl_NothingElseOfThePage_IsCopied', () => {
-    // The frame is given what it needs and builds the address from it: the parent, the version and the rest of the address of the page do not follow.
     const url = new URL(agency({ campaign: 'estate-2026' }));
 
     expect([...url.searchParams.keys()].sort()).toEqual(['checkin', 'checkout', 'children', 'guests', 'lang', 'pets', 'utm_campaign', 'utm_medium', 'utm_source']);
@@ -181,7 +172,6 @@ describe('buildEmbedCheckoutUrl (the exit to the checkout, AC4)', () => {
   });
 
   it('bookingAttribution_fromEmbedCheckout_keepsPageHost', () => {
-    // The top window leaves the page of the agency's site for the checkout: the referrer of the checkout is that page, and the booking keeps its host.
     const url = agency({ campaign: 'estate-2026' });
 
     const attribution = bookingAttributionOf(queryOf(url), 'https://quokka360.com/prenota/', new URL(url).origin, false);
@@ -304,7 +294,6 @@ describe('buildEmbedPropertyUrl («Open on the site»)', () => {
 
     expect(new URL(buildEmbedPropertyUrl(platform)).pathname).toBe('/book/villa-rossi/property/casa-mare');
     expect(new URL(buildEmbedCheckoutUrl(platform)).pathname).toBe('/book/villa-rossi/property/casa-mare/checkout');
-    // The two differ by the segment and nothing else.
     expect(new URL(buildEmbedPropertyUrl(platform)).search).toBe(new URL(buildEmbedCheckoutUrl(platform)).search);
   });
 });

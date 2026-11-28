@@ -17,7 +17,6 @@ import {
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
-/** What the shared client resolves with for a read that came back with a status the read accepts. */
 const answer = (data: unknown, status = 200, headers: Record<string, string> = {}) => ({ status, data, headers });
 
 const FISCAL_CODE = 'RSSMRA80A01H501U';
@@ -66,7 +65,6 @@ const wire = (overrides: Record<string, unknown> = {}) => ({
 
 const page = (items: unknown[], totalCount = items.length) => ({ items, totalCount, page: 1, pageSize: 20 });
 
-/** The failure of an axios call whose body is a JSON Blob (`responseType: 'blob'`). */
 function blobFailure(status: number, body: unknown): AxiosError {
   const config = { headers: new AxiosHeaders(), responseType: 'blob' } as InternalAxiosRequestConfig;
   const data = new Blob([JSON.stringify(body)], { type: 'application/problem+json' });
@@ -86,7 +84,6 @@ describe('listDocuments', () => {
     expect(axios.get).toHaveBeenCalledWith('/fiscal/documents', expect.objectContaining({ params: { from: '2026-11-01', to: '2026-11-30', kind: 'Invoice', page: 2, pageSize: 20 } }));
   });
 
-  // Money rule: the figures and the words of the document are the ones of the server, untouched.
   it('ListDocuments_ADocument_KeepsTheNumberTheDayAndTheAmountAsTheServerSentThem', async () => {
     vi.mocked(axios.get).mockResolvedValueOnce(answer(page([wire(), wire({ id: 'd-2', currency: 'CHF', total: 55 })], 41)));
 
@@ -133,7 +130,6 @@ describe('listDocuments', () => {
     ['a total that is not a number', page([wire({ total: Number.NaN })])],
     ['a document with no state', page([wire({ sdiStatus: undefined })])],
     ['a number that is a figure', page([wire({ number: 12 })])],
-    // One bad document is a load error for the whole answer: a list that silently misses a document could be read as one in order.
     ['one bad document among good ones', page([wire(), wire({ id: 7 })])],
   ])('ListDocuments_%s_IsALoadErrorAndNeverAnEmptyList', async (_case, body) => {
     vi.mocked(axios.get).mockResolvedValueOnce(answer(body));
@@ -150,7 +146,6 @@ describe('listDocuments', () => {
 });
 
 describe('a 403 (permission rule: the refusal of the server is an answer of the read, not a move of the whole app to the no-access page)', () => {
-  /** The shared client rejects a 403 on a read and sends the app to the no-access page, so the read has to accept the status for the answer to reach the code. */
   const acceptedStatuses = () => {
     const config = vi.mocked(axios.get).mock.calls[0][1];
     return [200, 204, 401, 403, 404, 422, 500].filter((status) => config?.validateStatus?.(status));
@@ -182,7 +177,6 @@ describe('the files', () => {
   it('PdfPathOf_ADocumentOfCasaZenAndOneOfTheChannelManager_HaveEachTheirOwnAddress', () => {
     expect(pdfPathOf({ id: DOCUMENT_ID, source: 'CasaZen' })).toBe(`/fiscal/documents/${DOCUMENT_ID}/pdf`);
     expect(pdfPathOf({ id: DOCUMENT_ID, source: 'Octorate' })).toBe(`/fiscal/documents/${DOCUMENT_ID}/octorate-pdf`);
-    // The id is never taken for a path.
     expect(pdfPathOf({ id: '../x', source: 'CasaZen' })).toBe('/fiscal/documents/..%2Fx/pdf');
   });
 
@@ -205,7 +199,6 @@ describe('the files', () => {
     const [path] = vi.mocked(axios.get).mock.calls[0];
     expect(path).toBe(`/fiscal/documents/${DOCUMENT_ID}/octorate-pdf`);
     expect(String(path)).not.toMatch(/^https?:/);
-    // A header the page may not read (CORS) is no name, and no error.
     expect(file.contentDisposition).toBeNull();
   });
 
@@ -275,7 +268,6 @@ describe('getDocumentsContext', () => {
     const context = await getDocumentsContext();
 
     expect(axios.get).toHaveBeenCalledWith('/fiscal/documents/settings', expect.anything());
-    // The setting has no series of its own: the server uses the year, which the context says with an empty pattern.
     expect(context).toEqual({ mode: 'CasaZenDirectOnly', casazenIssuanceEnabled: true, sdiProviderConfigured: false, guestDocumentSeries: '' });
     const kept = JSON.stringify(context);
     for (const secret of [VAT_NUMBER, FISCAL_CODE, 'Via Roma', 'pec.example', 'Some Provider']) expect(kept).not.toContain(secret);
@@ -347,7 +339,6 @@ describe('getDocument', () => {
 });
 
 describe('issueBatch', () => {
-  // Data rule: the counts are made from the rows, one per document, so a count can never say «all issued» over a row that failed.
   it('IssueBatch_TheCounts_AreMadeFromTheRowsAndNotTakenFromTheAnswer', async () => {
     vi.mocked(axios.post).mockResolvedValueOnce(
       answer({
@@ -363,7 +354,6 @@ describe('issueBatch', () => {
 
     const result = await issueBatch(['a', 'b']);
 
-    // The call works through up to 200 documents in a row: it is given more than the 30 s of every other call, so the answer of every document is not lost to a timeout.
     expect(axios.post).toHaveBeenCalledWith('/fiscal/documents/issue-batch', { documentIds: ['a', 'b'] }, { timeout: 5 * 60_000 });
     expect([result.issued, result.failed, result.remaining]).toEqual([1, 1, 3]);
     expect(result.rows).toEqual([

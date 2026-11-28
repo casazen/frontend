@@ -9,19 +9,12 @@ import { copyAllTextOf, fieldsOf, guestNameOf, missingKeysOf } from './swiss-day
 const COPY_TOAST_ID = 'swiss-notification-copied';
 
 interface CopyButtonProps {
-  /** What goes to the clipboard. */
   value: string;
-  /** What the button says to a screen reader: what is copied, and of whom. */
   label: string;
   testId: string;
-  /** The text of the button; without one it is an icon. */
   children?: string;
 }
 
-/**
- * Copies a text to the clipboard and says so with a toast. Where there is no clipboard (an insecure page, a refused permission) it says that, and the value is still on the screen to
- * select: the person copies it by hand.
- */
 function CopyButton({ value, label, testId, children }: CopyButtonProps) {
   const { t } = useTranslation();
   const copy = async () => {
@@ -46,11 +39,9 @@ function CopyButton({ value, label, testId, children }: CopyButtonProps) {
 
 interface SwissGuestBlockProps {
   guest: SwissNotificationGuest;
-  /** The place of the guest in the list, from 1: the name of a guest the check-in has no name for. */
   number: number;
 }
 
-/** One guest as data ready to copy: a line for each field the check-in recorded, a button for each, and one for the whole guest. */
 function SwissGuestBlock({ guest, number }: SwissGuestBlockProps) {
   const { t } = useTranslation();
   const name = guestNameOf(guest, t('swissNotification.guests.unnamed', { number }));
@@ -74,7 +65,6 @@ function SwissGuestBlock({ guest, number }: SwissGuestBlockProps) {
           return (
             <div key={field.id} className="grid min-w-0 grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)] items-center gap-x-3" data-testid={`swiss-field-${field.id}`}>
               <dt className="break-words text-sm text-foreground/70">{label}</dt>
-              {/* The button is part of the value (a group of a list of definitions holds a term and its definitions only). */}
               <dd className="flex min-w-0 items-center justify-between gap-2">
                 <span className="min-w-0 break-words text-sm font-medium" data-testid={`swiss-field-${field.id}-value`}>
                   {field.value}
@@ -91,19 +81,12 @@ function SwissGuestBlock({ guest, number }: SwissGuestBlockProps) {
 
 interface SwissGuestsStepProps {
   day: SwissNotificationDay;
-  /** The person may correct the guests of a stay (`booking.write`, what the host form of the guests asks): «Completa i dati» opens it. */
   canEditGuests: boolean;
-  /** Any request of the layer is on its way: the buttons wait for it. */
   busy: boolean;
-  /** Opens the editor of the guests of a stay, inside the layer. */
   onComplete: (bookingId: string) => void;
   onNext: () => void;
 }
 
-/**
- * Step 1 «Ospiti»: the guests of the day as data ready to copy onto the portal of the canton, a button for each field and one for each guest; and what each of them still misses, with
- * «Completa i dati» to put it right without leaving the layer. CasaZen transmits nothing (decision D1): the host copies, and says so in the last step.
- */
 export function SwissGuestsStep({ day, canEditGuests, busy, onComplete, onNext }: SwissGuestsStepProps) {
   const { t } = useTranslation();
 
@@ -151,7 +134,6 @@ export function SwissGuestsStep({ day, canEditGuests, busy, onComplete, onNext }
               </li>
             ))}
           </ul>
-          {/* Who may not correct the guests is told whom to ask: the layer has no way out but the portal, so no link to the booking. */}
           <p className="text-sm text-foreground/70" data-testid="swiss-issues-body">
             {canEditGuests ? t('swissNotification.issues.body') : t('swissNotification.issues.bodyNoEdit')}
           </p>

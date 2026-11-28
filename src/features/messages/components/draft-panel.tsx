@@ -28,9 +28,7 @@ import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 import { DraftEditor } from './draft-editor';
 
 interface DraftPanelProps {
-  /** The conversation (`ota:…` or `direct:…`), as the page has it. */
   threadKey: string;
-  /** The host may ask for a draft: the permission to write the bookings, which the endpoint asks. */
   canAsk: boolean;
 }
 
@@ -52,7 +50,6 @@ export function DraftPanel({ threadKey, canAsk }: DraftPanelProps) {
   return <DraftPanelBody threadKey={threadKey} canAsk={canAsk && flags.messageAssistant} localOnly={!flags.messageAssistant} />;
 }
 
-/** A line that tells what happened to a draft the host decided on this page: it stays until the next thing the host does. */
 interface Notice {
   tone: 'success' | 'warning';
   key: string;
@@ -67,8 +64,6 @@ function DraftPanelBody({ threadKey, canAsk, localOnly }: DraftPanelProps & { lo
   const { hasPermission } = useWorkspace();
   const pending = usePendingApprovals();
   const approve = useApproveItem();
-  // The edit, the rejection and the request for a draft are started from this panel and live here: a dialog closed while its request goes on must not take the
-  // callbacks of the request with it, and every button of the panel waits for any of them.
   const edit = useEditItem();
   const saveAndApprove = useSaveAndApproveItem();
   const reject = useRejectItem();
@@ -76,7 +71,6 @@ function DraftPanelBody({ threadKey, canAsk, localOnly }: DraftPanelProps & { lo
 
   const [editing, setEditing] = useState(false);
   const [rejecting, setRejecting] = useState<ApprovalQueueItem | null>(null);
-  // Why the last approval of a draft failed (the code of its action), until the next try.
   const [failure, setFailure] = useState<{ id: string; code: string } | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
 
@@ -90,7 +84,6 @@ function DraftPanelBody({ threadKey, canAsk, localOnly }: DraftPanelProps & { lo
   const handleApprove = (item: ApprovalQueueItem) => {
     setFailure(null);
     setNotice(null);
-    // What an earlier request for a draft ended in says nothing about this decision: it is not shown again when the draft is gone.
     request.reset();
     approve.mutate(item.id, {
       onSuccess: (approved) => setNotice(noticeOf(approvalOutcome(approved))),
@@ -116,7 +109,6 @@ function DraftPanelBody({ threadKey, canAsk, localOnly }: DraftPanelProps & { lo
       </div>
     );
   } else if (draft === null && pending.isError && !pending.data) {
-    // A reading that failed is not «no draft»: it is told as a failure, with a way to try again.
     body = (
       <Alert
         variant="danger"
@@ -166,7 +158,6 @@ function DraftPanelBody({ threadKey, canAsk, localOnly }: DraftPanelProps & { lo
 
         {editing ? (
           <DraftEditor
-            // A new text of the same draft (the list read again after a save) starts a new editor only when the host opens it again.
             key={draft.id}
             item={draft}
             edit={edit}
@@ -223,7 +214,6 @@ function DraftPanelBody({ threadKey, canAsk, localOnly }: DraftPanelProps & { lo
     );
   }
 
-  // What the last request for a draft ended in is the state of the panel only while there is no draft: once one is there it is the draft that counts.
   const outcome = request.data ? draftOutcomeView(request.data) : null;
   const requestError = request.isError && draft === null ? request.error : null;
   if (!draft && pending.isSuccess && !request.data && !requestError && !notice && canAsk) {

@@ -21,7 +21,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/** The address names of the letters (backend `LeaseLetterKinds.Slug`); never renamed. */
 const LETTER_SLUGS: Readonly<Record<LeaseLetterKind, string>> = {
   Disdetta: 'disdetta',
   PresaAttoRecesso: 'presa-atto-recesso',
@@ -33,7 +32,6 @@ const LETTER_SLUGS: Readonly<Record<LeaseLetterKind, string>> = {
   RestituzioneCauzione: 'restituzione-cauzione',
 };
 
-/** What the server answers for a statement of the return of the deposit: numbers, lists of years and of sums, or it is not an answer. */
 function expectDepositCalculation(data: unknown, url: string): LeaseDepositCalculation {
   if (!isRecord(data) || !Array.isArray(data.years) || !Array.isArray(data.deductions)) throw new UnexpectedApiResponseError(url);
   const { deposit, interest, interestPaid, interestDue, deductionsTotal, returned, from, to } = data;
@@ -69,7 +67,6 @@ function expectIstatCalculation(data: unknown, url: string): LeaseIstatCalculati
   return { currentRent, foiPercent, sharePercent, appliedPercent, increase, newRent };
 }
 
-/** What the server answers for the operations: anything else (an HTML fallback, an envelope) is not an answer. */
 function expectOperations(data: unknown, url: string): LeaseOperations {
   if (
     !isRecord(data) ||
@@ -95,32 +92,18 @@ function expectOperations(data: unknown, url: string): LeaseOperations {
  * of the backend (`lease-operations.md`).
  */
 export const leaseOperationsApi = {
-  /** What can be done now and the state of each letter. */
   get: async (id: string): Promise<LeaseOperations> =>
     expectOperations(await ApiClient.get<unknown>(`/leases/${id}/operations`), '/leases/:id/operations'),
 
-  /**
-   * The draft of the landlord's notice of non-renewal, as a PDF. At the first expiry the reason is required (422
-   * `lease_disdetta_reason_required`). 409 `lease_not_in_force`, `lease_already_terminated`; 422 `lease_type_has_no_renewal`.
-   */
   downloadDisdetta: async (id: string, input: DisdettaLetterInput): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.Disdetta}`, input, { responseType: 'blob' })).data,
 
-  /** The draft of the acknowledgement of the tenant's withdrawal, as a PDF, for a withdrawal received on `receivedOn`. */
   downloadPresaAttoRecesso: async (id: string, input: TenantWithdrawalInput): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.PresaAttoRecesso}`, input, { responseType: 'blob' })).data,
 
-  /**
-   * The draft of the agreement of the two parties to renew or extend the lease, as a PDF, for the period from `startsOn` to `endsOn`.
-   * 422 `lease_letter_not_applicable` (a type that does not renew), `lease_renewal_end_invalid`.
-   */
   downloadRinnovo: async (id: string, input: RenewalLetterInput): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.Rinnovo}`, input, { responseType: 'blob' })).data,
 
-  /**
-   * The draft of the confirmation that the need of a transitory lease goes on, from the landlord to the tenant, as a PDF. 422
-   * `lease_letter_not_applicable` when the need is the tenant's or the lease is not a transitory one in force.
-   */
   downloadConfermaEsigenza: async (id: string): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.ConfermaEsigenza}`, {}, { responseType: 'blob' })).data,
 
@@ -132,10 +115,6 @@ export const leaseOperationsApi = {
   calculateIstat: async (id: string, input: IstatCalculationInput): Promise<LeaseIstatCalculation> =>
     expectIstatCalculation(await ApiClient.post<unknown>(`/leases/${id}/istat/calculate`, input), '/leases/:id/istat/calculate'),
 
-  /**
-   * The draft of the request to update the rent, as a PDF, with the numbers of the calculation, from `effectiveFrom` (never in the past, not
-   * after the period: 422 `lease_letter_effect_date_invalid`).
-   */
   downloadAggiornamentoIstat: async (id: string, input: IstatLetterInput): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.AggiornamentoIstat}`, input, { responseType: 'blob' })).data,
 
@@ -146,36 +125,18 @@ export const leaseOperationsApi = {
   downloadOpzioneCedolare: async (id: string, input: OpzioneCedolareLetterInput): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.OpzioneCedolare}`, input, { responseType: 'blob' })).data,
 
-  /**
-   * The draft of the minutes of the handover of the property at the end of the lease, as a PDF, dated `handoverOn` when given. The state, the
-   * meters and the keys are lines the parties fill in by hand. 422 `lease_letter_not_applicable` when the lease is not ending,
-   * `lease_letter_effect_date_invalid`.
-   */
   downloadRiconsegna: async (id: string, input: HandoverLetterInput): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.Riconsegna}`, input, { responseType: 'blob' })).data,
 
-  /**
-   * The statement of the return of the security deposit worked out by the server from the rate of each year the deposit was held (the person
-   * types them), the interest already paid and the sums kept. Nothing is written. 422 `lease_deposit_none`, `lease_letter_not_applicable`,
-   * `lease_deposit_dates_invalid`, `lease_deposit_rate_invalid`, `lease_deposit_rate_missing`, `lease_deposit_interest_paid_invalid`,
-   * `lease_deposit_deduction_invalid`, `lease_deposit_deductions_exceed`.
-   */
   calculateDepositReturn: async (id: string, input: DepositReturnInput): Promise<LeaseDepositCalculation> =>
     expectDepositCalculation(await ApiClient.post<unknown>(`/leases/${id}/deposit/calculate`, input), '/leases/:id/deposit/calculate'),
 
-  /** The draft of the statement of the return of the deposit, as a PDF, with the same numbers as the calculation of the same input. */
   downloadRestituzioneCauzione: async (id: string, input: DepositReturnInput): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.RestituzioneCauzione}`, input, { responseType: 'blob' })).data,
 
-  /**
-   * Records that the landlord returned the deposit on `returnedOn` (a day that has already happened) with the sums the same input gives: an event
-   * in the history and nothing else (CasaZen moves no money). The answer is the operations as they are now. 422 the codes of the calculation and
-   * `lease_deposit_return_date_invalid`.
-   */
   recordDepositReturn: async (id: string, input: DepositReturnInput): Promise<LeaseOperations> =>
     expectOperations(await ApiClient.post<unknown>(`/leases/${id}/deposit/return`, input), '/leases/:id/deposit/return'),
 
-  /** Marks a letter as sent on a day, by a means: an event in the history and nothing else. The answer is the operations as they are now. */
   markSent: async (id: string, kind: LeaseLetterKind, input: MarkLetterSentInput): Promise<LeaseOperations> =>
     expectOperations(
       await ApiClient.post<unknown>(`/leases/${id}/letters/${LETTER_SLUGS[kind]}/sent`, input),

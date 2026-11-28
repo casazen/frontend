@@ -4,10 +4,6 @@ import { resetE2eStorage } from './helpers/locale';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
 import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
-/**
- * Affitti lunghi: Contratti, Spese condominiali and Manutenzione on the property;
- * Canoni only inside a contract; manual condominium payments in settings; Pagamenti in the tenant portal.
- */
 const PROPERTY_ID = 'prop-lr-ia';
 const LEASE_ID = 'lease-ia-1';
 

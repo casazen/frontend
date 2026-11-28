@@ -25,10 +25,6 @@ async function readOrNull<T>(path: string, params?: Record<string, string>): Pro
   return response.data as T;
 }
 
-/**
- * A payout of the wire page cut to the members of the contract, and nothing else: whatever else an answer carried (an account written by mistake, an address) never reaches
- * the cache or the screen. `ownerHasIban` is a yes only when the server said yes: anything else blocks the payout, never offers it.
- */
 function toWirePayout(raw: WirePayout): WirePayout {
   return {
     payoutId: raw.payoutId,
@@ -44,16 +40,11 @@ function toWirePayout(raw: WirePayout): WirePayout {
   };
 }
 
-/** The payouts of an answer, each cut to its members; an answer that is not a list (a page of the app served in place of the API) is a failed read, never an empty list. */
 function payoutsOf(data: unknown, path: string): WirePayout[] {
   if (!Array.isArray(data)) throw new UnexpectedApiResponseError(path);
   return (data as WirePayout[]).map(toWirePayout);
 }
 
-/**
- * A batch cut to the members of the contract (`WireBatch`), and nothing else, like the payouts: the cache holds no more than the contract says, whatever an answer carried
- * (the file, the debit account, a name). What is not a batch at all (a string, a number) is a failed read.
- */
 function toWireBatch(raw: unknown, path: string): WireBatch {
   if (typeof raw !== 'object' || raw === null) throw new UnexpectedApiResponseError(path);
   const batch = raw as WireBatch;
@@ -71,7 +62,6 @@ function toWireBatch(raw: unknown, path: string): WireBatch {
   };
 }
 
-/** The batches of an answer, each cut to its members; an answer that is not a list (a page of the app served in place of the API) is a failed read, never «no files». */
 function batchesOf(data: unknown, path: string): WireBatch[] {
   if (!Array.isArray(data)) throw new UnexpectedApiResponseError(path);
   return data.map((item: unknown) => toWireBatch(item, path));
@@ -83,10 +73,6 @@ function batchesOf(data: unknown, path: string): WireBatch[] {
  * of the issuer profile of the org: the request names no account. The list of the batches never holds an IBAN, a name or the file.
  */
 export const wireTransferApi = {
-  /**
-   * The batches of the org, the newest first (the server gives at most 200); `null` when the server refuses it to this caller (403). An answer that is not a list is a failed
-   * read, and every batch is cut to the members of the contract.
-   */
   listBatches: async (): Promise<WireBatch[] | null> => {
     const path = '/wire-transfers/batches';
     const data = await readOrNull<unknown>(path);
@@ -104,10 +90,6 @@ export const wireTransferApi = {
     return data === null ? null : payoutsOf(data, path);
   },
 
-  /**
-   * A batch of the org and the payouts it pays (`api/wire-transfers/batch/{id}/payouts`), in the order of the transfers of its file. A payout reversed after the batch was
-   * made is in it and says so; a batch made before the payouts has none. 404 for a batch that is not the org's; `null` on a 403.
-   */
   getBatchPayouts: async (batchId: string): Promise<WireBatchPayouts | null> => {
     const path = `/wire-transfers/batch/${batchId}/payouts`;
     const data = await readOrNull<unknown>(path);
@@ -117,21 +99,11 @@ export const wireTransferApi = {
     return { batch: toWireBatch(answer.batch, path), payouts: payoutsOf(answer.payouts, path) };
   },
 
-  /**
-   * Creates a wire file from confirmed payouts of ONE currency. The server checks the payouts, the issuer profile, the owners' addresses and accounts and the file against
-   * its schema before it saves anything; the refusals are 422 with a `code` (the ones about owners list their `ownerIds`; `wire_batch_schema_unavailable`: no file is made).
-   */
   createBatch: (data: CreateBatchRequest) => ApiClient.post<CreateBatchResponse>('/wire-transfers/batch', data),
 
-  /** The file of a batch, through the authenticated client. The server marks the batch Downloaded the first time it hands the file out. */
   downloadBatchFile: (batchId: string): Promise<DownloadedFile> => fileApi.get(`/wire-transfers/batch/${batchId}/file`),
 
-  /** Marks the batch as downloaded without handing the file out (422 `batch_already_downloaded_or_paid` once it is). */
   confirmDownload: (batchId: string) => ApiClient.post<void>(`/wire-transfers/batch/${batchId}/confirm-download`),
 
-  /**
-   * Marks the batch as paid. It cannot be undone, and it is the administrator's word: the server does not know whether the bank executed the transfers.
-   * 422 `batch_not_downloaded` while the file was never handed out, `batch_already_paid` once it is.
-   */
   confirmPaid: (batchId: string) => ApiClient.post<void>(`/wire-transfers/batch/${batchId}/confirm-paid`),
 };

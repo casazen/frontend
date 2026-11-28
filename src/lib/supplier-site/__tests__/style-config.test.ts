@@ -32,7 +32,6 @@ describe('siteButtonColor: the color a supplier chose for its buttons', () => {
   it('takes a color white text reads on at 4.5:1, in six digits and lower case', () => {
     expect(siteButtonColor('#0B5FA5')).toBe('#0b5fa5');
     expect(siteButtonColor('  #1F2933 ')).toBe('#1f2933');
-    // The shorthand is read as six digits (the server refuses the three-digit form, the editor sends it complete).
     expect(siteButtonColor('#036')).toBe('#003366');
   });
 

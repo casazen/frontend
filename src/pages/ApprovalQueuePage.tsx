@@ -33,8 +33,6 @@ export function ApprovalQueuePage() {
   const queryClient = useQueryClient();
   const { data: items, isLoading, error, isFetching, refetch } = usePendingApprovals();
   const approveItem = useApproveItem();
-  // The edit and the rejection are started from their dialogs but live here, with the approval: a dialog closed while its request goes on (the X, Esc, a
-  // tap outside) would take the callbacks of the request with it, and the decision would be written neither below nor on the card.
   const editItem = useEditItem();
   const saveAndApproveItem = useSaveAndApproveItem();
   const rejectItem = useRejectItem();
@@ -42,17 +40,12 @@ export function ApprovalQueuePage() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [editing, setEditing] = useState<ApprovalQueueItem | null>(null);
   const [rejecting, setRejecting] = useState<ApprovalQueueItem | null>(null);
-  // The reply to a review whose approval waits for the answer to the question (it is public and cannot be taken back).
   const [publishing, setPublishing] = useState<ApprovalQueueItem | null>(null);
-  // The queue lists only what waits: what was decided here stays below, quiet, until the page is left.
   const [decided, setDecided] = useState<ApprovalQueueItem[]>([]);
-  // Why the last approval of an item failed (the code of its action), until the next try.
   const [failures, setFailures] = useState<Record<string, string>>({});
 
   const filteredItems = useMemo(() => (items ?? []).filter((item) => matchesType(item, typeFilter)), [items, typeFilter]);
 
-  // One decision at a time, wherever it was started (the card, the dialog of the edit, the dialog of the rejection), also when its dialog has been closed:
-  // while it goes on every button of the queue waits, so an approval cannot be sent twice at once.
   const busy = approveItem.isPending || editItem.isPending || saveAndApproveItem.isPending || rejectItem.isPending;
   const approvingId = approveItem.isPending ? approveItem.variables : undefined;
 
@@ -74,7 +67,6 @@ export function ApprovalQueuePage() {
 
   const handleApprove = (item: ApprovalQueueItem) => {
     clearFailure(item.id);
-    // A public reply is not approved by one click: the question comes first, with the words that will be published.
     if (isReviewReply(item)) {
       setPublishing(item);
       return;
@@ -101,7 +93,6 @@ export function ApprovalQueuePage() {
     }
   };
 
-  // The words on the question are the ones the list holds now (another person may have edited the draft), else the ones the host pressed on.
   const publishingItem = publishing === null ? null : ((items ?? []).find((candidate) => candidate.id === publishing.id) ?? publishing);
 
   if (isLoading) {

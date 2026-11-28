@@ -19,7 +19,6 @@ const flagOn = { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: true };
 describe('route manifest: the plan «Inizia con CasaZen» (E10/F03/US01/T02)', () => {
   it('RouteManifest_ThePlanPage_IsInTheManifestOnceThroughOnboardingRoutes', () => {
     expect(ONBOARDING_ROUTES.map((route) => route.path)).toContain('/app/short-rent/onboarding');
-    // The manifest spreads the list once: every entry of it is in the manifest, and none twice.
     for (const route of ONBOARDING_ROUTES) {
       expect(ROUTE_MANIFEST.filter((candidate) => candidate.path === route.path), route.path).toHaveLength(1);
     }
@@ -32,17 +31,14 @@ describe('route manifest: the plan «Inizia con CasaZen» (E10/F03/US01/T02)', (
     expect(entry?.featureFlag).toBe('octorateOnboarding');
     expect(entry?.requiredPermissions).toEqual(['property.read']);
 
-    // A role that cannot read the properties does not get the plan page: the server asks the same.
     const without = (_context: string, permission: string) => permission !== 'property.read';
     expect(entry && hasEntryPermission(entry, without)).toBe(false);
     expect(entry && hasEntryPermission(entry, allowAll)).toBe(true);
   });
 
   it('RouteManifest_ThePlanPage_IsInNoMenuSinceItIsTheFirstWizardAndTheGuide', () => {
-    // «Inizia con CasaZen» is the welcome of the first access (`FirstRunWizard`) and the road of the «Guida»: no entry of the menu.
     expect(entry?.navPlacement).toBeUndefined();
     expect(entry?.navParent).toBeUndefined();
-    // Its name stays, for the trail of its pages.
     expect(entry?.navKey).toBe('nav.onboardingPlan');
     expect(entry?.icon).toBe('ClipboardCheck');
     expect(entry?.icon && NAV_ICONS[entry.icon]).toBeDefined();
@@ -68,7 +64,6 @@ describe('route manifest: the plan «Inizia con CasaZen» (E10/F03/US01/T02)', (
     }
   });
 
-  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
   it('RouteManifest_ThePlanPage_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
     const page = await entry?.component();
 
@@ -100,7 +95,6 @@ describe('route manifest: the pages of the parts, the panel steps and the summar
     }
   });
 
-  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
   it.each(PAGES)('RouteManifest_$path_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async ({ path }) => {
     const page = await ROUTE_MANIFEST.find((candidate) => candidate.path === path)?.component();
 
@@ -132,19 +126,14 @@ describe('route manifest: the integration settings (E10/F03/US03/T01)', () => {
       getNavMatchEntries('short-rent', hasPermission as never, features).map((page) => page.path);
 
     expect(reachable(admin, flagOn)).toContain(SETTINGS_PATH);
-    // It is never an entry of "Altro": its section («Impostazioni») is the administrator's too.
     expect(getSecondaryNavEntries('short-rent', admin as never, flagOn).map((page) => page.path)).not.toContain(SETTINGS_PATH);
-    // Anyone else has no way in, and with the flag off nobody has one: the page does not exist.
     expect(reachable(notAdmin, flagOn)).not.toContain(SETTINGS_PATH);
     for (const features of [undefined, {}, DEFAULT_FEATURE_FLAGS]) expect(reachable(admin, features)).not.toContain(SETTINGS_PATH);
-    // The route guard asks no permission (the menu does, through `orgBillingAdmin`): a person who is not the administrator who opens the address is told
-    // who manages the page by the page itself, and meets no 403.
     expect(settings?.requiredPermissions).toEqual([]);
     expect(settings && hasEntryPermission(settings, admin)).toBe(true);
     expect(settings && hasEntryPermission(settings, notAdmin)).toBe(false);
   });
 
-  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
   it('RouteManifest_TheSettingsPage_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
     const page = await settings?.component();
 
@@ -173,7 +162,6 @@ describe('route manifest: the bulk configuration (E10/F03/US03/T02)', () => {
     }
   });
 
-  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
   it('RouteManifest_TheBulkPage_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
     const page = await bulk?.component();
 
@@ -210,7 +198,6 @@ describe('route manifest: the staff queue of the assist requests (E10/F03/US03/T
     expect(inMenu('short-rent', allowAll, flagOn)).not.toContain(ASSIST_PATH);
   });
 
-  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
   it('RouteManifest_TheAssistQueue_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
     const page = await assist?.component();
 

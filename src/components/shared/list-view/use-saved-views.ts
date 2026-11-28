@@ -14,13 +14,10 @@ import {
 import type { ListViewsScope } from './list-types';
 
 export interface UseSavedViews {
-  /** There is somebody to keep views for. Without a scope (nobody is signed in) the list offers none. */
   enabled: boolean;
   views: readonly SavedView[];
-  /** Keeps the current view under a name. `ok: false` says why not (no name, the limit, the storage refused). */
   save: (name: string, query: string) => SaveViewResult | { ok: false; reason: 'storage' };
   remove: (id: string) => void;
-  /** Puts a view back where it was (the "Annulla" of removing one). */
   restore: (view: SavedView, index: number) => void;
 }
 
@@ -43,7 +40,6 @@ export function useSavedViews(listKey: string, scope: ListViewsScope | null | un
   const context = scope?.context;
   const key = useMemo(() => (userId && context ? savedViewsKey(listKey, { userId, context }) : null), [listKey, userId, context]);
 
-  // The raw text is the snapshot: it is a string, so React can tell whether it changed.
   const raw = useSyncExternalStore(
     subscribe,
     () => (key ? readSavedViewsRaw(key) : null),

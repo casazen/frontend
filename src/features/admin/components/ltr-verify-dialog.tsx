@@ -18,11 +18,9 @@ import type { MarkVerifiedInput } from '@/api/ltr-reference-data.api';
 
 interface Props {
   open: boolean;
-  /** Name of what is being verified (comune and kind of data), for the title. */
   subject: string;
   isSubmitting: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Rejects on API errors (shown by the caller): the dialog then stays open. */
   onConfirm: (input: MarkVerifiedInput) => Promise<unknown>;
 }
 

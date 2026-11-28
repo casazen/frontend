@@ -20,7 +20,6 @@ import { UpcomingDeadlines } from './upcoming-deadlines';
 
 const LEASE_CREATE_PATH = '/app/long-rent/leases/new';
 
-/** What follows «Adesso», in the order it is read: the leases by group, the rent of the month, the next dates. */
 function OverviewBody({ overview, today }: { overview: LongRentOverview; today: string }) {
   const deadlines = useLongRentDeadlines(overviewWindow(today));
 
@@ -41,12 +40,6 @@ function OverviewBody({ overview, today }: { overview: LongRentOverview; today: 
   );
 }
 
-/**
- * The home of the long-term area (LR-05): «in five seconds I know what to do». One colored block, «Adesso», with the step of
- * the landlord that cannot wait; then, quiet, the leases by group, the rent of the month and the next dates. Every number and
- * every step comes from the server (`GET /long-rent/overview`, `GET /long-rent/deadlines`), the page works none out. With no
- * lease at all it is the guide of the first steps (`LongRentGuide`) and nothing else.
- */
 export function LongRentOverviewPage() {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();

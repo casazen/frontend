@@ -79,7 +79,6 @@ function view(path = '/app/short-rent', org = 'A', permissions = ['booking.read'
   return (orgId: string, allowed = permissions) => result.rerender(tree(orgId, allowed));
 }
 
-// The app loads the panel on demand. Load its module before measuring UI waits in the test runner.
 beforeAll(async () => {
   await import('../ask-panel');
 }, 60000);

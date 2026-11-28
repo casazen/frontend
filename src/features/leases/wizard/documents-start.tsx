@@ -20,7 +20,6 @@ import { stepWordsAt } from './step-words';
 import { emptyFlow, leaseEditPath, registeredSteps, stepKey, visibleSteps } from './wizard-model';
 import { wizardPath } from './wizard-path';
 
-/** After this long the person is told it takes more than usual and may go on by hand while the reading goes on. */
 const SLOW_AFTER_MS = 120_000;
 const NOTHING_TO_LINK = () => '';
 
@@ -55,14 +54,12 @@ export function DocumentsStart({ contractType, defaultPropertyId }: { contractTy
   const reading = useDraftReading(leaseId ?? '', uploaded);
   const state = reading.data?.state;
 
-  // The reading is over (it read, or it could not): on to the wizard, once.
   useEffect(() => {
     if (!leaseId || left.current || (state !== 'Done' && state !== 'Failed')) return;
     left.current = true;
     void wizardPath(leaseId, state === 'Done').then((path) => navigate(path, { replace: true }));
   }, [leaseId, state, navigate]);
 
-  // An honest limit: past it the person may go on by hand, and the reading goes on meanwhile.
   useEffect(() => {
     if (!uploaded) return;
     const timer = window.setTimeout(() => setSlow(true), SLOW_AFTER_MS);
@@ -77,7 +74,6 @@ export function DocumentsStart({ contractType, defaultPropertyId }: { contractTy
   }));
   const position = { current: 1, total: steps.length };
 
-  // What is missing before the contract can be read: the property (until the draft exists) and the file, or the confirmation of the photos.
   const propertyLeft = leaseId === null && !propertyId;
   const missing: MissingItem[] = [
     ...(propertyLeft ? [{ step: 1, need: { code: 'property_missing' } }] : []),
@@ -105,7 +101,7 @@ export function DocumentsStart({ contractType, defaultPropertyId }: { contractTy
         try {
           id = await createDraft.mutateAsync({ propertyId, origin: 'Imported', contractType });
         } catch {
-          return; // useCreateLeaseDraft.onError says why; nothing was created
+          return;
         }
         setLeaseId(id);
       }
@@ -123,7 +119,6 @@ export function DocumentsStart({ contractType, defaultPropertyId }: { contractTy
     }
   };
 
-  // By hand: the wizard of a contract already signed, with the data typed.
   if (byHand) {
     return <NewLeaseStep origin="Imported" contractType={contractType} defaultPropertyId={propertyId || defaultPropertyId} />;
   }

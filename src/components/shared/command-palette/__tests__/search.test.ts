@@ -39,7 +39,6 @@ describe('searchCommands (UI-06)', () => {
     const items = [item('substring', 'Calendario prenotazioni'), item('word', 'Nuova prenotazione'), item('prefix', 'Prenotazioni')];
 
     expect(labels(search(items, 'preno'))).toEqual(['Prenotazioni', 'Nuova prenotazione', 'Calendario prenotazioni']);
-    // In the middle of a word it is found too, below the rest.
     expect(labels(search([...items, item('middle', 'Reprenotare')], 'preno'))).toEqual([
       'Prenotazioni',
       'Nuova prenotazione',
@@ -63,7 +62,6 @@ describe('searchCommands (UI-06)', () => {
     expect(labels(search(items, 'ospiti'))).toEqual(['Ospite Mario']);
     expect(labels(search(items, 'contratto'))).toEqual(['Contratti']);
     expect(labels(search(items, 'prenotazione'))).toEqual(['Prenotazioni']);
-    // A short word is not made shorter: "casa" must not find "castello".
     expect(labels(search([item('x', 'Castello')], 'casa'))).toEqual([]);
   });
 
@@ -88,7 +86,6 @@ describe('searchCommands (UI-06)', () => {
     const items = [item('a', 'Villa Mare', { subtitle: 'Roma' }), item('b', 'Villa Lago', { subtitle: 'Como' }), item('c', 'Mare di Roma')];
 
     expect(labels(search(items, 'villa mare'))).toEqual(['Villa Mare']);
-    // Both words in the label are worth more than one in the label and one in the second line.
     expect(labels(search(items, 'mare roma'))).toEqual(['Mare di Roma', 'Villa Mare']);
     expect(labels(search(items, 'villa roma'))).toEqual(['Villa Mare']);
     expect(labels(search(items, 'villa torino'))).toEqual([]);
@@ -99,7 +96,6 @@ describe('searchCommands (UI-06)', () => {
 
     expect(labels(search(items, 'prenotazioni di mario'))).toEqual([]);
     expect(labels(search(items, 'di mario'))).toEqual(['Mario Rossi']);
-    // A text made only of those words still looks for them.
     expect(labels(search([item('c', 'Di Pietro')], 'di'))).toEqual(['Di Pietro']);
   });
 
@@ -121,7 +117,6 @@ describe('searchCommands (UI-06)', () => {
 
     const groups = search(items, 'immobile');
 
-    // The page is the label that starts with the text; the property too, and it came later; the action has it in a later word.
     expect(groups.map((group) => group.id)).toEqual(['page', 'property', 'action', 'guest']);
     expect(groups[0].hits[0].item.label).toBe('Immobili');
   });
@@ -175,7 +170,6 @@ describe('highlightRanges', () => {
 
   it('HighlightRanges_SeveralWords_UnderlinesEachAndMergesTheOnesThatTouch', () => {
     expect(underlined('Villa Mare Roma', 'roma villa')).toEqual(['Villa', 'Roma']);
-    // Words that follow each other, a space between them, are one underline.
     expect(underlined('Villa Mare Roma', 'mare villa')).toEqual(['Villa Mare']);
     expect(underlined('Villa Mare', 'vil illa')).toEqual(['Villa']);
   });
@@ -241,7 +235,6 @@ describe('suggestCommands (the palette with nothing typed)', () => {
     const groups = suggestCommands([quiet, ...actions], { activeArea: 'short-rent', recentIds: [] });
 
     expect(groups.flatMap((group) => group.hits.map((hit) => hit.item.id))).not.toContain('signout');
-    // ...but typing finds it.
     expect(labels(search([quiet], 'esci'))).toEqual(['Esci']);
   });
 });
@@ -260,7 +253,6 @@ describe('mergeRemoteResults (the hook of the server search)', () => {
     expect(merged.map((group) => group.id)).toEqual(['property', 'page']);
     expect(merged[0].hits.map((hit) => hit.item.id)).toEqual(['a', 'b']);
     expect(merged[1].hits.map((hit) => hit.item.id)).toEqual(['c']);
-    // What the server found is underlined like the rest.
     expect(merged[0].hits[1].titleRanges).toEqual([{ start: 0, end: 5 }]);
   });
 

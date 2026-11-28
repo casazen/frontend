@@ -18,35 +18,27 @@ import type {
 
 export type NoteTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
-/** A line with a tone: its color is never the only signal (the words say it, and the icon of the tone). */
 export interface RowNote {
   text: string;
   tone: NoteTone;
 }
 
-/** A row opens its source or answers a booking request. */
 export type RowAction =
   | { kind: 'link'; label: string; to: string }
   | { kind: 'respond'; label: string; bookingId: string };
 
-/** The kinds of row of "Oggi": the chips filter by these. Cleanings are interventions of the cleaning category, listed apart. */
 export type TodayKind = 'arrivals' | 'departures' | 'cleaning' | 'jobs';
 
 export interface HomeRow {
   id: string;
   kind?: TodayKind;
-  /** Done for today (arrival or departure registered, job finished): the row is dimmed and ticked. */
   done?: boolean;
   title: string;
-  /** Who or what the row is about, to tell its button from the same button of another row ("Registra arrivo: Sofia Marino"). Default: the title. */
   subject?: string;
   sub?: string;
   note?: RowNote;
-  /** The page of the thing: where the title goes. */
   to: string;
-  /** The booking the title opens in the drawer, when it has a drawer. */
   bookingId?: string;
-  /** The guest's messages the host has not read yet (a row of a thread, SR-12). */
   unread?: number;
   action?: RowAction;
 }
@@ -56,7 +48,6 @@ interface Context {
   locale: string;
 }
 
-/** Where the requests to the suppliers are: «Le mie app» of the marketplace (MKT). */
 const SERVICES_PATH = '/app/short-rent/marketplace/mine';
 const CALENDAR_PATH = '/app/short-rent/bookings/calendar';
 const bookingPath = (bookingId: string) => `/app/short-rent/bookings/${bookingId}`;
@@ -65,13 +56,10 @@ const clock = (instant: string): string => {
   return wall ? `${String(wall.hour).padStart(2, '0')}:${String(wall.minute).padStart(2, '0')}` : '';
 };
 
-/** "12–15 ott": the days of a stay. */
 function stayRange(from: string, to: string, locale: string): string {
   const short: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
   return `${formatStayDate(from.slice(0, 10), locale, short)}–${formatStayDate(to.slice(0, 10), locale, short)}`;
 }
-
-/* ------------------------------------------------------------------------------------------------------ Oggi */
 
 const SERVICE_TONES: Record<string, NoteTone> = { Richiesto: 'neutral', PresoInCarico: 'info', InCorso: 'info', Completato: 'success', Pagato: 'success', Rifiutato: 'danger' };
 
@@ -137,7 +125,6 @@ function serviceRow(service: DashboardTodayService, { t }: Context): HomeRow {
   };
 }
 
-/** The rows of "Oggi": arrivals, then departures, then the interventions in order of time. The stays have no hour in the API. */
 export function buildTodayRows(today: DashboardToday, options: { propertyId: string; canWrite: boolean }, context: Context): HomeRow[] {
   const inScope = (item: { propertyId: string }) => !options.propertyId || item.propertyId === options.propertyId;
   return [
@@ -146,8 +133,6 @@ export function buildTodayRows(today: DashboardToday, options: { propertyId: str
     ...today.services.items.filter(inScope).map((service) => serviceRow(service, context)),
   ];
 }
-
-/* ---------------------------------------------------------------------------------------------------- Da fare */
 
 /** How pressing a deadline is, in words: red within a day, amber within three, otherwise a plain date. */
 export function urgencyOf(dueAt: string | null, { t, locale }: Context, now: Date = new Date()): RowNote {
@@ -187,13 +172,8 @@ type TodoAction = (typeof TODO_ACTIONS)[number];
 const isTodoAction = (action: string): action is TodoAction => (TODO_ACTIONS as readonly string[]).includes(action);
 const isCockpitAction = (action: string): action is ComplianceCockpitAction => (COMPLIANCE_COCKPIT_ACTIONS as readonly string[]).includes(action);
 
-/** Days shown before the first night they share: the conflict is not at the very edge of the Timeline. */
 const CONFLICT_LEAD_DAYS = 2;
 
-/**
- * Where a night taken twice is solved: the Timeline of the property, from just before the first night the two share (the day the
- * item is due), so both bars are in view with their red frame.
- */
 function calendarConflictPath(item: DashboardTodoItem): string {
   const params = new URLSearchParams({ view: 'timeline' });
   const first = romeDateOf(item.dueAt);
@@ -202,7 +182,6 @@ function calendarConflictPath(item: DashboardTodoItem): string {
   return `${CALENDAR_PATH}?${params.toString()}`;
 }
 
-/** The screen where the host does what the item asks: the one of the cockpit when it has one, else the stay, else the services. */
 function todoPath(item: DashboardTodoItem, hasPermission: PermissionPredicate): string {
   if (item.action === 'ResolveCalendarConflict') return calendarConflictPath(item);
   if (isCockpitAction(item.action)) {
@@ -213,7 +192,6 @@ function todoPath(item: DashboardTodoItem, hasPermission: PermissionPredicate): 
   return item.propertyId && item.action === 'ActivateProperty' ? `/app/short-rent/properties/${item.propertyId}` : SERVICES_PATH;
 }
 
-/** What the item still lacks, in a few words, for the codes that say something the title does not. */
 function missingText(item: DashboardTodoItem, t: TFunction): string | undefined {
   const missing = (item.missing ?? []).find((m) => m.code === 'guest_field_missing' || m.code === 'guest_data_incomplete' || m.code === 'calendar_conflict');
   if (!missing) return undefined;
@@ -235,10 +213,6 @@ function conflictNote(item: DashboardTodoItem, { t, locale }: Context, now?: Dat
   };
 }
 
-/**
- * A conversation that waits for the host's answer: a row of the list of the direct threads (`GET api/messages`, SR-12) or of the hub
- * (`GET api/messages?includeOta=true`, NF-61), which also lists the conversations of the channels.
- */
 export type HomeThread = HostThreadSummary | MessageHubThread;
 
 function isHubThread(thread: HomeThread): thread is MessageHubThread {
@@ -249,15 +223,9 @@ export interface TodoOptions {
   propertyId: string;
   canWrite: boolean;
   hasPermission: PermissionPredicate;
-  /** The open threads that wait for the host's answer (`GET api/messages?needsReply=true&includeOta=true`, NF-61); none when the host cannot read them. */
   threads?: readonly HomeThread[];
 }
 
-/**
- * «Rispondi a {ospite}»: a guest wrote and the host has not answered (SR-12). The title and the button go to the booking on its tab
- * Messaggi; the line under the title is the property and the start of what the guest wrote, which only the host reads. A conversation
- * of a channel, or one with no booking yet (a request), has no such tab: it is answered in the page of the messages (NF-61).
- */
 function messageRow(thread: HomeThread, { t, locale }: Context): HomeRow {
   const hub = isHubThread(thread);
   const bookingId = thread.bookingId ?? undefined;
@@ -299,24 +267,20 @@ export function buildTodoRows(today: DashboardToday, feeds: readonly DashboardIc
       const to = todoPath(item, options.hasPermission);
       const approval = action === 'RespondToRequest' && item.bookingId ? approvals.get(item.bookingId) : undefined;
       const cinMissing = action === 'ActivateProperty' && (item.missing ?? []).some((m) => m.code.startsWith('activation_cin'));
-      // A night taken twice is about a property, and its label is that property: the line under the title says what is wrong instead.
       const conflict = action === 'ResolveCalendarConflict';
       const sub = approval
         ? `${approval.propertyName} · ${stayRange(approval.checkInDate, approval.checkOutDate, locale)} · ${t('dashboard.today.guests', { count: approval.numberOfGuests })}`
         : [action === 'ActivateProperty' || conflict ? null : item.propertyName, missingText(item, t)].filter(Boolean).join(' · ');
       const cta = t(cinMissing ? 'dashboard.todo.ActivateProperty.ctaCin' : `dashboard.todo.${action}.cta`);
       const respond = action === 'RespondToRequest' && options.canWrite && item.bookingId;
-      // Whoever may not answer is taken to the booking: the button does not say "Accetta" for a link that only opens it.
       const linkLabel = action === 'RespondToRequest' ? t('dashboard.todo.open') : cta;
       return {
-        // Two nights taken twice of one property can share their first stay: their place in the list tells them apart.
         id: `${action}-${conflict ? `${position}-` : ''}${item.bookingId ?? item.serviceRequestId ?? item.propertyId ?? item.label}`,
         title: t(`dashboard.todo.${action}.title`, { label: item.label }),
         subject: item.label,
         sub: sub || undefined,
         note: conflict ? conflictNote(item, context, now) : urgencyOf(item.dueAt, context, now),
         to,
-        // The title of a conflict goes where its button goes (the Timeline), not to the first of the two bookings.
         bookingId: conflict ? undefined : (item.bookingId ?? undefined),
         action: respond ? { kind: 'respond', label: cta, bookingId: item.bookingId! } : { kind: 'link', label: linkLabel, to },
       };

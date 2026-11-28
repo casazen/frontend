@@ -6,10 +6,6 @@ import { Alert } from '@/components/ui/alert';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useDiscardSelfBilling } from '@/queries/use-self-billing';
 
-/**
- * The confirmation of the discard of a draft (no number is consumed). A refusal or a call that gets no answer is told in the dialog, in the words of its code (else a sentence that says the draft is still there), and the dialog
- * stays open: the confirmation lets the dialog stay open on a failure and says nothing itself, so a failure that is not told here would be a silent one.
- */
 export function DiscardDialog({ id, onClose, onDiscarded }: { id: string; onClose: () => void; onDiscarded: () => void }) {
   const { t } = useTranslation();
   const discard = useDiscardSelfBilling();

@@ -33,7 +33,6 @@ import {
   useWithdrawSiteDocument,
 } from './use-site-documents';
 
-/** "Documenti sito" (BK-14, A3-21): the host's own privacy notice and booking terms, shown on the public booking site. */
 export function SiteDocumentsPage() {
   return (
     <AppShell>
@@ -123,7 +122,6 @@ export function SiteDocumentsContent() {
   );
 }
 
-/** The two ways to provide a document, in the order the editor offers them. */
 const SOURCES: readonly OrgSiteDocumentSource[] = ['Text', 'ExternalUrl'];
 
 interface DocumentForm {
@@ -132,7 +130,6 @@ interface DocumentForm {
   externalUrl: string;
 }
 
-/** What the editor shows for a state: the current version (even when withdrawn, to republish it), else an empty text. */
 function toForm(state: OrgSiteDocumentState): DocumentForm {
   const current = state.current;
   return {
@@ -142,7 +139,6 @@ function toForm(state: OrgSiteDocumentState): DocumentForm {
   };
 }
 
-/** True when the form is exactly the version the public site shows now. */
 function isUnchanged(state: OrgSiteDocumentState, form: DocumentForm): boolean {
   const current = state.current;
   if (!state.published || !current) return false;
@@ -162,7 +158,6 @@ function SiteDocumentCard({ state, orgSlug }: { state: OrgSiteDocumentState; org
   const [form, setForm] = useState<DocumentForm>(() => toForm(state));
   const [submitted, setSubmitted] = useState(false);
   const [confirmingWithdraw, setConfirmingWithdraw] = useState(false);
-  // Sync the editor from the server state whenever a publish or a withdrawal changes it (adjusting state during render).
   const [synced, setSynced] = useState(state);
   if (state !== synced) {
     setSynced(state);
@@ -224,7 +219,6 @@ function SiteDocumentCard({ state, orgSlug }: { state: OrgSiteDocumentState; org
       </CardHeader>
 
       <CardContent className="space-y-5 pt-5">
-        {/* UI-07 pilot of ChoiceCard: the same two radio buttons (same names, values and test ids), drawn as cards. */}
         <ChoiceGroup legend={t('siteDocuments.source.label')} legendVisible minCardWidth={14}>
           {SOURCES.map((source) => (
             <ChoiceCard

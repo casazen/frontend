@@ -15,32 +15,17 @@ import {
 } from '@/components/ui/sheet';
 
 export interface HelpTipProps {
-  /**
-   * The explanation: one sentence, two at most, in plain words (inline content: it goes inside a paragraph). It is not
-   * the place for a manual; the link below it is.
-   */
   children: React.ReactNode;
   /** What the tip is about, as a heading ("Codice CIN"). It also names the button: "Cos'è: Codice CIN". */
   title?: string;
-  /** The name of the "?" button for a screen reader. Without it, "Cos'è: {title}", or "Maggiori informazioni". */
   label?: string;
-  /** Where "Scopri di più" goes: a path of the app (`/app/…`) or an address. Without it there is no link. */
   learnMoreHref?: string;
-  /** The text of the link. Default: "Scopri di più". */
   learnMoreLabel?: string;
-  /** Which side of the "?" the bubble prefers (a tablet or a desktop; on a phone it is a sheet from the bottom). */
   side?: 'top' | 'right' | 'bottom' | 'left';
-  /**
-   * On a phone the explanation is a sheet from the bottom of the window. Turn it off for a page that cannot hold something fixed to its window (the widgets
-   * of a frame that is as tall as its content: a sheet would sit at the bottom of all that content, far from the guest): it is then the bubble beside the
-   * "?" at every width. Default: on.
-   */
   sheetOnPhone?: boolean;
-  /** For the button: where it sits, next to the label of a field or the title of a card. */
   className?: string;
 }
 
-// An address with a scheme, or a page of the user manual (`/guida/…`, static files that the router of the app does not know).
 const EXTERNAL_HREF = /^(?:[a-z][a-z0-9+.-]*:|\/\/|\/guida\/)/i;
 
 function LearnMoreLink({ href, label, onNavigate }: { href: string; label: string; onNavigate: () => void }) {
@@ -95,7 +80,6 @@ export function HelpTip({ children, title, label, learnMoreHref, learnMoreLabel,
     />
   ) : null;
 
-  // A 16 px icon in a 20 px disc; the invisible `before` box makes the target 44 px for a finger.
   const trigger = (
     <button
       type="button"
@@ -114,7 +98,6 @@ export function HelpTip({ children, title, label, learnMoreHref, learnMoreLabel,
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>{trigger}</SheetTrigger>
         <SheetContent side="bottom" data-testid="help-tip-sheet" className="outline-none">
-          {/* The room on the right is the close button's. */}
           <SheetHeader className="px-4 pb-2 pr-14 pt-0">
             <SheetTitle>{title ?? name}</SheetTitle>
           </SheetHeader>
@@ -137,8 +120,6 @@ export function HelpTip({ children, title, label, learnMoreHref, learnMoreLabel,
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : name}
         aria-describedby={textId}
-        // The focus goes to the bubble, not to the link inside it: a screen reader then reads the text, which a link
-        // taking the focus would skip. The link is the next Tab.
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           content.current?.focus();

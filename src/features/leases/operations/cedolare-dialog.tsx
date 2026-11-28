@@ -28,7 +28,6 @@ function CedolareBody({ lease, operations, onClose }: Omit<CedolareDialogProps, 
 
   const min = parseStayDate(operations.cedolareNotice.minEffectiveOn);
   const max = parseStayDate(operations.cedolareNotice.maxEffectiveOn);
-  // The day is optional: without it the letter leaves it to complete. A day that is typed has to be one the contract has.
   const dateValid = effectiveFrom === '' || (isStayDate(effectiveFrom) && (min === '' || effectiveFrom >= min) && (max === '' || effectiveFrom <= max));
 
   return (

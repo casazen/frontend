@@ -7,12 +7,6 @@ import type { PublicOrgDto } from '@/types';
 import type { PublicStayCard } from '@/types/public-stays.types';
 import { buildFaq } from './faq-model';
 
-/**
- * «Domande frequenti» (DB-07b): an accordion of native `details` (it works with the keyboard and a screen reader as it is) and,
- * beside it, the way to ask what is not there: write to the host (the dialog of DB-02b) and call if they published a number. The
- * reply time of the prototype ("risponde di solito entro un'ora") is not measured, so it is not said (DB-D9). The address
- * `?sezione=domande` scrolls here.
- */
 export function FaqSection({ org, slug, cards }: { org: PublicOrgDto; slug: string; cards: readonly PublicStayCard[] }) {
   const { t, i18n } = useTranslation();
   const host = org.hostName?.trim() || org.displayName;

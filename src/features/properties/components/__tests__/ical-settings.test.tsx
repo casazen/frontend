@@ -54,7 +54,6 @@ const syncingFeed: PropertyIcalFeed = {
   blockCount: 0,
 };
 
-/** Failed API call as the axios client rejects it: ProblemDetails body with the stable `code` (FD-05). */
 function problem(status: number, code?: string): AxiosError {
   return new AxiosError('Request failed', 'ERR_BAD_REQUEST', undefined, undefined, {
     status,
@@ -114,7 +113,6 @@ describe('IcalSettings (PC-11, PC-13)', () => {
       expect(within(rows[0]).getByTestId('ical-feed-status')).toHaveTextContent('Sincronizzato');
       expect(within(rows[0]).getByText(/Ultima sync: 24\/09\/2026/)).toBeInTheDocument();
       expect(within(rows[0]).getByText(/3 periodi bloccati importati/)).toBeInTheDocument();
-      // A label replaces the channel name, the channel stays as a badge.
       expect(within(rows[1]).getByText('Booking camera 2')).toBeInTheDocument();
       expect(within(rows[1]).getByText('Booking.com')).toBeInTheDocument();
     });
@@ -182,14 +180,12 @@ describe('IcalSettings (PC-11, PC-13)', () => {
       expect(within(row).getByRole('button', { name: /Sincronizzazione…/ })).toBeDisabled();
       expect(propertyIcalApi.getFeeds).toHaveBeenCalledTimes(1);
 
-      // Light polling while the feed is syncing: the next read shows the result.
       await act(() => vi.advanceTimersByTimeAsync(3_000));
 
       await waitFor(() => expect(within(row).getByTestId('ical-feed-status')).toHaveTextContent('Sincronizzato'));
       expect(within(row).getByText(/2 periodi bloccati importati/)).toBeInTheDocument();
       expect(invalidate).toHaveBeenCalledWith({ queryKey: ['bookings', 'calendar'] });
 
-      // Sync over: no more polling.
       const reads = vi.mocked(propertyIcalApi.getFeeds).mock.calls.length;
       await act(() => vi.advanceTimersByTimeAsync(30_000));
       expect(propertyIcalApi.getFeeds).toHaveBeenCalledTimes(reads);
@@ -292,7 +288,6 @@ describe('IcalSettings (PC-11, PC-13)', () => {
       });
       expect(screen.getByLabelText('Etichetta (facoltativa)')).toHaveValue('');
       expect(toast.success).toHaveBeenCalledWith('Calendario collegato: la prima sincronizzazione è in corso.');
-      // The list is read again to show the new feed.
       await waitFor(() => expect(propertyIcalApi.getFeeds).toHaveBeenCalledTimes(2));
     });
 
@@ -313,7 +308,6 @@ describe('IcalSettings (PC-11, PC-13)', () => {
       expect(input).toHaveValue('http://www.airbnb.it/calendar/ical/1.ics');
       expect(input).toHaveAttribute('aria-invalid', 'true');
 
-      // Correcting the URL hides the error of the previous attempt.
       typeImportUrl('https://www.airbnb.it/calendar/ical/1.ics');
       expect(within(form).queryByRole('alert')).not.toBeInTheDocument();
     });

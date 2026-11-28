@@ -15,33 +15,20 @@ export type TimelineTone = StatusTone;
 
 export interface TimelineEvent {
   id: string;
-  /**
-   * When it happened (or will): an instant in ISO 8601, `2026-10-16T09:30:00Z`. Missing (or null) when the time was not kept: the
-   * event is shown without a time, and only `order="given"` keeps it where the page put it (the other orders put it last).
-   */
   at?: string | null;
-  /** What happened, already translated: one short line. */
   title: string;
   description?: string;
-  /** Who did it ("Giulia", "CasaZen", "L'ospite"), already translated. */
   actor?: string;
-  /** Default `neutral`. */
   tone?: TimelineTone;
-  /** Replaces the icon of the tone. */
   icon?: LucideIcon;
-  /** An address of the app (`/app/short-rent/bookings/3f2a`): the title becomes a link to the thing it is about. */
   href?: string;
 }
 
 export interface TimelineProps {
   events: readonly TimelineEvent[];
-  /** `desc`: the latest first (default). `asc`: the oldest first. `given`: as they come, for a page that has put them in order already. */
   order?: 'desc' | 'asc' | 'given';
-  /** How many events are shown before "Mostra altri"; also how many each press adds. Default 5; `Infinity` shows them all. */
   limit?: number;
-  /** The name of the list for a screen reader. Default: "Cronologia". */
   label?: string;
-  /** What to say when there is nothing yet. */
   emptyText?: string;
   className?: string;
   testId?: string;
@@ -70,7 +57,6 @@ function sortEvents(events: readonly TimelineEvent[], order: 'desc' | 'asc' | 'g
   });
   if (order === 'given') return dated;
   const direction = order === 'asc' ? 1 : -1;
-  // An event whose date cannot be read goes last in either order; for the others the sort is stable (equal times keep the order given).
   return dated.sort((a, b) => {
     if (!a.time || !b.time) return a.time ? -1 : b.time ? 1 : 0;
     return direction * (a.time.getTime() - b.time.getTime());
@@ -93,7 +79,6 @@ export function Timeline({ events, order = 'desc', limit = DEFAULT_LIMIT, label,
   const now = useNowDate();
   const step = Math.max(1, limit);
   const [shownCount, setShownCount] = useState(step);
-  // The event that takes the focus when "Mostra altri" adds some: the first of the new ones. A callback ref focuses it once, when it mounts.
   const [focusId, setFocusId] = useState<string | null>(null);
   const focusOnMount = useCallback((element: HTMLLIElement | null) => element?.focus({ preventScroll: true }), []);
 
@@ -118,7 +103,6 @@ export function Timeline({ events, order = 'desc', limit = DEFAULT_LIMIT, label,
           const Icon = event.icon ?? TONE_ICONS[tone];
           const toneWord = tone === DEFAULT_TONE ? null : t(`detailDrawer.timeline.tone.${tone}`);
           const relative = time ? formatRelative(time, now, i18n.language) : null;
-          // A page of the app, and nothing else: the check of the return path of the login (no other site, no `javascript:`, no tab or newline that hides a host).
           const href = safeReturnTo(event.href);
           return (
             <li
@@ -128,7 +112,6 @@ export function Timeline({ events, order = 'desc', limit = DEFAULT_LIMIT, label,
               data-tone={tone}
               className="relative flex gap-3 pb-5 outline-none last:pb-0"
             >
-              {/* The line that joins this event to the next one. */}
               {index < visible.length - 1 ? <span aria-hidden="true" className="absolute bottom-0 left-3 top-7 w-px -translate-x-1/2 bg-border" /> : null}
               <span aria-hidden="true" className={cn('relative flex size-6 shrink-0 items-center justify-center rounded-full ring-1 ring-inset', STATUS_TONE_CLASSES[tone])}>
                 <Icon className="size-3.5" />
@@ -137,7 +120,6 @@ export function Timeline({ events, order = 'desc', limit = DEFAULT_LIMIT, label,
                 <p className="break-words text-sm font-medium leading-6 text-foreground">
                   {toneWord ? <span className="sr-only">{toneWord}: </span> : null}
                   {href ? (
-                    // Underlined at rest, not only on hover: a title that leads somewhere must not look like the ones that do not. On a touch screen the line of text is padded to a finger.
                     <Link
                       to={href}
                       className="rounded-sm underline decoration-foreground/40 underline-offset-4 hover:decoration-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:py-2.5"

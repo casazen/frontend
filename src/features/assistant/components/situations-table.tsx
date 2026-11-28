@@ -21,7 +21,6 @@ interface SituationRowProps {
   situation: EffectiveSituation;
   inProperty: boolean;
   editable: boolean;
-  /** Any request of the table is going on: every button of every row waits for it. */
   busy: boolean;
   onEdit: (situation: EffectiveSituation) => void;
   onUseOrganization: (situation: EffectiveSituation) => void;
@@ -64,8 +63,6 @@ function SituationRow({ situation, inProperty, editable, busy, onEdit, onUseOrga
           </Badge>
         </div>
         {situation.isSensitive ? <p className="break-words text-xs text-foreground/70">{t('assistant.situations.sensitive')}</p> : null}
-        {/* The start of the value as the server keeps it. A situation nobody configured has none: its start is unknown, which is never read as «long enough», so it is not
-            eligible for the automatic modes (closed by default, PO-08). The row says so; it never invents a date. */}
         {situation.modeSince ? (
           <p className="text-xs text-foreground/70" data-testid="assistant-situation-since">
             {t('assistant.situations.since', { date: new Date(situation.modeSince).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' }) })}
@@ -106,11 +103,8 @@ function SituationRow({ situation, inProperty, editable, busy, onEdit, onUseOrga
 }
 
 interface SituationsTableProps {
-  /** The property whose situations are shown, or `null` for the organization's. */
   propertyId: string | null;
-  /** The person may read them (`booking.read` for the organization, `property.read` for a property); without it nothing is asked of the server. */
   canRead: boolean;
-  /** The person may change them (the organization administrator for the organization's, `property.write` for a property's exceptions). */
   canEdit: boolean;
 }
 
@@ -130,7 +124,6 @@ export function SituationsTable({ propertyId, canRead, canEdit }: SituationsTabl
   const busy = save.isPending || remove.isPending;
 
   if (!canRead) return <SettingsNoAccess message={t('assistant.noAccess.situations')} testId="assistant-situations-no-access" />;
-  // A 404 is «not found» even when an older answer is still in the cache (the query keeps its data on an error).
   if (situations.isError && isNotFound(situations.error)) {
     return <SettingsNotFound title={t('assistant.property.notFound')} hint={t('assistant.property.notFoundHint')} testId="assistant-situations-not-found" />;
   }
@@ -172,7 +165,6 @@ export function SituationsTable({ propertyId, canRead, canEdit }: SituationsTabl
           {assistantProblemMessage(remove.error, t) ?? t('assistant.situations.actionFailed')}
         </Alert>
       ) : null}
-      {/* The refusal of a save whose dialog was closed while it went on (Esc, a tap outside): the dialog that would say it is gone, so the table does. While the dialog is open it says it itself. */}
       {save.isError && editing === null ? (
         <Alert variant="danger" role="alert" data-testid="assistant-situations-save-error">
           {isNotFound(save.error) ? t('assistant.error.situationNotFound') : (assistantProblemMessage(save.error, t) ?? t('assistant.situations.edit.saveFailed'))}
@@ -183,7 +175,6 @@ export function SituationsTable({ propertyId, canRead, canEdit }: SituationsTabl
         propertyId={propertyId}
         save={save}
         onClose={() => {
-          // Closed with nothing going on: what the dialog said has been said, and goes. Closed while the request goes on: how it ends is for the table to say.
           if (!save.isPending) save.reset();
           setEditing(null);
         }}

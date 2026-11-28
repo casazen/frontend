@@ -20,18 +20,10 @@ import { useDownloadHostReport } from '@/queries/use-host-reports';
 const SHORT_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
 interface ReportDownloadDialogProps {
-  /** The report to download, or null while the dialog is closed. */
   report: DownloadableReport | null;
   onClose: () => void;
 }
 
-/**
- * Asks for the days and the format of a report and downloads it (SR-10). The three reports of short rent come from
- * `GET /api/reports/*` as a CSV; the fiscal ones go through the download code of the fiscal reports page
- * (`useDownloadFiscalReport`, `saveBlobAs`), with the same parameters. A period the backend would refuse (more than 24 months,
- * days in disorder, a fiscal report across two years) is told before the call; when the call fails the dialog says why and the
- * button becomes "Riprova".
- */
 export function ReportDownloadDialog({ report, onClose }: ReportDownloadDialogProps) {
   return (
     <Dialog
@@ -50,7 +42,6 @@ function DownloadForm({ report, onClose }: { report: DownloadableReport; onClose
   const today = todayInRome();
   const name = t(`reports.items.${report.id}.name`);
 
-  // The period the report suggests; the days to type start from it.
   const suggested: Exclude<PeriodPresetId, 'custom'> =
     report.suggested && report.suggested !== 'custom' ? report.suggested : 'thisMonth';
   const [preset, setPreset] = useState<PeriodPresetId>(suggested);
@@ -65,7 +56,6 @@ function DownloadForm({ report, onClose }: { report: DownloadableReport; onClose
   const pending = hostDownload.isPending || fiscalDownload.isPending;
 
   const choosePreset = (next: PeriodPresetId) => {
-    // The days to type start from the ones the person was looking at.
     if (next === 'custom') setCustom(period);
     setFailure(null);
     setPreset(next);

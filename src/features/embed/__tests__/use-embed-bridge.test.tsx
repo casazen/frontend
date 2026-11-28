@@ -17,18 +17,12 @@ import { embedWidgetHandle, useEmbed } from '../embed-context';
 import { EmbedShell } from '../embed-shell';
 import { useEmbedBridge, type EmbedBridge } from '../use-embed-bridge';
 
-/**
- * The bridge between the frame and the page of the agency's website (E41/F01/US01/T02, NF-145). What costs something when it is wrong is the
- * security of the conversation: a message goes only to the origin the address named and a message is believed only from the window that frames
- * the page and from that origin. A listener on the page that frames the widget, and every script on it, reads what is sent.
- */
 vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getPublicOrg: vi.fn() } }));
 
 const PARENT = 'https://quokka360.com';
 const ADDRESS = `v=1&parent=${encodeURIComponent(PARENT)}`;
 const CHECKOUT = 'https://app.example.test/book/villa-rossi/property/casa-mare/checkout?checkin=2026-12-01&checkout=2026-12-05&guests=2';
 
-// No color of its own: what the page asks for is what shows.
 const ORG: PublicOrgDto = { slug: 'villa-rossi', displayName: 'Villa Rossi', logoUrl: null, themeColor: null, contactEmail: null, publicThemeId: 'mare' };
 const getPublicOrg = vi.mocked(publicOrgApi.getPublicOrg);
 
@@ -37,13 +31,10 @@ function httpError(status: number): AxiosError {
   return new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, null, { status, statusText: '', headers: {}, config, data: {} });
 }
 
-// --- the window that frames the page, the animation frames and the size of the wrapper ---------------------------------------------------
-
 const parentWindow = { postMessage: vi.fn() };
 const otherWindow = { postMessage: vi.fn() };
 const originalParent = Object.getOwnPropertyDescriptor(window, 'parent');
 
-/** This page is in a frame of `parent`. */
 function frameInside(parent: unknown) {
   Object.defineProperty(window, 'parent', { configurable: true, writable: true, value: parent });
 }
@@ -66,7 +57,6 @@ class ResizeObserverStub {
     ResizeObserverStub.all.push(this);
   }
 }
-/** The browser tells the observers that the size changed. */
 const resized = () =>
   act(() => {
     for (const observer of ResizeObserverStub.all) observer.callback([], observer as unknown as ResizeObserver);
@@ -103,11 +93,8 @@ afterEach(async () => {
   document.documentElement.lang = 'it';
 });
 
-// --- what the widget sees, what the frame sent, what the page sends back ------------------------------------------------------------------
-
 const seen = vi.fn<(bridge: EmbedBridge) => void>();
 
-/** A widget that reads the bridge. */
 function BridgeProbe() {
   const bridge = useEmbedBridge();
   const embed = useEmbed();
@@ -123,13 +110,11 @@ function BridgeProbe() {
 
 const bridgeNow = () => seen.mock.lastCall?.[0] as EmbedBridge;
 
-/** Everything the frame posted to `window.parent`, and where to. */
 const posts = () => parentWindow.postMessage.mock.calls as [EmbedMessage, string][];
 const sent = (type?: EmbedMessageType) => posts().map(([message]) => message).filter((message) => type === undefined || message.type === type);
 
 function renderFramed(entry: string, { siteEmbed = true, routes }: { siteEmbed?: boolean; routes?: RouteObject[] } = {}) {
   seen.mockReset();
-  // One layout for the two widgets, as the routes of the app have it: the shell stays mounted when the guest moves from one to the other.
   const router = createMemoryRouter(
     routes ?? [
       {
@@ -152,7 +137,6 @@ function renderFramed(entry: string, { siteEmbed = true, routes }: { siteEmbed?:
   return router;
 }
 
-/** A message that reaches the frame from the window `source`, written as `origin`. */
 function arrives(data: unknown, { source, origin = PARENT }: { source: unknown; origin?: string }) {
   const event = new MessageEvent('message', { data });
   Object.defineProperty(event, 'source', { value: source });
@@ -162,7 +146,6 @@ function arrives(data: unknown, { source, origin = PARENT }: { source: unknown; 
   });
 }
 
-/** The page answers as the loader does. */
 const pageSays = (data: unknown) => arrives(data, { source: parentWindow });
 
 const wrapper = () => screen.getByTestId('embed-shell');
@@ -174,7 +157,6 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
     renderFramed(`/embed/villa-rossi/booking?${ADDRESS}`);
     await screen.findByTestId('embed-shell');
 
-    // Still loading: the page is told nothing yet.
     expect(sent('ready')).toEqual([]);
     expect(sent('error')).toEqual([]);
 
@@ -184,7 +166,6 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
     expect(sent('ready')).toEqual([{ source: 'casazen', v: 1, type: 'ready', widget: 'booking' }]);
     expect(posts().find(([message]) => message.type === 'ready')?.[1]).toBe(PARENT);
 
-    // Another render, a configuration, a resize: still one.
     pageSays(buildEmbedMessage('config', { lang: 'en' }));
     wrapperHeight = 800;
     resized();
@@ -228,7 +209,6 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
     await screen.findByTestId('bridge');
     flushFrame();
 
-    // The height of the wrapper, rounded up.
     expect(sent('resize')).toEqual([{ source: 'casazen', v: 1, type: 'resize', height: 401 }]);
 
     wrapperHeight = 520.2;
@@ -236,7 +216,6 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
     flushFrame();
     expect(sent('resize').map((message) => (message as EmbedMessage<'resize'>).height)).toEqual([401, 521]);
 
-    // A page that gets shorter must get a shorter frame.
     wrapperHeight = 300.2;
     resized();
     flushFrame();
@@ -249,7 +228,6 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
     flushFrame();
     const before = sent('resize').length;
 
-    // Three changes before the next frame: one message, with the last height.
     for (const height of [410, 420, 430]) {
       wrapperHeight = height;
       resized();
@@ -257,7 +235,6 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
     flushFrame();
     expect(sent('resize').slice(before)).toEqual([{ source: 'casazen', v: 1, type: 'resize', height: 430 }]);
 
-    // A change that rounds to the same pixel says nothing.
     for (const height of [429.1, 429.9, 430]) {
       wrapperHeight = height;
       resized();
@@ -272,7 +249,6 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
   });
 
   it('embedBridge_resize_NeverReadsTheScrollHeightOfTheDocument', async () => {
-    // `scrollHeight` of the document cannot go below the height the frame already has: the frame would never shrink.
     let reads = 0;
     Object.defineProperty(document.documentElement, 'scrollHeight', {
       configurable: true,
@@ -316,7 +292,6 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
   it('embedBridge_url_IsPostedAtEveryChangeOfAddress_WithThePathRelativeToTheBaseAndNothingOfTheFrame', async () => {
     const router = renderFramed(`/embed/villa-rossi/booking?${ADDRESS}`);
     await screen.findByTestId('bridge');
-    // The first address is not a change.
     expect(sent('url')).toEqual([]);
 
     await act(async () => {
@@ -325,7 +300,6 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
       );
     });
 
-    // `parent`, `v` and `lang` are the frame's own; a code, a token and an address of e-mail are never sent to a page.
     expect(sent('url')).toEqual([{ source: 'casazen', v: 1, type: 'url', path: '/property/casa-mare', query: 'checkin=2026-12-01&guests=2' }]);
 
     await act(async () => {
@@ -348,7 +322,6 @@ describe('moving from one widget to another inside the frame', () => {
       await router.navigate(`/embed/villa-rossi/property/casa-mare?from=booking&checkin=2026-12-01&${ADDRESS}`);
     });
 
-    // The cards of the booking widget lead to the property widget in the same frame: the page hears the new address, and nothing starts again.
     expect(screen.getByTestId('bridge')).toHaveAttribute('data-widget', 'property');
     expect(screen.getByTestId('bridge')).toHaveTextContent('active-attached');
     expect(sent('ready')).toEqual([{ source: 'casazen', v: 1, type: 'ready', widget: 'booking' }]);
@@ -376,7 +349,6 @@ describe('the frame talks only to the origin the address named (the proof of sec
       expect(targetOrigin).toBe(PARENT);
       expect(targetOrigin).not.toBe('*');
     }
-    // Nobody else was written to, and the page itself was not used as a mailbox.
     expect(otherWindow.postMessage).not.toHaveBeenCalled();
   });
 
@@ -411,7 +383,6 @@ describe('the frame talks only to the origin the address named (the proof of sec
   });
 
   it('embedBridge_PageNotInAFrame_IsInactive_EvenWithAValidParent', async () => {
-    // Opened on its own: `window.parent` is the window itself.
     frameInside(window);
     const postToSelf = vi.spyOn(window, 'postMessage');
     renderFramed(`/embed/villa-rossi/booking?${ADDRESS}`);
@@ -465,7 +436,6 @@ describe('what the page says to the frame: config (AC3)', () => {
 
     arrives(data, where);
 
-    // Nothing is believed: not attached, no color, no radius, no font, the language stays.
     expect(screen.getByTestId('bridge')).toHaveTextContent('active-detached');
     expect(bridgeNow().attached).toBe(false);
     expect(wrapper().style.getPropertyValue('--cz-public-primary')).toBe('');
@@ -501,7 +471,6 @@ describe('what the page says to the frame: config (AC3)', () => {
     expect(wrapper()).toHaveAttribute('data-font', 'classico');
     await waitFor(() => expect(i18n.language).toBe('en'));
     expect(document.documentElement.lang).toBe('en');
-    // The org's own theme stays: the page asks for a look, not for another site.
     expect(wrapper()).toHaveAttribute('data-theme', 'mare');
   });
 
@@ -510,7 +479,6 @@ describe('what the page says to the frame: config (AC3)', () => {
     await screen.findByTestId('bridge');
     const fontBefore = wrapper().getAttribute('data-font');
 
-    // A color that is not hex, a radius of 99 px, a font nobody knows, a language that is neither: nothing changes, and the message still attaches the bridge.
     pageSays(buildEmbedMessage('config', { theme: { primary: 'red', radius: '99px', font: 'comic-sans' }, lang: 'de' }));
 
     expect(screen.getByTestId('bridge')).toHaveTextContent('active-attached');
@@ -520,7 +488,6 @@ describe('what the page says to the frame: config (AC3)', () => {
     expect(wrapper().getAttribute('data-font')).toBe(fontBefore);
     expect(i18n.language).toBe('it');
 
-    // One bad value does not take the good ones with it.
     pageSays(buildEmbedMessage('config', { theme: { primary: 'javascript:alert(1)', radius: '8px', font: 'moderno' } }));
     expect(wrapper().style.getPropertyValue('--cz-public-primary')).toBe('');
     expect(wrapper().style.getPropertyValue('--cz-public-radius')).toBe('8px');

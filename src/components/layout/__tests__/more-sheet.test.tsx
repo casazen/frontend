@@ -41,7 +41,6 @@ function LocationProbe() {
   return <p data-testid="location">{useLocation().pathname}</p>;
 }
 
-/** The sheet next to a stand-in for the "Altro" button of the bar, which the sheet gives the focus back to. */
 function renderSheet(contextKey: AppContextKey, path = `/app/${contextKey}`) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -91,9 +90,7 @@ describe('MoreSheet (UI-04b)', () => {
 
       expect(sheet()).toHaveAttribute('data-sheet-side', 'bottom');
       expect(sheet()).toHaveAttribute('data-testid', 'more-sheet');
-      // Phone only: from the tablet the sidebar takes over.
       expect(sheet()).toHaveClass('md:hidden');
-      // The title names it; nothing else describes it.
       expect(sheet()).not.toHaveAttribute('aria-describedby');
       expect(within(sheet()).getByRole('heading', { name: 'Altro' })).toBeInTheDocument();
     });
@@ -118,11 +115,8 @@ describe('MoreSheet (UI-04b)', () => {
       expect(tiles(groups[1])).toEqual(['Sito di prenotazione', 'Marketplace']);
       expect(groups[2]).toHaveAccessibleName('Gestione');
       expect(tiles(groups[2])).toEqual(['Incassi']);
-      // The settings close the sheet as they close the sidebar; the queues are tabs of the Cruscotto, the profile is in the account row
-      // at the end of the sheet: there is no "Altro" group left.
       expect(groups[3]).toHaveAccessibleName('Impostazioni e inviti');
       expect(tiles(groups[3])).toEqual(['Impostazioni']);
-      // The destinations of the bar are not repeated.
       for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Immobili']) {
         expect(within(sheet()).queryByRole('link', { name })).not.toBeInTheDocument();
       }
@@ -155,15 +149,12 @@ describe('MoreSheet (UI-04b)', () => {
     });
 
     it('MoreSheet_AreaWithJustAltro_HasNoGroupHeadings', () => {
-      // A role that reads the leases and not the properties, and is not the organization administrator: the bar holds what it can open and
-      // nothing is at the foot, so behind "Altro" there is only "Altro". The condominium register needs property.read, so it is absent.
       arrange(['long-rent'], (_ctx, permission) => permission !== 'property.read' && permission !== ORG_BILLING_ADMIN_PERMISSION);
       renderSheet('long-rent', '/app/long-rent/leases');
 
       open();
 
       expect(tiles(sheet())).toEqual(['Report fiscale']);
-      // One group needs no name on the screen (the title says it), and still has one for a screen reader.
       expect(within(sheet()).getByRole('group', { name: 'Altro' })).toBeInTheDocument();
       expect(within(sheet()).queryByText('Altro', { selector: 'p' })).not.toBeInTheDocument();
     });
@@ -202,8 +193,6 @@ describe('MoreSheet (UI-04b)', () => {
       expect(heading).toHaveTextContent('Portale fornitori');
       expect(heading).toHaveTextContent('Casa Rossi Srl');
       expect(within(sheet()).queryByTestId('area-switcher')).not.toBeInTheDocument();
-      // The bar of the phone has the four places of every day, "Servizi e prezzi" the fourth (SP-06, SP-D11): the sheet holds the
-      // showcase, the customers (SP-16b) and the settings (SP-16c-c), which are not on the bar, and, in "Altro", the profile and the iCal guide.
       expect(tiles(sheet())).toEqual(['Vetrina', 'Clienti', 'Impostazioni', 'Profilo', 'Guida iCal']);
     });
 
@@ -219,7 +208,6 @@ describe('MoreSheet (UI-04b)', () => {
   });
 
   describe('account (UI-05)', () => {
-    // The sheet lists the page "Profilo" among its tiles too: the account is looked at on its own.
     const account = () => within(screen.getByTestId('sheet-account'));
     const accountRow = () => account().getByRole('button', { name: /Mario Rossi/ });
 
@@ -229,10 +217,8 @@ describe('MoreSheet (UI-04b)', () => {
 
       open();
 
-      // The row of the demo ("Profilo, tema e lingua") without the theme, which does not exist yet (D26).
       expect(accountRow()).toHaveTextContent('Profilo e lingua');
       expect(accountRow()).toHaveAttribute('aria-expanded', 'false');
-      // Closed, what is inside is not reachable.
       expect(account().queryByRole('link', { name: 'Profilo' })).not.toBeInTheDocument();
       expect(account().queryByRole('button', { name: 'Esci' })).not.toBeInTheDocument();
       expect(account().getByTestId('language-switcher')).not.toBeVisible();
@@ -367,7 +353,6 @@ describe('MoreSheet (UI-04b)', () => {
 
       open();
 
-      // The first control would be the close button, which would show its ring at every tap on "Altro".
       expect(sheet()).toHaveFocus();
       expect(sheet()).toHaveClass('outline-none');
     });
@@ -388,7 +373,6 @@ describe('MoreSheet (UI-04b)', () => {
     it('MoreSheet_OpenerTookNoFocus_TheFocusGoesBackToAltroOfTheBar', async () => {
       arrange(['short-rent']);
       renderSheet('short-rent');
-      // A tap on Safari does not focus a button: nothing has the focus when the sheet opens.
       expect(document.body).toHaveFocus();
       open();
 
@@ -417,12 +401,10 @@ describe('MoreSheet (UI-04b)', () => {
       open();
 
       fireEvent.click(within(sheet()).getByRole('link', { name: 'Incassi' }));
-      // Radix gives the focus back one tick after the sheet is gone: wait for it not to.
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 30));
       });
 
-      // `RouteFocus` moves the focus to the heading of the new page; the bar must not take it.
       expect(bar).not.toHaveFocus();
     });
 
@@ -435,7 +417,6 @@ describe('MoreSheet (UI-04b)', () => {
 
       fireEvent.click(within(sheet()).getByRole('link', { name: 'Incassi' }));
 
-      // Same page: no heading to take the focus, so it goes back to where it was.
       await waitFor(() => expect(bar).toHaveFocus());
       expect(screen.getByTestId('location')).toHaveTextContent('/app/short-rent/payments');
     });

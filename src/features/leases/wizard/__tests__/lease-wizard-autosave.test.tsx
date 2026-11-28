@@ -76,7 +76,6 @@ describe('LeaseWizard autosave', () => {
     );
     const tenant = within(screen.getByTestId('lease-tenants-0'));
 
-    // First change: sent after the pause, on version 4, with the code normalized.
     fireEvent.change(tenant.getByLabelText(/^Nome/), { target: { value: 'Giulia' } });
     fireEvent.change(tenant.getByLabelText(/^Codice fiscale/), { target: { value: TENANT_CODE.toLowerCase() } });
     await waitFor(() => expect(leasesApi.saveDraft).toHaveBeenCalledTimes(1));
@@ -93,7 +92,6 @@ describe('LeaseWizard autosave', () => {
       }),
     );
 
-    // Second change: made on the version the server answered (5); the server says it is stale and nothing else is written.
     fireEvent.change(tenant.getByLabelText(/^Cognome/), { target: { value: 'Verdi' } });
     await waitFor(() => expect(leasesApi.saveDraft).toHaveBeenCalledTimes(2));
     expect(leasesApi.saveDraft).toHaveBeenNthCalledWith(2, 'lease-1', expect.objectContaining({ version: 5, step: 2 }));
@@ -105,7 +103,6 @@ describe('LeaseWizard autosave', () => {
     await new Promise((resolve) => setTimeout(resolve, 600));
     expect(leasesApi.saveDraft).toHaveBeenCalledTimes(2);
 
-    // The personal data went to the server and nowhere else: no draft in the browser.
     const stored = JSON.stringify({ ...localStorage, ...sessionStorage });
     expect(stored).not.toContain(TENANT_CODE);
     expect(stored).not.toContain('Giulia');

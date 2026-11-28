@@ -14,7 +14,6 @@ import { getProblemMessage } from '@/lib/api-errors';
 
 const ADMIN_SEO_KEY = 'admin-seo';
 
-/** Server-side paginated list; the previous page stays on screen while the next one loads. */
 export function useSeoPages(params?: SeoPagesQuery) {
   return useQuery({
     queryKey: [ADMIN_SEO_KEY, 'pages', params],
@@ -23,7 +22,6 @@ export function useSeoPages(params?: SeoPagesQuery) {
   });
 }
 
-/** Review screen of one page; disabled while no page is selected. */
 export function useSeoPageDetail(pageId: string | null) {
   return useQuery({
     queryKey: [ADMIN_SEO_KEY, 'page', pageId],
@@ -84,7 +82,6 @@ export function usePlatformAiBudget() {
   });
 }
 
-/** Top comuni of the SEO funnel (SE-04, AC9), read again at every visit: the events arrive all day. */
 export function useSeoTopComuni(days: number) {
   return useQuery({
     queryKey: [ADMIN_SEO_KEY, 'top-comuni', days],
@@ -119,7 +116,6 @@ export function useApproveSeoRevision() {
       toast.success(i18n.t('toast.seoRevisionApproved'));
     },
     onError: (error) => {
-      // A newer revision (409) or a refused one (422): reload what the admin sees.
       queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY] });
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.seoRevisionApproveFailed'));
     },

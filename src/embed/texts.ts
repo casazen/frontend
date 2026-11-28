@@ -10,9 +10,7 @@
 
 export type EmbedLang = 'it' | 'en';
 
-/** The words of `SEARCH_TEXTS`: one set per language. A `{max}` or a `{date}` in a text is where the bar writes the number or the day. */
 export interface SearchText {
-  /** The name of the search form for a screen reader. */
   form: string;
   where: string;
   anywhere: string;
@@ -22,13 +20,11 @@ export interface SearchText {
   fewer: string;
   more: string;
   go: string;
-  /** The name of the calendar (a dialog). */
   calendar: string;
   previous: string;
   next: string;
   arrival: string;
   departure: string;
-  /** Said after the arrival is chosen, after «Arrivo 12 marzo.». */
   chooseDeparture: string;
   night: string;
   nights: string;
@@ -41,7 +37,6 @@ export interface SearchText {
   preview: string;
 }
 
-/** What the search bar writes (NF-146): the same words as the search of the booking site, in the two languages of the plugin. */
 export const SEARCH_TEXTS: Record<EmbedLang, SearchText> = {
   it: {
     form: 'Cerca disponibilità',
@@ -97,7 +92,6 @@ export const SEARCH_TEXTS: Record<EmbedLang, SearchText> = {
   },
 };
 
-/** What the loader writes: the title of each frame, the placeholder while it loads, and the lead of the link that replaces it when it does not. */
 export const LOADER_TEXTS = {
   it: {
     loading: 'Caricamento…',

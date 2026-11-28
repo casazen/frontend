@@ -73,8 +73,6 @@ function MonthEndCloseBody() {
   const post = usePostPeriod();
   const [dialog, setDialog] = useState<PageDialog>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
-  // The dialog of «Esegui per tutti» stays in the page, closed, while a run it started goes on: it goes on following the run, reads the month again when it ends and tells how it went, so the
-  // person who left it is not left to reload the page (the dialog says so when it is left: `onKeepChange`).
   const [bulkKept, setBulkKept] = useState(false);
 
   const names = useMemo(() => new Map((ownersQuery.data ?? []).map((owner) => [owner.id, `${owner.firstName} ${owner.lastName}`.trim()] as const)), [ownersQuery.data]);
@@ -94,7 +92,6 @@ function MonthEndCloseBody() {
     }
   };
 
-  /** The currency of an owner's statements, when the row of the owner has read its versions: the correction is made in it. */
   const currencyOf = (ownerId: string) => queryClient.getQueryData<OwnerStatementVersion[]>(ownerAccountingKeys.versions(period.year, period.month, ownerId))?.[0]?.currency;
   const lastDay = endOfMonth(`${periodParam(period)}-01`);
 
@@ -195,7 +192,6 @@ interface OwnerGroupSectionProps {
   nameOf: (ownerId: string) => string;
 }
 
-/** One of the four groups, a heading under the section of the owners: the owners in it by name. A group with nobody in it is not shown (a calm page shows what there is to do). */
 function OwnerGroupSection({ group, period, monthOver, owners, nameOf }: OwnerGroupSectionProps) {
   const { t } = useTranslation();
   if (owners.length === 0) return null;

@@ -20,7 +20,6 @@ import {
 
 const DASH = '—';
 
-// The words of a payment that is not settled are the ones the plan pages have always had (`billing.notice.*`).
 const PAYMENT_NOTICE: Partial<Record<BillingSubscriptionStatus, string>> = {
   past_due: 'billing.notice.pastDue',
   incomplete: 'billing.notice.incomplete',
@@ -61,12 +60,10 @@ function Figure({ label, value, help, testId }: { label: string; value: string; 
 
 interface PlanFocusProps {
   subscription: BillingSubscription;
-  /** The plan the page calls the person's own (see `pickShownTier`). */
   tier: PlanTier;
   usage: PlanUsage;
   openAccess: boolean;
   pricesPending: boolean;
-  /** Opens the comparison of the plans. */
   onOpenPlans: () => void;
   portal: PortalHandle;
 }
@@ -84,7 +81,6 @@ export function PlanFocus({ subscription, tier, usage, openAccess, pricesPending
   const tone: CalmTone = !needsPaymentAction(status) ? 'neutral' : status === 'unpaid' ? 'danger' : 'warning';
   const paymentKey = PAYMENT_NOTICE[status];
   const planNotice = pickPlanNotice(openAccess, pricesPending);
-  // A payment to settle comes first; then what the person should know about the open access or the prices; an ended subscription last.
   const notice = paymentKey
     ? t(paymentKey)
     : planNotice

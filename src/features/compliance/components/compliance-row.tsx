@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 import type { LightState } from '../lib/compliance-light';
 import { ComplianceLight } from './compliance-light';
 
-// The title and the line under it are one control, as wide as the column and at least 44 px high (as in the rows of the Home).
 const OPEN =
   'group/open flex min-h-11 min-w-0 flex-col justify-center rounded-md text-left outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
@@ -13,32 +12,23 @@ const OPEN =
 export const ROW_BUTTON = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
 interface ComplianceRowProps {
-  /** The icon of the kind of row; a row without one has no column for it. */
   icon?: LucideIcon;
   title: string;
-  /** Where the title goes; without it the title is only text. */
   to?: string;
-  /** Where it happens or whom it is about, under the title. */
   sub?: string;
-  /** What it still lacks, in words. */
   detail?: string;
   /**
    * The traffic light of the row (NF-52): its pill, with the icon and the words of the light, and the reason in plain words under the title.
    * A row without one (the CIN page, the Alloggiati dashboard) has no light at all; `unknown` draws "Da verificare", never green.
    */
   light?: LightState;
-  /** Why the row has its light, in plain words: read with the light, drawn under what the row is about. */
   reason?: string;
-  /** The state, as a `StatusBadge`. */
   badge?: React.ReactNode;
-  /** How pressing it is (a `NoteLine`): its words and icon say it, not only its color. */
   note?: React.ReactNode;
-  /** The one button of the row (a link or the trigger of a dialog), built by the page. */
   action?: React.ReactNode;
   testId?: string;
   /** The `data-testid` of the title: of the link when there is one, of the plain text otherwise. */
   titleTestId?: string;
-  /** What the law dates and the host answers for: the icon takes the color of urgency (the words of the row say the same). */
   urgent?: boolean;
 }
 

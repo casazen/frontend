@@ -12,7 +12,6 @@ import { getProblemCode } from '@/lib/api-errors';
  */
 export type LinkFailure = 'expired' | 'invalid' | 'notFound' | 'suppressed' | 'retry';
 
-/** Codes of `PublicMarketingController` that say the link itself does not work. */
 const INVALID_LINK_CODES: ReadonlySet<string> = new Set([
   'invalid_signature',
   'signature_missing',
@@ -22,7 +21,6 @@ const INVALID_LINK_CODES: ReadonlySet<string> = new Set([
   'org_id_missing',
 ]);
 
-/** The failure of a call, from its problem code; a 400 or 422 without a code we know is still a link the server refused. */
 export function linkFailureOf(error: unknown): LinkFailure {
   if (!isAxiosError(error) || !error.response) return 'retry';
 
@@ -30,7 +28,6 @@ export function linkFailureOf(error: unknown): LinkFailure {
   const code = getProblemCode(data);
   if (code === 'link_expired') return 'expired';
   if (code === 'contact_not_found') return 'notFound';
-  // The only 409 of the two endpoints: the address opted out, and an old confirmation link does not lift that.
   if (code === 'contact_suppressed' || status === 409) return 'suppressed';
   if ((code !== undefined && INVALID_LINK_CODES.has(code)) || status === 400 || status === 422) return 'invalid';
   return 'retry';

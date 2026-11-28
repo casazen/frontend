@@ -20,7 +20,6 @@ import { exemptionOf, taxBreakdownOf, taxOutlook, type CheckInWizardValues } fro
 import { TaxCollection } from './tax-collection';
 import { TaxRateSubstep } from './tax-rate-substep';
 
-/** The reasons the host may choose have a plain-words label under the key the API gives (`touristTax.exemption.<code>`). */
 const EXEMPTION_LABEL_KEYS: Readonly<Record<string, string>> = {
   resident: 'touristTax.exemption.resident',
   health_care: 'touristTax.exemption.health_care',
@@ -32,7 +31,6 @@ const EXEMPTION_LABEL_KEYS: Readonly<Record<string, string>> = {
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
-/** Who may have collected the tax of a channel stay. */
 const COLLECTORS = ['Channel', 'Host'] as const satisfies readonly TouristTaxCollector[];
 
 /** The label of an exemption reason: the plain words of the code the API knows, otherwise the code itself. */
@@ -47,14 +45,12 @@ interface TaxGuestRowProps {
   guest: StayTouristTaxGuest;
   name: string;
   tax: StayTouristTax;
-  /** The exemption code of the guest in the form of the wizard. */
   code: string;
   money: (amount: number) => string;
   busy: boolean;
   onChange: (code: string) => void;
 }
 
-/** One guest of the tax: nights, taxable nights, the exemption (a minor exempt by age is shown, not selectable) and the amount. */
 function TaxGuestRow({ index, guest, name, tax, code, money, busy, onChange }: TaxGuestRowProps) {
   const { t } = useTranslation();
   const selectId = `tax-exemption-${index}`;
@@ -132,8 +128,6 @@ export function TaxStep({ bookingId, form, state }: TaxStepProps) {
   const [rateOpen, setRateOpen] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const locale = i18n.language.startsWith('en') ? 'en-GB' : 'it-IT';
-  // The tax of the stay has no currency of its own (the Italian rates are in euro): when the server sends the collection (the flag of the online payment is on) its currency is the one of the
-  // property and the amounts are shown in it, a currency it does not say as a number with no symbol; with the flag off the amounts are the euro amounts they have always been.
   const collectionCurrency = taxQuery.data?.collection?.currency;
   const money = (amount: number) =>
     taxQuery.data?.collection
@@ -164,7 +158,6 @@ export function TaxStep({ bookingId, form, state }: TaxStepProps) {
 
   const tax = taxQuery.data;
   const outlook = taxOutlook(tax);
-  // Every write of the card waits for the others: none of its buttons starts a second one while one is under way.
   const busy = setExemptions.isPending || setCollector.isPending || recordPaidAtProperty.isPending;
 
   const chooseExemption = (index: number, code: string) => {
@@ -172,7 +165,6 @@ export function TaxStep({ bookingId, form, state }: TaxStepProps) {
     const previous = form.getValues(path);
     form.setValue(path, code, { shouldDirty: false });
     setProblem(null);
-    // Only this guest goes (a null code clears the exemption): the others, whose reason the host may not be allowed to see, stay as they are.
     setExemptions.mutate(exemptionOf(index, code), {
       onError: (error) => {
         form.setValue(path, previous, { shouldDirty: false });
@@ -188,7 +180,6 @@ export function TaxStep({ bookingId, form, state }: TaxStepProps) {
     });
   };
 
-  // «Pagata in struttura» (E25/F01/US02/T01): the server refuses it for a stay it does not apply to, one the guest already paid online or one whose payment is on its way, and says why.
   const recordPaid = () => {
     setProblem(null);
     recordPaidAtProperty.mutate(undefined, {

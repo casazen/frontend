@@ -6,7 +6,6 @@ import { BaseStep } from '../steps/base-step';
 import { NEW_PROPERTY_DEFAULTS, type PropertyWizardValues } from '../property-wizard-model';
 import { RoomsEditor } from '../steps/rooms-editor';
 
-// The comune picker reads the official list: the first step is rendered here for its counters only.
 vi.mock('@/queries/use-comuni', () => ({
   useComuneDatasetStatus: () => ({ data: { datasetAvailable: false }, isPending: false, isError: false, refetch: vi.fn() }),
   useComuneSearch: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
@@ -102,14 +101,12 @@ describe('RoomsEditor (NF-34)', () => {
   });
 
   it('removeRoom_TheLastRoomThatIsSaved_CannotBeTakenOff_TheServerTakesNoEmptyList', () => {
-    // The server keeps one room: the editor starts from it, and taking it off would change nothing there (it would come back).
     const withOne = { ...NEW_PROPERTY_DEFAULTS, rooms: [{ key: 'room-1', type: 'Bedroom' as const, beds: [{ type: 'Double' as const, count: 1 }] }] };
     render(<Harness values={withOne} storedRoomCount={1} />);
 
     expect(screen.getByTestId('property-wizard-room-remove')).toBeDisabled();
     expect(screen.getByTestId('property-wizard-rooms-last-saved')).toHaveTextContent('non si può togliere');
 
-    // Another room next to it: now either can go (the other stays), and the last one is locked again.
     fireEvent.click(screen.getByTestId('property-wizard-room-add'));
     expect(screen.queryByTestId('property-wizard-rooms-last-saved')).not.toBeInTheDocument();
     fireEvent.click(screen.getAllByTestId('property-wizard-room-remove')[0]!);
@@ -127,7 +124,6 @@ describe('RoomsEditor (NF-34)', () => {
 
   it('firstStep_WithRooms_TheCountersAreReadFromThemAndNotTyped', () => {
     render(<Harness withBaseStep />);
-    // Without rooms the host types the counters.
     expect(screen.getByTestId('property-wizard-bedrooms')).toBeInTheDocument();
     expect(screen.queryByTestId('property-wizard-bedrooms-derived')).not.toBeInTheDocument();
 
@@ -136,7 +132,6 @@ describe('RoomsEditor (NF-34)', () => {
     expect(screen.queryByTestId('property-wizard-bedrooms')).not.toBeInTheDocument();
     expect(screen.getByTestId('property-wizard-bedrooms-derived')).toHaveTextContent('1');
     expect(screen.getByTestId('property-wizard-beds-derived')).toHaveTextContent('1');
-    // The guests and the bathrooms are not derived from the rooms.
     expect(screen.getByTestId('property-wizard-maxGuests')).toBeInTheDocument();
     expect(screen.getByTestId('property-wizard-bathrooms')).toBeInTheDocument();
   });

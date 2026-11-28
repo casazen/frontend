@@ -41,7 +41,6 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
       await navigator.clipboard.writeText(url);
       setCopied(true);
     } catch {
-      // No clipboard (insecure context, permission denied): select the link so the host can copy it by hand.
       inputRef.current?.select();
       toast.error(t('ical.copyFailed'));
     }
@@ -57,7 +56,6 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
     regenerate.reset();
   };
 
-  // The dialog closes only once the new link is there; on error it stays open with the reason.
   const confirm = () => {
     regenerate.mutate(undefined, {
       onSuccess: () => {

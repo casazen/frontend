@@ -15,7 +15,6 @@ const auth = vi.hoisted(() => ({
 }));
 const realtime = vi.hoisted(() => ({
   state: 'connected' as 'connected' | 'connecting' | 'disconnected',
-  /** What the bell handed to the hook: the test plays the server by calling `onNewNotification`. */
   options: undefined as { onNewNotification?: (change: NotificationsChange) => void } | undefined,
 }));
 const toastMock = vi.hoisted(() => vi.fn());
@@ -163,7 +162,6 @@ describe('NotificationBell (UI-12)', () => {
     fireEvent.click(row);
 
     await waitFor(() => expect(notificationsApi.markRead).toHaveBeenCalledWith('t1'));
-    // The entity of the entry is the property: the layer opens on its first day to notify (no day in the address).
     expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent/compliance?detail=ticino:p-1');
     expect(screen.queryByTestId('notification-panel')).not.toBeInTheDocument();
   });
@@ -257,7 +255,6 @@ describe('NotificationBell (UI-12)', () => {
   });
 
   describe('the pop-up of a new notification', () => {
-    /** The server tells the open session about a new notification: the hook calls what the bell gave it. */
     const arrives = (change: NotificationsChange) => act(() => realtime.options?.onNewNotification?.(change));
 
     type ToastOptions = { id: string; duration: number; action?: { label: string; onClick: () => void } };
@@ -281,7 +278,6 @@ describe('NotificationBell (UI-12)', () => {
       expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent/bookings/b-1?tab=guest');
     });
 
-    // E30/F02/US03/T01 (NF-127): a Ticino alert or declaration is a pop-up that says what it is about and opens the layer of that property over the cockpit (the entity is the property, never the day).
     it.each([
       ['ticino-notification-due', 'Gli ospiti di un arrivo in Ticino vanno notificati alla polizia cantonale entro 24 ore.'],
       ['ticino-notification-overdue', 'Sono passate le 24 ore per notificare alla polizia cantonale gli ospiti di un arrivo in Ticino.'],

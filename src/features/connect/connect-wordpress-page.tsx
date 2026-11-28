@@ -37,7 +37,6 @@ export function ConnectWordPressPage() {
   const { contexts, isReady, getDefaultRoute } = useWorkspace();
   const { org, isLoading: userLoading } = useCurrentUser();
   const authorize = useAuthorizeSiteConnection(org?.id);
-  // True from the first click until the call fails: a second click in the same moment, before the page has drawn the disabled button, sends nothing.
   const sent = useRef(false);
   const [cancelled, setCancelled] = useState(false);
 
@@ -49,7 +48,6 @@ export function ConnectWordPressPage() {
     );
   }
   if (flagsError) {
-    // A flag that could not be read is not «off»: nothing is known, and the page says so with a way to try again (as the embeddable pages do).
     return (
       <PublicAccessFrame
         icon={TriangleAlert}
@@ -121,7 +119,6 @@ export function ConnectWordPressPage() {
     if (sent.current) return;
     sent.current = true;
     authorize.mutate(request, {
-      // The whole window goes to the address the server answered: the screen of the plugin on the site, with the one-time code.
       onSuccess: (target) => window.location.assign(target),
       onError: () => {
         sent.current = false;
@@ -135,7 +132,6 @@ export function ConnectWordPressPage() {
       testId={PAGE_TEST_ID}
       outcome="consent"
       title={
-        // The name of the agency is whatever its owner wrote: it is escaped before the sentence is read for its tags and put back as text, so a name with a `<` is text and never a tag.
         <Trans
           i18nKey="siteConnect.wordpress.question"
           values={{ site: request.siteHost, agency: org.name }}

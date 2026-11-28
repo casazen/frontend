@@ -8,7 +8,6 @@ vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn(), delete: 
 const ORG_ID = '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b';
 const CONNECTION_ID = '9a1c7e52-3b8d-4f60-8c2e-7d5a4b3c2e11';
 
-// Made-up values: none of them is a code, a state or a credential of anyone.
 const REQUEST = {
   siteUrl: 'https://www.quokka360.test',
   returnUrl: 'https://www.quokka360.test/wp-admin/options-general.php?page=casazen',
@@ -22,7 +21,6 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// PLG-FE-CONSOLE (NF-201, NF-203): the three calls of the console to `SiteConnectionsController`, and what each one keeps on the page that asked.
 describe('SiteConnectionsApi', () => {
   it('authorize_PostsTheFiveFieldsToThePathOfTheOrg_AndTheRefusalOfTheAccountStaysOnThePage', async () => {
     vi.mocked(axios.post).mockResolvedValueOnce({ status: 200, data: ANSWER });
@@ -48,7 +46,6 @@ describe('SiteConnectionsApi', () => {
   });
 
   it.each([undefined, null, '', '<!doctype html><html></html>', {}, { data: 'x' }])('list_AnAnswerThatIsNotAList_%j_IsAnUnexpectedAnswer', async (data) => {
-    // The page of the app served for `/api/*` by a rewrite that is wrong is not a list of sites: it is a read that failed.
     vi.mocked(axios.get).mockResolvedValueOnce({ status: 200, data });
 
     await expect(SiteConnectionsApi.list(ORG_ID)).rejects.toBeInstanceOf(UnexpectedApiResponseError);

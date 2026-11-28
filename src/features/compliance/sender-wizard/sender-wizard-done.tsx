@@ -21,10 +21,6 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 
 type Tone = 'done' | 'attention' | 'problem';
 
-/**
- * How each outcome stands: the icon and colour of the screen, and the points of «Cosa succede ora». The green check is for what is done (a sender the server verified, or the host's own send,
- * which has nothing to verify); the host's word, what cannot be told and what does not send have the sign of what they are, so a result that is not complete never looks like one.
- */
 const OUTCOMES: Readonly<Record<SenderOutcome, { tone: Tone; points: ReadonlyArray<{ key: string; tone: Tone }> }>> = {
   active: { tone: 'done', points: [{ key: 'send', tone: 'done' }, { key: 'istat', tone: 'done' }] },
   declared: { tone: 'attention', points: [{ key: 'word', tone: 'attention' }, { key: 'check', tone: 'attention' }] },
@@ -70,7 +66,6 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   }, [ready]);
 
   if (sender.isError || !sender.data) {
-    // A state that cannot be read is an error: also the read of a property that is no longer reachable (`null`), never a fine result.
     return sender.isError || sender.data === null ? (
       <ErrorState testId="sender-done-error" title={t('compliance.sender.done.readError')} error={sender.error} onRetry={() => void sender.refetch()} />
     ) : (
@@ -89,10 +84,7 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   const settled = tone === 'done';
   const propertyPage = `${PROPERTIES_PATH}/${encodeURIComponent(propertyId)}`;
   const stateAddress = `${propertyPage}?${new URLSearchParams({ section: CONNECTION_HEALTH_SECTION }).toString()}`;
-  // With the channel manager as the sender the result also says what happens to the guests of a stay, as the server holds the setting now (E20/F01/US02): never from the form.
   const autoSend = sender.data.sender === 'ChannelManager' && typeof sender.data.autoSendGuestsToOctorate === 'boolean' ? (sender.data.autoSendGuestsToOctorate ? 'on' : 'off') : null;
-  // The line only says what the setting is: with a result that is done (a sender the server verified) it is part of it and has the green check; while the result is not complete (the host's word,
-  // not verified, off) it is information with a neutral sign, never the green check of something done.
   const AutoSendIcon = settled ? Check : Info;
   const primary = returnTo ? { label: t('propertySetup.returnToProperty'), to: returnTo } : settled
     ? { label: t('compliance.sender.done.toCompliance'), to: COMPLIANCE_PATH }

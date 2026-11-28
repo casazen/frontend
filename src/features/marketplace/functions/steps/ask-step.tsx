@@ -14,16 +14,9 @@ import { LicenseProblem } from './license-problem';
 
 interface AskStepProps {
   context: LicensedContext;
-  /** Goes back to the step where the property is chosen. */
   onChoose: () => void;
 }
 
-/**
- * Step «La richiesta» (E09/F02/US04/T03, PO-12, D21): CasaZen cannot switch a module of the license on, so it prepares the request the person makes to their channel
- * manager: a short text in simple words that names the function and the property (the server writes it in the language of the page), with a «Copia» button. The button of
- * the wizard, «Ho fatto la richiesta», records that the person asked (`POST /api/marketplace/functions/{moduleCode}/request`): the function is then Requested until the
- * license shows it. A function that is on already is told, with the way back to the Marketplace, and nothing is recorded.
- */
 export function AskStep({ context, onChoose }: AskStepProps) {
   const { t } = useTranslation();
   const { control } = useFormContext<LicensedRequestValues>();
@@ -81,7 +74,6 @@ export function AskStep({ context, onChoose }: AskStepProps) {
       await navigator.clipboard.writeText(guidance);
       toast.success(t('marketplace.licensed.ask.copied'));
     } catch {
-      // The text is on the screen and can be selected: the person copies it by hand.
       toast.error(t('marketplace.licensed.ask.copyFailed'));
     }
   };

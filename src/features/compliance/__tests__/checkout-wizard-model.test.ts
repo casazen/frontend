@@ -52,7 +52,6 @@ function state(overrides: Partial<CheckoutWizardState> = {}): CheckoutWizardStat
   };
 }
 
-/** The messages a step gives for these answers: empty when the step is valid. */
 function problems(step: keyof typeof checkoutStepSchemas, answers: Partial<CheckoutAnswers>) {
   const schema = checkoutStepSchemas[step];
   if (!schema) throw new Error(`no rules for ${step}`);

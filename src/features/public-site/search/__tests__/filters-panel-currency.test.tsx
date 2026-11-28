@@ -9,14 +9,8 @@ import { NO_FACETS, type FacetsCurrency, type SearchFacets } from '../search-fac
 import type { SearchScope } from '../search-scope';
 import { useSearchState } from '../use-search-state';
 
-// The panel asks the server how many homes the draft leaves: that answer is not what is read here, so it never comes.
 vi.mock('@/api/public-site-search.api', () => ({ publicSiteSearchApi: { getStays: vi.fn() } }));
 
-/**
- * CHF-MONEY, the filters of the results (the form of the sheet, here as the panel of a frame): the two price sliders and the summary of the range are written in
- * the currency the facets say (francs in Switzerland); with no usable currency, with no symbol and the phrase that says so; with homes of two currencies, the
- * numbers alone (the currency is not missing, a slider has no one to name). The range is the one of the address: `minPrice=100&maxPrice=300`.
- */
 const SCOPE: SearchScope = { kind: 'org', slug: 'demo', hostName: 'Demo' };
 
 const one = (currency: string): FacetsCurrency => ({ currency, currencyState: 'one' });
@@ -39,7 +33,6 @@ function renderPanel(currency: FacetsCurrency) {
   );
 }
 
-/** What the form says: the summary of the range, and the value of each of the two sliders. */
 function written() {
   const form = screen.getByTestId('search-filters-form');
   return {

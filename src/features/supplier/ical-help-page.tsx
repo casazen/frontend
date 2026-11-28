@@ -24,7 +24,6 @@ const PLATFORM_GUIDES: PlatformGuide[] = [
 export function IcalHelpPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  // The same page is also a stand-alone address (`/help/ical`, no shell, no padding): there it stays a centered column to read.
   const inShell = useAppShell() !== null;
 
   return (

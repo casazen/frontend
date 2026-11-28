@@ -63,7 +63,6 @@ function stayGuestValuesFromRow(
 ): StayGuestFormValues {
   const bornAbroad = row.bornInItaly === false;
   const documentKindOf = (kind: string | null | undefined) => (kind && (DOCUMENT_KINDS as readonly string[]).includes(kind) ? kind : '');
-  // The guest of the row (`requiresDocument`) or, for any other guest, the one of the wizard: a guest without a document is empty in both.
   const ofRow = row.requiresDocument;
   return {
     type: row.type,
@@ -111,13 +110,6 @@ interface StayGuestsEditDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * Host entry of the guests of the stay (CO-12, CO-09): walk-in guests, a guest who cannot use the check-in link,
- * corrections, official codes to complete. Same rules as the guest portal (kinds and order, document only for a single
- * guest or a head of family or group and, in a Swiss stay, for every adult the police file notifies). Opening the form is the explicit request for the
- * full document numbers (audited by the API: those of the single guests and the heads); a host who may not read them, or the number of such a member,
- * re-enters the number, as the guest does.
- */
 export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }: StayGuestsEditDialogProps) {
   const { t } = useTranslation();
   const withDocuments = summary.guests.some((g) => g.requiresDocument && g.documentNumberMasked);
@@ -125,17 +117,14 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
     queryKey: ['alloggiati', 'document-numbers', bookingId],
     queryFn: () => alloggiatiApi.getDocumentNumbers(bookingId),
     enabled: open && withDocuments,
-    // Identity documents: never kept in the cache after the form closes.
     gcTime: 0,
     staleTime: 0,
     retry: false,
   });
   const numbersForbidden = numbers.isError && getHttpStatus(numbers.error) === 403;
-  // The fields the summary does not carry (residence, document dates, tourist tax exemption): read from the wizard of the booking.
   const saved = useCheckInWizardState(bookingId, open);
   const requiredGuestFields = saved.data?.requiredGuestFields;
   const statisticalFields = useMemo(() => requiredStatisticalFields(requiredGuestFields), [requiredGuestFields]);
-  // A property in Switzerland (NF-132) asks the home of each guest, the document of every adult and the plate of the car, as the guest page does.
   const swiss = useMemo(() => swissRulesOf(requiredGuestFields, summary.arrivalDate), [requiredGuestFields, summary.arrivalDate]);
 
   return (
@@ -176,7 +165,6 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
             savedGuests={saved.data?.guests}
             statisticalFields={statisticalFields}
             swiss={swiss}
-            // The plate of the stay is a field of the form only where the regime asks it; the plate on file starts it.
             vehiclePlate={saved.data?.askVehiclePlate === true ? (saved.data.booking.vehiclePlate ?? '') : undefined}
             onDone={() => onOpenChange(false)}
           />
@@ -190,13 +178,9 @@ interface StayGuestsEditFormProps {
   bookingId: string;
   summary: AlloggiatiGuestSummaryDto;
   documentNumbers: StayGuestDocumentNumberDto[] | undefined;
-  /** The guests of the check-in wizard: the fields the summary does not carry. */
   savedGuests: CheckInWizardGuest[] | undefined;
-  /** The statistical fields the region requires (`requiredGuestFields` of the wizard): asked here too, and sent. */
   statisticalFields: readonly StatisticalGuestField[];
-  /** What a property in Switzerland asks on top of the record (NF-132): the home, the document of every adult. Nothing for an Italian stay. */
   swiss: SwissStayRules;
-  /** The plate of the car on file, where the regime asks one (`askVehiclePlate`): the form then has the field and a save sends it; `undefined` where none is asked. */
   vehiclePlate: string | undefined;
   onDone: () => void;
 }
@@ -240,8 +224,6 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, 
   const onSubmit = handleSubmit(async (values) => {
     setSaveError(null);
     try {
-      // The exemption of the tourist tax, the statistical fields and the home of the guests travel with the guest as they were received: the
-      // server takes the list as the whole truth, so a save that left them out would erase them. The plate goes with them where the regime asks it.
       await replace.mutateAsync(toGuestsSave(values, statisticalFields, swiss));
       onDone();
     } catch (error) {

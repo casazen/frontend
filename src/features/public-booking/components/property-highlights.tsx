@@ -39,7 +39,6 @@ import { isItalianFallback, pickText } from '@/features/public-booking/lib/prope
 import type { PublicHighlight } from '@/types';
 import '@/features/public-booking/property-page.css';
 
-/** The icons a host can give a highlight: the fixed list of the backend (DB-11a), each with the symbol the page draws for it. */
 const HIGHLIGHT_ICONS: Record<string, LucideIcon> = {
   waves: Waves,
   walk: Footprints,
@@ -76,7 +75,6 @@ const HIGHLIGHT_ICONS: Record<string, LucideIcon> = {
   train: TrainFront,
 };
 
-/** Up to three things the host wants a guest to know first, each with an icon, a title and a line. Nothing when the host wrote none. */
 export function PropertyHighlights({ highlights }: { highlights: readonly PublicHighlight[] | null | undefined }) {
   const { i18n } = useTranslation();
   const items = (highlights ?? [])

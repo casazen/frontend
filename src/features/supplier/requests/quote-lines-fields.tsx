@@ -10,12 +10,6 @@ import { newRowKey, QUOTE_LIMITS, totalCentsOf, type QuoteForm, type QuoteProble
 
 const T = 'supplier.requests.quote';
 
-/**
- * The lines of a quote and the note, with the total that adds up as the supplier writes (SP-04b): what the sheet of the quote and the sheet of
- * the offer on a request on measure (SP-08e, decision SP-D30: one engine) have in common. The sheet owns the form and the rest of it (the
- * time, the terms, the buttons); this draws the lines and keeps the row that was just added in focus. The mistakes are told after the first
- * try to send, not while the person is still writing the first line.
- */
 export function QuoteLinesFields({
   form,
   setForm,
@@ -31,7 +25,6 @@ export function QuoteLinesFields({
   const [focusKey, setFocusKey] = useState<string | null>(null);
   const total = totalCentsOf(form.rows);
 
-  // The row the person just added takes the focus, so they can go on typing.
   useEffect(() => {
     if (focusKey) document.getElementById(`${focusKey}-label`)?.focus();
   }, [focusKey]);

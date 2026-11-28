@@ -1,14 +1,8 @@
-/**
- * The map data the engine has been given (DB-19a): the national base and the detail packs. The data files are loaded on demand
- * by `loadRegionData` (src/features/site-maps/load.ts), which hands them to the functions here; drawing never fetches anything.
- */
 import { sampleCurve, type Pt } from '../geometry';
 import { clamp, rngOf, slug } from '../numeric';
 import { roundCoord, toKm, type LatLon } from '../view';
 import { snapKm } from './land';
 import type { BaseTown, DetailPack, GeoBase, GeoLod, GeoName, PackAreaName, PackTown, RawItaly, RawLod, RawName, RawPack, RawShape, Shape } from './model';
-
-/* ----- decoding of the generated file ----- */
 
 export function decodeShape(raw: RawShape, u: number): Shape {
   const k: Pt[] = [];
@@ -63,10 +57,6 @@ export function decodeItaly(raw: RawItaly): GeoBase {
   };
 }
 
-/**
- * A detail pack from its generated file (tools/maps/build-packs.mjs). The built-up area of a town comes from its inhabitants, as
- * in the base; the roads, the railways and the hand-made tints of a pack are empty for the packs made from Natural Earth.
- */
 export function decodePack(raw: RawPack): DetailPack {
   const towns: PackTown[] = [];
   const foot: Record<string, number> = {};
@@ -105,8 +95,6 @@ export function decodePack(raw: RawPack): DetailPack {
   };
 }
 
-/* ----- what has been loaded ----- */
-
 let base: GeoBase | null = null;
 const packs = new Map<string, DetailPack>();
 let version = 0;
@@ -125,7 +113,6 @@ export function installPack(pack: DetailPack): void {
   packs.set(pack.id, pack);
   changed();
 }
-/** To be told when something has been loaded (a page redraws its map). */
 export function subscribeGeo(cb: () => void): () => void {
   listeners.add(cb);
   return () => {
@@ -138,11 +125,6 @@ export const geoVersion = (): number => version;
 export const geoBase = (): GeoBase | null => base;
 export const geoPacks = (): DetailPack[] => [...packs.values()];
 
-/**
- * Where a town of the loaded data is, by its name (case, accents and punctuation do not matter), rounded to the two decimals a map
- * accepts. It is how a house without a position of its own is put on the map: at its comune. Null when the data have no such town,
- * and while they have not been loaded. A detail pack knows its own towns best, so the packs are asked first.
- */
 export function townPoint(name: string | null | undefined): LatLon | null {
   const key = name ? slug(name) : '';
   if (!key) return null;
@@ -150,19 +132,14 @@ export function townPoint(name: string | null | undefined): LatLon | null {
   return town ? { lat: roundCoord(town.lat), lon: roundCoord(town.lon) } : null;
 }
 
-/* ----- the world of the renderer: base and packs merged, in km ----- */
-
 export interface WorldTown {
   id: string;
   name: string;
   lat: number;
   lon: number;
   tier: 1 | 2 | 3;
-  /** Position in km. */
   k: Pt;
-  /** Radius in km of the built-up area. */
   foot: number;
-  /** From a detail pack: its built-up area is drawn at every close zoom, named or not. */
   detail: boolean;
 }
 export interface World {
@@ -194,7 +171,6 @@ export function getWorld(): World {
     for (let i = 0; i < own && !dup; i++) dup = towns[i].id === t.id || Math.hypot(towns[i].k[0] - k[0], towns[i].k[1] - k[1]) < TOWN_DEDUPE_KM;
     if (!dup) towns.push({ id: t.id, name: t.name, lat: t.lat, lon: t.lon, tier: t.tier, k, foot: clamp(0.011 * Math.sqrt(t.pop), 0.35, 12), detail: false });
   }
-  // the base is generalised (1:10 000 000): a coastal town may fall in the sea by a kilometre, so it is pulled back to the shore
   const fine = base ? base.lods[base.lods.length - 1] : null;
   const landed = (p: Pt): Pt => (fine ? snapKm(fine, p, SNAP_KM) : p);
   for (const t of towns) t.k = landed(t.k);

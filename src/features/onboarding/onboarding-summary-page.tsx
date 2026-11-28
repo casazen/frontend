@@ -14,19 +14,10 @@ import { ActivationDialog } from './components/activation-dialog';
 import { FinalTestPanel } from './components/final-test-panel';
 import { FlowStatusTable } from './components/flow-status-table';
 
-/** The flow an address names (`?flow=`, the target of the «Da fare» of a flow), whatever the case; `null` for anything else. */
 function requestedFlow(value: string | null): OnboardingFlowKey | null {
   return ONBOARDING_FLOW_KEYS.find((flow) => flow.toLowerCase() === value?.trim().toLowerCase()) ?? null;
 }
 
-/**
- * `/app/short-rent/onboarding/summary`: the last part of the plan, «Riepilogo e attivazione» (E10/F03/US02/T03, NF-104 part 11, NF-106): the traffic light
- * of each flow on each property, the final read-only test and the activation with a confirmation. What is not ready is in «Da fare» (the server keeps it
- * there), and each property that is not has its own «Fai ora». `?flow=` opens the table on that flow's properties still to complete.
- *
- * The table is readable by anyone who can read the properties. The test and the activation are decisions of the organization administrator (the server
- * asks `OrgBillingAdmin`): anyone else is told who does them, with no button to press and no 403 to meet. In no menu.
- */
 export function OnboardingSummaryPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();

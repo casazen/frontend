@@ -93,7 +93,6 @@ function OwnerRow({ owner }: { owner: PropertyOwnerSummary }) {
   const name = nameOf(owner, (id) => t('ownerAccounting.owner.unnamed', { id }));
   const state = mandateOfRow(settled, mandates.isError ? undefined : mandates.data, today);
 
-  // An absent member is a server that did not write it: only `null` says the owner has no profile.
   const facts: string[] = [];
   if (owner.entityKind === null) facts.push(t('owners.row.noProfile'));
   else if (owner.entityKind !== undefined) {

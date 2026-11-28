@@ -65,7 +65,6 @@ function toInput(channel: AdminImuChannel): UpdateImuChannelInput {
 
 const blankToNull = (value: string | null) => (value == null || value.trim() === '' ? null : value.trim());
 
-/** Edit of the comune office receiving the IMU communication and of its rate (LT-13). */
 export function LtrImuChannelDialog({ channel, onClose }: { channel: AdminImuChannel; onClose: () => void }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();

@@ -13,21 +13,17 @@ interface RuleRow {
   key: string;
   icon: LucideIcon;
   text: string;
-  /** The house does not allow it: the icon is struck through (and the words say so). */
   no?: boolean;
 }
 
-/** How one window of the policy is said: in days when the hours are whole days, else in hours; `Start` for a window with no notice at all. */
 function windowCount(window: PolicyWindow): { unit: 'Days' | 'Hours' | 'Start'; count: number } {
   if (window.count === 0) return { unit: 'Start', count: 0 };
   return { unit: window.unit === 'day' ? 'Days' : 'Hours', count: window.count };
 }
 
-/** What the policy gives back, as the stages of a short list. Nothing is promised that the numbers of the policy do not say. */
 function CancellationBlock({ policy, summary }: { policy: PublicCancellationPolicy | null | undefined; summary: string }) {
   const { t, i18n } = useTranslation();
   const { quote, calendar, stay } = useBooking();
-  // With the dates chosen and a quote in, the days are the real ones (the server worked them out for this stay and keeps the promise).
   const forStay = quote.status === 'ready' && quote.quote.cancellation?.selfServiceAvailable ? quote.quote.cancellation : null;
 
   if (!policy) {
@@ -56,7 +52,6 @@ function CancellationBlock({ policy, summary }: { policy: PublicCancellationPoli
     <div className="pp-cancel" data-testid="property-cancellation">
       <h3 className="public-display flex flex-wrap items-center gap-2.5 text-lg font-semibold">
         {t('publicProperty.rules.cancellationTitle')}
-        {/* The name is the catalog's: once the host changed the windows it no longer describes them. */}
         {!policy.hostOverrideApplies && policy.name ? <span className="pp-cancel__badge">{policy.name}</span> : null}
       </h3>
       {forStay ? (

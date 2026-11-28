@@ -21,12 +21,10 @@ export function openablePage(context: CommandContext, pattern: string): RouteMan
   return isEntryFeatureEnabled(entry, context.flags) ? entry : undefined;
 }
 
-/** The path of a page of the manifest with its `:id` filled in. */
 export function pathWithId(pattern: string, id: string): string {
   return pattern.replace(':id', encodeURIComponent(id));
 }
 
-/** The words after `|` in a translated list of keywords ("oggi|home|panoramica"), trimmed, without the empty ones. */
 export function splitKeywords(text: string): string[] {
   return text
     .split('|')

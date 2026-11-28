@@ -11,7 +11,6 @@ import { useOrgComplianceSender } from '@/queries/use-org-compliance-sender';
 import { commercialPartAllowed, commercialRouteAllowed } from './commercial-access';
 import { clearPlanResume, getPlanResumeRecord } from './plan-resume';
 
-/** A pause records intent; the server still decides whether that task needs attention. */
 export function usePlanResume(userId: string | null | undefined, orgId: string | null | undefined, enabled = true) {
   const commercial = useCommercialProfile();
   const { flags } = useFeatureFlags();

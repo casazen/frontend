@@ -7,17 +7,13 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useTranslateMessage } from '@/queries/use-message-thread';
 import type { MessageTranslationRequest } from '@/types';
 
-/** What is translated: a message of the conversation (by its id, the server holds the text) or the text the host is writing. */
 export type TranslateSource = { messageId: string } | { text: string };
 
 interface TranslateButtonProps {
   threadKey: string;
   source: TranslateSource;
-  /** One of the languages of the listing (`it`, `en`, …). */
   targetLanguage: string;
-  /** What the button says: «Traduci». */
   label: string;
-  /** For a draft: puts the translation in the place of the text. Without it the translation is only read. */
   onUse?: (text: string) => void;
   size?: 'sm' | 'default';
 }

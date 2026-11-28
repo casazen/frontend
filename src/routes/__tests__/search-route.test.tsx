@@ -94,7 +94,6 @@ describe('public search route (BK-20)', () => {
   it('SearchRoute_AnonymousGuest_IsInThePublicShellWithTheResultsLinkedToTheBookingSite', async () => {
     const router = renderPublicApp('/search');
 
-    // The whole route table and the page with its map are built on the first visit: more than the default second on a busy runner.
     expect(await screen.findByTestId('platform-search', undefined, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByTestId('public-site-shell')).toBeInTheDocument();
     expect(await screen.findByRole('link', { name: 'Casa del Faro' }, { timeout: 5000 })).toHaveAttribute(
@@ -102,7 +101,6 @@ describe('public search route (BK-20)', () => {
       '/book/villa-mare/property/casa-del-faro',
     );
     expect(router.state.location.pathname).toBe('/search');
-    // None of the host console: no navigation of the app shell.
     expect(screen.queryByRole('navigation', { name: i18n.t('shell.mainNavigation') })).not.toBeInTheDocument();
     expect(screen.queryByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).not.toBeInTheDocument();
   });

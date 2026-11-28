@@ -7,10 +7,6 @@ import { analyzePrimaryColor } from '@/lib/public-site-colors';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { HostSurfaceFrame } from '../host-surface-frame';
 
-/**
- * NF-140: the frame of the guest check-in and of the owner portal on the own domain of an agency: its logo and name (a link to `/`), its colours, no indexing, and «powered by» only
- * when the agency's settings say so. The pages inside keep their own content.
- */
 const BRANDING: HostBranding = {
   logoUrl: 'https://cdn.example.test/villa-rossi.png',
   primaryColor: '#1a5276',
@@ -37,7 +33,6 @@ function renderFrame(hostSite: HostSite | null) {
   );
 }
 
-/** A page of the portal: it sets its own title and keeps itself out of the indexes, as the pages inside the frame do. */
 function PageWithATitle() {
   useSeoMeta({ title: 'Area proprietari', noindex: true });
   return <main data-testid="page-inside" />;
@@ -63,9 +58,7 @@ describe('HostSurfaceFrame (NF-140)', () => {
     expect(home).toHaveAttribute('href', '/');
     const logo = home.querySelector('img');
     expect(logo).toHaveAttribute('src', BRANDING.logoUrl);
-    // The name is next to the logo: the picture adds nothing for a screen reader.
     expect(logo).toHaveAttribute('alt', '');
-    // The page of the frame is the page, untouched.
     expect(screen.getByTestId('host-surface-frame')).toContainElement(screen.getByTestId('page-inside'));
     expect(screen.getByTestId('page-inside')).toHaveTextContent('The page');
   });
@@ -83,7 +76,6 @@ describe('HostSurfaceFrame (NF-140)', () => {
     renderFrame(site(BRANDING));
 
     const root = screen.getByTestId('host-surface-frame');
-    // The same derivation of the booking site: the colour and the text on it that holds AA.
     const analysis = analyzePrimaryColor('#1a5276', 'mare');
     expect(root.style.getPropertyValue('--cz-public-primary')).toBe('#1a5276');
     expect(root.style.getPropertyValue('--cz-public-on-primary')).toBe(analysis?.onPrimary);
@@ -161,7 +153,6 @@ describe('HostSurfaceFrame (NF-140)', () => {
 
     const home = screen.getByTestId('host-surface-frame-home');
     expect(home).toHaveTextContent('<img src=x onerror=alert(1)> Villa');
-    // The logo is the only picture: the name did not become one.
     expect(home.querySelectorAll('img')).toHaveLength(1);
     expect(document.querySelectorAll('img[onerror]')).toHaveLength(0);
   });

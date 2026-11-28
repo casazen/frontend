@@ -18,10 +18,8 @@ import type { CompanyTenantCase, ShortLetTaxRegime } from '@/types';
 import { failureText, messageOf } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
 
-/** The most characters of the note of a decision (`ShortLetTaxDecision.ReasonMaxLength` of the backend). */
 const REASON_MAX = 500;
 
-/** The part of the address that opens the decision of one stay: the page of the withholding opens the dialog on it. */
 const DECISION_PARAM = 'decision';
 
 const REGIMES: readonly ShortLetTaxRegime[] = ['ShortLet', 'NotShortLet'];
@@ -123,22 +121,15 @@ function DecisionForm({ kase, onClose }: DecisionFormProps) {
 }
 
 interface TenantDecisionDialogProps {
-  /** The booking the decision is about (its id, from a button of the list or from the address that the «Da fare» opens). */
   bookingId: string;
   onClose: () => void;
 }
 
-/**
- * The dialog of the decision about a company tenant, opened from the «Da fare» of the stay (`…/withholding?decision=<booking>`) or from the list of the stays that wait for one. The stay is found among the ones the server
- * lists; one that is not there (decided in the meantime, no longer a company tenant's, outside the reach of the person) is told, never answered with a form for a stay that needs none.
- */
 export function CompanyTenantDecisionDialog({ bookingId, onClose }: TenantDecisionDialogProps) {
   const { t } = useTranslation();
   const cases = useCompanyTenantCases(true);
-  // A read that failed is a failed read, whatever an earlier answer left in the cache.
   const list = cases.isError ? undefined : cases.data;
   const inList = list?.find((candidate) => candidate.bookingId === bookingId) ?? null;
-  // The list keeps the 200 stays with the latest check-out, the decided ones among them: a stay older than that which still waits for its decision is looked for among the waiting ones before it is told gone.
   const older = usePendingCompanyTenantCases(Array.isArray(list) && inList === null);
   const kase = inList ?? (older.isError ? undefined : older.data)?.find((candidate) => candidate.bookingId === bookingId) ?? null;
   const retry = older.isError && inList === null ? older : cases;
@@ -212,7 +203,6 @@ export function CompanyTenantCasesSection() {
   const list = cases.isError ? undefined : cases.data;
   const dialog = open ? <CompanyTenantDecisionDialog bookingId={open} onClose={close} /> : null;
 
-  // The dialog keeps its place whatever the list is doing (loading, failed, refused, drawn): a dialog that moved in the tree would be made again, and with it what the person has chosen.
   let content: ReactNode = null;
   if (cases.isError) {
     content = (

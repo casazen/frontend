@@ -94,7 +94,6 @@ describe('host-invite', () => {
   });
 
   it('validLandingPath_DocumentAddressOfAGuest_NeverBecomesPartOfAnAttribution', () => {
-    // The address of the document a guest got by e-mail names the document (E12/F02/US02), as an invite address carries its token.
     expect(validLandingPath('/documents/view/3f2b8c0e-5d2a-4f7e-9a41-1c6d8e0b7a52')).toBeUndefined();
     expect(validLandingPath('/p/tassa-soggiorno/roma')).toBe('/p/tassa-soggiorno/roma');
   });

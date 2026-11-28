@@ -26,7 +26,6 @@ const SPACES: ReadonlyArray<{ name: SpaceName; min: number; max: number }> = [
  */
 const SPACE_GRID = 'grid grid-cols-1 gap-x-8 gap-y-4 @2xl:grid-cols-2 @5xl:grid-cols-4 @5xl:gap-4';
 
-/** One counter of the grid: the name beside its buttons, and, four in a row, a small tile with the buttons under the name. */
 const SPACE_ITEM =
   'flex min-w-0 items-center justify-between gap-4 @5xl:flex-col @5xl:items-start @5xl:justify-between @5xl:gap-3 @5xl:rounded-lg @5xl:p-4 @5xl:ring-1 @5xl:ring-inset @5xl:ring-border';
 
@@ -37,7 +36,6 @@ interface SpaceRowProps {
   max: number;
 }
 
-/** One counter of the spaces: the name and what it counts, and the two buttons beside it (under it in a tile). */
 function SpaceRow({ form, name, min, max }: SpaceRowProps) {
   const { t } = useTranslation();
   const label = t(`propertyWizard.base.spaces.${name}.label`);
@@ -66,7 +64,6 @@ function SpaceRow({ form, name, min, max }: SpaceRowProps) {
   );
 }
 
-/** A counter that the rooms below decide: shown with its number, not changed here. */
 function DerivedRow({ name, value }: { name: 'bedrooms' | 'beds'; value: number }) {
   const { t } = useTranslation();
 
@@ -85,15 +82,9 @@ function DerivedRow({ name, value }: { name: 'bedrooms' | 'beds'; value: number 
 
 interface BaseStepProps {
   form: UseFormReturn<PropertyWizardValues>;
-  /** How many rooms the server has for the property (none while it is not created): the last one saved cannot be taken off. */
   storedRoomCount?: number;
 }
 
-/**
- * Step 1 · «Che casa stai aggiungendo?» (SR-07b): the kind of accommodation, the name, where it is (the comune from the official
- * list), its spaces and its rooms with their beds (NF-34). «Avanti» creates the property on the server and saves the rooms. No map:
- * without a geocoder a pin would be made up.
- */
 export function BaseStep({ form, storedRoomCount = 0 }: BaseStepProps) {
   const { t } = useTranslation();
   const {
@@ -104,7 +95,6 @@ export function BaseStep({ form, storedRoomCount = 0 }: BaseStepProps) {
   } = form;
   const comuneIstatCode = watch('comuneIstatCode') || null;
   const country = watch('country');
-  // Once the unit has a room, the bedrooms and the beds are the rooms': the counters are not asked twice.
   const hasRooms = watch('rooms').length > 0;
 
   return (
@@ -147,7 +137,6 @@ export function BaseStep({ form, storedRoomCount = 0 }: BaseStepProps) {
                   setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldValidate: true, shouldDirty: true });
                   setValue('city', comune?.name ?? '', { shouldValidate: true, shouldDirty: true });
                 }}
-                // Without the official list there is nothing to choose from: the city is written, as in the form of today.
                 unavailableFallback={
                   <Input
                     aria-label={t('propertyWizard.base.comune.fallbackLabel')}

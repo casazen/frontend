@@ -24,7 +24,6 @@ export function document(overrides: Partial<FiscalDocumentEntry> = {}): FiscalDo
   };
 }
 
-/** A draft of a stay CasaZen can issue: no number and no day, nothing to download. */
 export function draft(overrides: Partial<FiscalDocumentEntry> = {}): FiscalDocumentEntry {
   return document({
     id: 'd0000000-0000-4000-8000-000000000003',
@@ -39,7 +38,6 @@ export function draft(overrides: Partial<FiscalDocumentEntry> = {}): FiscalDocum
   });
 }
 
-/** A document the channel manager issued and CasaZen imported: read-only, with a PDF at the channel manager. */
 export function importedDocument(overrides: Partial<FiscalDocumentEntry> = {}): FiscalDocumentEntry {
   return document({
     id: 'd0000000-0000-4000-8000-000000000002',
@@ -77,7 +75,6 @@ export function swissDetail(overrides: Partial<FiscalDocumentDetail> = {}): Fisc
   };
 }
 
-/** One document of the card of a booking, in francs. */
 export function bookingDocument(overrides: Partial<BookingFiscalDocument> = {}): BookingFiscalDocument {
   return {
     id: 'd0000000-0000-4000-8000-000000000001',

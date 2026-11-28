@@ -27,9 +27,7 @@ describe('CommandPaletteTrigger: the search of the header (UI-06)', () => {
 
     expect(button).toHaveAttribute('type', 'button');
     expect(button).toHaveAttribute('aria-haspopup', 'dialog');
-    // A screen reader is told both shortcuts, whatever the system.
     expect(button).toHaveAttribute('aria-keyshortcuts', 'Control+K Meta+K');
-    // The visible words and the name are the same (WCAG 2.5.3, label in name).
     expect(button).toHaveTextContent(NAME);
   });
 
@@ -54,7 +52,6 @@ describe('CommandPaletteTrigger: the search of the header (UI-06)', () => {
 
     const button = screen.getByTestId('command-palette-trigger');
 
-    // 44 px for a finger, and the text becomes a text for assistive technology only; the shortcut is not shown.
     expect(button).toHaveClass('max-md:size-11', 'max-md:min-h-11', 'max-md:justify-center');
     expect(within(button).getByText(NAME)).toHaveClass('max-md:sr-only');
     expect(button.querySelector('kbd')).toHaveClass('max-md:hidden');

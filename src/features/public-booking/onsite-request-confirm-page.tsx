@@ -35,7 +35,6 @@ export function OnSiteRequestConfirmPage() {
 
   useSeoMeta({ title: t('siteConfirm.pageTitle', { org: org.displayName }), noindex: true });
 
-  // The page changed from the question to the answer: the title takes the focus, so a screen reader reads it.
   useEffect(() => {
     titleRef.current?.focus({ preventScroll: true });
   }, [confirm.isSuccess]);

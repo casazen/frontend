@@ -12,31 +12,18 @@ import { MESSAGE_HUB_POLL_MS, MESSAGE_HUB_QUERY, invalidateMessageHubLists, useR
 import { newIdempotencyKey } from '@/queries/use-thread-send';
 import type { HostReviewCommand, OtaReviewActionState } from '@/types';
 
-/** Root of the queries of the reviews of a booking: what each booking says about the reviews of its stay. */
 export const OTA_REVIEWS_QUERY = 'ota-reviews';
 
-/** The cache entry of one review of the hub (under the hub, so the live refresh of the hub reads it again). */
 const reviewThreadKeyOf = (threadKey: string) => [MESSAGE_HUB_QUERY, 'review-thread', threadKey] as const;
 
-/** The cache entry of the reviews of one booking. */
 const bookingReviewsKeyOf = (bookingId: string) => [OTA_REVIEWS_QUERY, 'booking', bookingId] as const;
 
-/**
- * What a review that appeared, a reply or the host's own review changes, wherever it is given or told (the page of a review, the section of a booking, the approval of a draft, the bell):
- * the reviews of the bookings, the reviews that are open, and the list of the hub, which holds the reviews under their own filter. They are marked stale and, where a page shows them,
- * read again at once.
- */
 export function invalidateReviews(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: [OTA_REVIEWS_QUERY] });
   void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'review-thread'] });
   invalidateMessageHubLists(queryClient);
 }
 
-/**
- * One review of the hub (`GET /api/messages/reviews/{threadKey}`, NF-69): the stars and the categories, the words of the guest, the reply and the host's own review with where they
- * stand, the booking card and what the channel allows. A review arrives, and a reply is confirmed or lost, from outside: it is read again when the page opens, on return to the
- * window, every minute while it is visible, and when the in-app notifications change.
- */
 export function useReviewThread(threadKey: string, enabled: boolean = true) {
   useRefetchOnNotificationsChange(enabled);
   return useQuery({
@@ -70,11 +57,6 @@ export function useBookingReviews(bookingId: string, enabled: boolean) {
   });
 }
 
-/**
- * «Aggiorna»: reads the booking from the channel manager now (`POST /api/bookings/{id}/reviews/refresh`, at most once every ten minutes). The answer is the reviews as they are after the
- * read and goes in place of what the section showed. A read that did not work is an error with its code (429 with the time to wait, 409, 422, 502): no toast, the section says why, in
- * its place. The answer holds the first words of the guests' reviews: it is dropped as soon as nothing observes it (`gcTime: 0`) and a refusal is kept without the request.
- */
 export function useRefreshBookingReviews(bookingId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -89,19 +71,15 @@ export function useRefreshBookingReviews(bookingId: string) {
     onSuccess: (reviews) => {
       queryClient.setQueryData(bookingReviewsKeyOf(bookingId), reviews);
       toast.success(i18n.t('reviews.booking.refreshed'));
-      // The reviews of the hub may have changed with the read: the open ones and the list are read again (the section just got its own answer).
       void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'review-thread'] });
       invalidateMessageHubLists(queryClient);
     },
   });
 }
 
-/** How a reply or the host's own review ended, as the page tells it. */
 interface ReviewSendResult {
   state: OtaReviewActionState;
-  /** The code of a refusal (`Error`). */
   errorCode: string | null;
-  /** The same key had been seen: what is shown is what was stored, and nothing was sent again. */
   replayed: boolean;
 }
 
@@ -155,7 +133,6 @@ export function useReplyToReview(threadKey: string) {
         attempts.settle();
         return { state: answer.state, errorCode: answer.errorCode ?? null, replayed: answer.replayed };
       } catch (error) {
-        // An answer of the server settles the attempt; no answer, or a 5xx, leaves it open: the same text goes again with the same key.
         if (!isTransientRequestError(error)) attempts.settle();
         throw withoutRequest(error);
       }
@@ -171,10 +148,6 @@ export function useReplyToReview(threadKey: string) {
   });
 }
 
-/**
- * The host's own review of the guest, once, while the window of the channel is open (`POST api/reviews/ota/{id}/host-review`, NF-69): the same key per attempt, answers and care as
- * {@link useReplyToReview}. Only a review of a channel has one.
- */
 export function useSendHostReview(threadKey: string) {
   const queryClient = useQueryClient();
   const attempts = useAttemptKey();

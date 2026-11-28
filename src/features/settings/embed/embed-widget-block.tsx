@@ -14,7 +14,6 @@ import { useOrgDestinations } from '@/queries/use-public-stays';
 import { EmbedSnippetPanel, type SnippetPlan } from './embed-snippet-panel';
 import { EMBED_WIDGETS, publicDestinations, readSearchTarget, type EmbedBase, type EmbedWidget } from './embed-snippet';
 
-/** The part of the i18n keys of a widget (`embed.settings.widgets.<key>`): the widget `guest-access` is `guestAccess` there. */
 const WIDGET_TEXT_KEY: Record<EmbedWidget, string> = {
   booking: 'booking',
   property: 'property',
@@ -26,21 +25,14 @@ interface ChoiceProps {
   origin: EmbedBase;
 }
 
-/**
- * The widget of one home: the homes of the org that are published on the site (a home that is not is never shown by the widget), in a select. The first one is the choice until the
- * host picks another, so the code and the preview are there at once. The slug of the home goes in the code (its id when it has none, as the links of the site do).
- */
 function PropertyChoice({ origin, propertyId, onPropertyChange }: ChoiceProps & { propertyId: string; onPropertyChange: (id: string) => void }) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
-  // Mounted only while the widget of a home is the choice, and read again each time: a home is published on another page, which this one does not watch.
   const homes = useProperties({ mode: 'short' }, { fresh: true, enabled: hasPermission('short-rent', 'property.read') });
   const publishable = useMemo(
     () =>
       (homes.data ?? []).filter(
         (home) =>
-          // The switch «Mostra la casa sul sito» of the host is one more condition of `PublicListing.IsPublished` (a home it hides answers 404 to the widget): `false` only, so a row
-          // that does not carry it stays as it was.
           home.publishedOnSite !== false &&
           isPropertyPublishable({ isActive: home.isActive, isPaused: home.isPaused, complianceStatus: home.complianceStatus ?? undefined }),
       ),
@@ -105,7 +97,6 @@ function SearchChoice({
   onTargetChange,
 }: ChoiceProps & { orgSlug: string; target: string; onTargetChange: (target: string) => void }) {
   const { t } = useTranslation();
-  // Read again each time the bar is chosen: the places are those of the homes published today, and a home is published on another page.
   const destinations = useOrgDestinations(orgSlug, { fresh: true });
   const read = readSearchTarget(target);
   const places = useMemo(() => publicDestinations((destinations.data ?? []).map(({ id, label }) => ({ id, label }))), [destinations.data]);
@@ -158,16 +149,10 @@ function SearchChoice({
 }
 
 interface EmbedWidgetBlockProps {
-  /** Where the loader and the frames are served from (`resolveEmbedBase`): the agency's own domain when it has one, else the origin of CasaZen and the slug of the org. */
   origin: EmbedBase;
-  /** The slug of the org, for the places of its site. */
   orgSlug: string;
 }
 
-/**
- * The one highlighted block of the page (E41/F03/US01, NF-147): the choice of the widget, what it needs, the code to paste and the preview, together. What the host chose (the home,
- * the address of the page) is kept while they look at another widget and come back; it is never stored anywhere else.
- */
 export function EmbedWidgetBlock({ origin, orgSlug }: EmbedWidgetBlockProps) {
   const { t } = useTranslation();
   const [widget, setWidget] = useState<EmbedWidget>('booking');

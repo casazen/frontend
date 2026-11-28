@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 
-/** The days could not be read: the calendar goes on without prices and rules, and says so, with a way to try again. Never shown for a caller who may not read them. */
 export function DayLayerNotice({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
 

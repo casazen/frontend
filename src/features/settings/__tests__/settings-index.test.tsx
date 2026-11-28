@@ -19,11 +19,9 @@ vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: 
 
 const EMBED_PATH = '/app/short-rent/settings/embed';
 
-/** The administrator of the account holds every permission; anyone else lacks the pseudo-permission of the administrator (and only that one here). */
 const administrator = () => true;
 const notAdministrator = (_context: string, permission: string) => permission !== ORG_BILLING_ADMIN_PERMISSION;
 
-/** An account that signed up through the commercial plans: only the modules in `addons` are open to it (`commercialRouteAllowed`). */
 function commercialProfile(addons: string[]) {
   return { ...buildDemoProfile('short-stay'), commercialSignup: { profile: 'owner' as const, planTier: 'Pro' as const, rooms: 1, addons }, commercialEnabledAddons: addons };
 }
@@ -61,7 +59,6 @@ describe('SettingsIndex: the page «Incorpora nel tuo sito» (E41/F03/US01)', ()
   it('settingsIndex_SiteEmbedOnAndAdministrator_LinksTheEmbedPageRightAfterTheDomain', () => {
     renderIndex({ siteEmbed: true });
 
-    // The settings of a rental area have no tabs: this index is the way in, so the page is in the group of the booking site, in the order of the tabs of the manifest.
     expect(embedLink()).toHaveAttribute('href', EMBED_PATH);
     expect(websiteLinks()).toEqual([labelOf('nav.siteAppearance'), labelOf('nav.domain'), labelOf('nav.embed'), labelOf('nav.siteDocuments')]);
   });

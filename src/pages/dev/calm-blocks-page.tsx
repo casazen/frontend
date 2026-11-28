@@ -38,10 +38,8 @@ const TONE_NAME: Record<CalmTone, string> = {
 
 const TODAY_LABELS = { today: 'Oggi', tomorrow: 'Domani', later: 'Più avanti' };
 
-/** A name with no space in it, as a property or a file has: it must wrap, not push the page sideways. */
 const LONG_NAME = 'Casa_Vacanze_Trullo_dei_Sogni_Alberobello_Via_Roma_12_interno_3';
 
-/** The calm blocks of UI-16 on one page, in every variant, to look at them and to let Playwright and axe walk through them. */
 export default function CalmBlocksPage() {
   const today = todayInRome();
   const [lastAction, setLastAction] = useState('nessuna');
@@ -53,7 +51,6 @@ export default function CalmBlocksPage() {
 
   const writeToSupplier: CalmAction = { label: 'Scrivi al fornitore o scegline un altro per questo intervento', onClick: done('scrivi al fornitore') };
 
-  // The date of a row is worked out from its day ("12 ott"); a time of the day is the row's own words.
   const deadlines: DayListItem[] = [
     { id: 'registration', day: addDays(today, 12), title: 'Registrazione del contratto Rossi', subtitle: 'Elisa Rossi · Via Roma 12, Bari', meta: 'tra 12 giorni', href: '/dev/calm-blocks?aperto=rossi' },
     { id: 'late-rent', day: addDays(today, -11), title: 'Canone di ottobre · Bianchi', subtitle: 'Marco Bianchi · Corso Vittorio 3', meta: 'in ritardo di 11 giorni', tone: 'danger', onOpen: done('apri canone Bianchi'), action: { label: 'Invia il sollecito', ariaLabel: 'Invia il sollecito: canone Bianchi', onClick: done('sollecito Bianchi') } },

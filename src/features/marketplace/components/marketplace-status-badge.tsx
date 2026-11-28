@@ -4,10 +4,8 @@ import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { MarketplaceCardStatus } from '@/types';
 
-/** What a badge can say: the status of a card, or `Requested` (the Active tab: a function that waits for the license). */
 type BadgeStatus = MarketplaceCardStatus | 'Requested';
 
-/** Colour and icon of each status (UX-09): the colour is never the only sign, the word and the icon say it too. */
 const STATUS_LOOK: Record<BadgeStatus, { variant: NonNullable<BadgeProps['variant']>; Icon: LucideIcon }> = {
   Active: { variant: 'success', Icon: CheckCircle2 },
   Pending: { variant: 'warning', Icon: Clock },
@@ -27,7 +25,6 @@ interface MarketplaceStatusBadgeProps {
   'data-testid'?: string;
 }
 
-/** Where an integration stands: Active, Not active, Pending, Requested or To fix. A status this page does not know draws nothing. */
 export function MarketplaceStatusBadge({ status, declared = false, className, 'data-testid': testId }: MarketplaceStatusBadgeProps) {
   const { t } = useTranslation();
   const look = STATUS_LOOK[status] as (typeof STATUS_LOOK)[BadgeStatus] | undefined;

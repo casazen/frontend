@@ -36,7 +36,6 @@ describe('formatPrice', () => {
     ['null', null],
     ['not a code (XX1)', 'XX1'],
   ] as const)('FormatPrice_Currency%s_WritesTheAmountWithNoSymbolAndSaysTheCurrencyIsNotAvailable', (_name, currency) => {
-    // The same rule of the cents: whole amounts have none, the others keep two.
     expect(formatPrice(16500, currency, 'it-IT', italian)).toBe('165 (valuta non disponibile)');
     expect(formatPrice(16550, currency, 'it-IT', italian)).toBe('165,50 (valuta non disponibile)');
     expect(formatPrice(16500, currency, 'en-GB', english)).toBe('165 (currency not available)');
@@ -68,7 +67,6 @@ describe('formatPriceShort', () => {
     ['null', null],
     ['not a code (XX1)', 'XX1'],
   ] as const)('FormatPriceShort_Currency%s_IsTheNumberAloneWithNoSymbolAndNoPhrase', (_name, currency) => {
-    // For a place with no room for the phrase (a cell of the calendar): the phrase is said where there is room, by `formatPrice`.
     expect(formatPriceShort(16500, currency, 'it-IT', italian)).toBe('165');
     expect(formatPriceShort(16550, currency, 'it-IT', italian)).toBe('165,50');
     expect(formatPriceShort(16500, currency, 'en-GB', english)).toBe('165');

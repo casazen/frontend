@@ -36,7 +36,6 @@ const state = (overrides: Partial<IdentityVerificationState> = {}): IdentityVeri
   ...overrides,
 });
 
-/** A card with the face on the front and the lines of letters on the back (the Italian electronic identity card): the front alone is good, and the back is what is missing. */
 const frontNeedsTheBack = (notArchived = false): IdentityDocumentResponse => ({
   success: true,
   acceptable: false,
@@ -60,7 +59,6 @@ const tryAgain: IdentitySelfieResponse = { result: 'retry', guidanceCodes: ['hol
 
 const picture = (name: string) => new File([name], `${name}.jpg`, { type: 'image/jpeg' });
 
-/** Whether a picture (a file or a blob) is anywhere in what the controller exposes: its state, its progress, whatever a screen could read. */
 function holdsAPicture(value: unknown, seen = new Set<unknown>()): boolean {
   if (value instanceof Blob) return true;
   if (value === null || typeof value !== 'object' || seen.has(value)) return false;
@@ -103,18 +101,15 @@ describe('the document on two sides: nothing of a picture is kept once it is sen
     const back = picture('back');
 
     await send(result, front);
-    // The front is good and the back is asked: the answer is not a refusal, and the page holds no picture.
     expect(result.current.progress).toMatchObject({ stage: 'document', documentSideNeeded: 'back', documentTwoSided: true, documentRefused: false });
     expect(holdsAPicture(result.current)).toBe(false);
 
     await send(result, back);
     expect(result.current.progress?.stage).toBe('selfie');
     expect(holdsAPicture(result.current)).toBe(false);
-    // Each picture went with the side it is of, in the order the answers asked.
     expect(vi.mocked(publicCheckinApi.postDocument).mock.calls.map((call) => call[2])).toEqual(['front', 'back']);
 
     await sendSelfie(result);
-    // The server has the pictures (outside Ticino): the selfie goes alone, and the page has none to send again.
     expect(vi.mocked(publicCheckinApi.postSelfie).mock.calls[0].slice(2, 4)).toEqual([null, null]);
     expect(result.current.progress).toMatchObject({ stage: 'done', lockCode: '4821', documentSidesTaken: [] });
     expect(holdsAPicture(result.current)).toBe(false);
@@ -130,7 +125,6 @@ describe('the document on two sides: nothing of a picture is kept once it is sen
 
     await send(result, front);
     await send(result, back);
-    // Held in a reference to be sent with the selfie, never in state: nothing a screen could read.
     expect(result.current.progress?.stage).toBe('selfie');
     expect(holdsAPicture(result.current)).toBe(false);
 
@@ -142,7 +136,6 @@ describe('the document on two sides: nothing of a picture is kept once it is sen
     expect(second[2]).toBe(front);
     expect(second[3]).toBe(back);
 
-    // The step is over (a pass): both pictures are let go. A selfie sent now finds nothing to send with it, and the API is not called.
     expect(result.current.progress?.stage).toBe('done');
     await sendSelfie(result);
     expect(publicCheckinApi.postSelfie).toHaveBeenCalledTimes(2);
@@ -158,7 +151,6 @@ describe('the document on two sides: nothing of a picture is kept once it is sen
     expect(result.current.progress).toMatchObject({ stage: 'document', documentSideNeeded: 'front', documentTwoSided: true, documentSidesTaken: [] });
 
     await send(result, picture('front'));
-    // The server is satisfied, but the selfie of a property that keeps nothing carries both pictures: the page asks for the back as well.
     expect(result.current.progress).toMatchObject({ stage: 'document', documentSideNeeded: 'back' });
 
     await send(result, picture('back'));
@@ -202,7 +194,6 @@ describe('the screen of the document on two sides', () => {
     vi.mocked(publicCheckinApi.postDocument).mockResolvedValueOnce(frontNeedsTheBack()).mockResolvedValueOnce(documentComplete());
     renderStep(state());
 
-    // The face side first: a passport is complete with it, and nothing is said of a back yet.
     expect(side()).toBe('front');
     expect(screen.queryByTestId('checkin-identity-mrz-illustration')).not.toBeInTheDocument();
     expect(screen.queryByTestId('checkin-identity-document-progress')).not.toBeInTheDocument();
@@ -215,7 +206,6 @@ describe('the screen of the document on two sides', () => {
     expect(screen.getByTestId('checkin-identity-document-pick')).toHaveTextContent(i18n.t('checkin.identity.document.back.pick'));
     // Not a refusal: no warning about the photo that was good.
     expect(screen.queryByTestId('checkin-identity-document-guidance')).not.toBeInTheDocument();
-    // The file box does not keep the picture it was given.
     expect((screen.getByTestId('checkin-identity-document-file') as HTMLInputElement).value).toBe('');
 
     pick(picture('back'));

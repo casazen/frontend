@@ -4,7 +4,6 @@ import { StatusBadge } from '@/components/shared/status/status-badge';
 import { useDayLabel } from '@/features/properties/mode/use-mode-labels';
 import { missingText, type AccountPropertyRow } from './account-properties-model';
 
-/** The mark of a cell whose answer is not there: nothing is claimed, and a screen reader is told why it is empty. */
 export function Unknown() {
   const { t } = useTranslation();
   return (
@@ -15,10 +14,6 @@ export function Unknown() {
   );
 }
 
-/**
- * The change of mode that waits for its day, in words: «Passaggio all'affitto lungo il 1 dicembre 2026» (AM-13b). Nothing when none does:
- * the list asks for it with the overview, so every row says it without a request of its own.
- */
 export function ScheduledChange({ row, className }: { row: Pick<AccountPropertyRow, 'property'>; className?: string }) {
   const { t } = useTranslation();
   const dayLabel = useDayLabel();
@@ -32,7 +27,6 @@ export function ScheduledChange({ row, className }: { row: Pick<AccountPropertyR
   );
 }
 
-/** How the property is let, with the icon of its area: an icon and a word, never the icon alone; under it the change that waits for its day. */
 export function ModeTag({ row }: { row: AccountPropertyRow }) {
   const { t } = useTranslation();
   const Icon = row.mode === 'Long' ? Home : Sun;
@@ -47,7 +41,6 @@ export function ModeTag({ row }: { row: AccountPropertyRow }) {
   );
 }
 
-/** The state of the property, and under it what the empty fields of a short-term one that is not ready say it lacks. */
 export function StateCell({ row }: { row: AccountPropertyRow }) {
   const { t } = useTranslation();
   return (
@@ -60,7 +53,6 @@ export function StateCell({ row }: { row: AccountPropertyRow }) {
   );
 }
 
-/** «3 utenti»: the number is what opens the list of who they are (the drawer of the property). */
 export function PeopleButton({ row, onWho }: { row: AccountPropertyRow; onWho: (row: AccountPropertyRow) => void }) {
   const { t } = useTranslation();
   if (row.people === null) return <Unknown />;

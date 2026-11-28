@@ -10,7 +10,6 @@ import { buildTimelineRows } from '../../lib/host-timeline';
 import { extendSelection, startSelection } from '../../lib/day-selection';
 import { HostTimeline } from '../host-timeline';
 
-// The names of the days are worked out by `dayLabel`: counted, to prove that drawing the Timeline again (the focus moves) does not work them out again.
 vi.mock('../../lib/day-layer', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../lib/day-layer')>();
   return { ...actual, dayLabel: vi.fn(actual.dayLabel) };
@@ -95,7 +94,6 @@ describe('the Timeline with the day layer (E08/F05/US03/T01)', () => {
 
     expect(text(within(cellOf('2026-09-12')).getByTestId('day-cell-price'))).toBe('120 €');
     expect(within(cellOf('2026-09-12')).getByTestId('day-cell-min')).toHaveTextContent('min 2');
-    // One night is no minimum worth saying.
     expect(within(cellOf('2026-09-13')).queryByTestId('day-cell-min')).not.toBeInTheDocument();
     expect(text(within(cellOf('2026-09-13')).getByTestId('day-cell-price'))).toBe('120,50 €');
   });
@@ -105,7 +103,6 @@ describe('the Timeline with the day layer (E08/F05/US03/T01)', () => {
 
     expect(within(cellOf('2026-09-10')).queryByTestId('day-cell')).not.toBeInTheDocument();
     expect(within(cellOf('2026-09-11')).queryByTestId('day-cell')).not.toBeInTheDocument();
-    // A taken night shows its booking (the bar) only.
     expect(within(cellOf('2026-09-14')).queryByTestId('day-cell')).not.toBeInTheDocument();
     expect(screen.getByTestId('timeline-bar')).toHaveAttribute('data-item-id', 'b-1');
   });
@@ -151,13 +148,11 @@ describe('the Timeline with the day layer (E08/F05/US03/T01)', () => {
     renderTimeline({ dayLayer: undefined });
 
     expect(screen.queryByTestId('day-cell')).not.toBeInTheDocument();
-    // The cells are decoration: nothing for a screen reader, no control.
     expect(screen.queryByRole('gridcell')).not.toBeInTheDocument();
     expect(screen.getByTestId('timeline-cells')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('HostTimeline_ACallerWhoMayReadButNotChangeTheDays_HearsWhatTheEyesRead_AndTheCellsAreNoControls', async () => {
-    // The day layer is there and nothing can be selected (no `onPressDay`): each day is a cell named in words, never a control, and the row is not hidden from a screen reader.
     const { container } = renderTimeline();
 
     expect(screen.getByRole('grid', { name: 'Giorni di Casa Mare' })).not.toHaveAttribute('aria-hidden');
@@ -207,13 +202,11 @@ describe('the days of the Timeline as controls (E08/F05/US03/T02)', () => {
   it('HostTimeline_MovingTheFocusWithTheArrows_DoesNotWorkOutTheNamesOfTheDaysAgain', () => {
     vi.mocked(dayLabel).mockClear();
     renderTimeline({ onPressDay: vi.fn() });
-    // One name for each day of the row, once.
     expect(vi.mocked(dayLabel)).toHaveBeenCalledTimes(DAYS.length);
 
     cellOf('2026-09-10').focus();
     for (const date of ['2026-09-10', '2026-09-11', '2026-09-12']) fireEvent.keyDown(cellOf(date), { key: 'ArrowRight' });
     expect(cellOf('2026-09-13')).toHaveFocus();
-    // The Timeline was drawn again for the day that takes the Tab key, and the names were not worked out again.
     expect(cellOf('2026-09-13')).toHaveAttribute('tabindex', '0');
     expect(vi.mocked(dayLabel)).toHaveBeenCalledTimes(DAYS.length);
   });
@@ -240,7 +233,6 @@ describe('the days of the Timeline as controls (E08/F05/US03/T02)', () => {
     cellOf('2026-09-12').focus();
     fireEvent.keyDown(cellOf('2026-09-12'), { key: 'ArrowRight' });
     expect(cellOf('2026-09-13')).toHaveFocus();
-    // Plain arrows only move; Shift plus arrow extends the selection of the row.
     expect(onPressDay).not.toHaveBeenCalled();
     fireEvent.keyDown(cellOf('2026-09-13'), { key: 'ArrowRight', shiftKey: true });
     expect(onPressDay).toHaveBeenCalledWith('p1', '2026-09-14', true, '2026-09-13');

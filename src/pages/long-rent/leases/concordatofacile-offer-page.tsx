@@ -51,7 +51,6 @@ export function ConcordatoFacileOfferPage() {
   return <GuidedContract />;
 }
 
-/** `?checkout=` as Stripe returns it: anything else is no result at all. */
 function checkoutResultOf(value: string | null): 'success' | 'cancelled' | null {
   return value === 'success' || value === 'cancelled' ? value : null;
 }
@@ -62,9 +61,7 @@ function GuidedContract() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [redirecting, setRedirecting] = useState(false);
-  // Back from the payment the access is read again every two seconds, until it is there or about forty seconds have passed.
   const [waitedLongEnough, setWaitedLongEnough] = useState(false);
-  // Why the link could not be made, if it could not (the person can ask again).
   const [openError, setOpenError] = useState<unknown>(null);
 
   const checkoutResult = checkoutResultOf(searchParams.get('checkout'));
@@ -73,8 +70,6 @@ function GuidedContract() {
   const accessQuery = useCfAccess(id!, { watch: checkoutResult === 'success' && !waitedLongEnough });
   const checkoutMutation = useCfCheckout();
   const giftMutation = useCfConsumeGift();
-  // `mutateAsync` and not `mutate`: the result is read from the promise, so it does not depend on the observer of the mutation, which
-  // the second run of the effects in development (StrictMode) detaches from a mutation started by the first.
   const { mutateAsync: openTheForm } = useOpenCfForm(id!, { replace: true });
 
   // The form opens by itself only straight after an act of the person on this page: back from the payment, or the gift practice used —
@@ -113,7 +108,6 @@ function GuidedContract() {
       redirectToStripe(result.sessionUrl);
     } catch {
       setRedirecting(false);
-      // Error is handled by the mutation
     }
   };
 
@@ -121,7 +115,6 @@ function GuidedContract() {
     if (!id) return;
     try {
       await giftMutation.mutateAsync(id);
-      // Access state is invalidated automatically by the mutation: the form opens as soon as it is read again
     } catch {
       // Error is handled below (409 conflict vs general error)
     }
@@ -177,7 +170,6 @@ function GuidedContract() {
     return <LoadingScreen />;
   }
 
-  // The payment was cancelled: say so, and the way back to the page of the service (without the result in the address).
   if (checkoutResult === 'cancelled') {
     return (
       <div className="space-y-6">
@@ -192,9 +184,6 @@ function GuidedContract() {
     );
   }
 
-  // The access is there. Straight after the payment or the gift practice the effect above opens the form: here only a calm wait, or what
-  // to do when the link could not be made. Any other time (a bookmark, "back" of the browser, the privacy notice still to accept) the
-  // sheet of the contract is the place: it opens the form from its main button.
   if (access.hasAccess) {
     if (!startsTheForm) {
       return <Navigate to={`/app/long-rent/leases/${id}`} replace />;
@@ -222,8 +211,6 @@ function GuidedContract() {
     return <LoadingScreen message={t('guidedContract.opening')} />;
   }
 
-  // Back from the payment and the access is not there yet: the webhook of Stripe can arrive after the person does. The access is read
-  // again every two seconds for about forty (`useCfAccess`); after that the person is told it takes a moment and can look again.
   if (checkoutResult === 'success') {
     if (!waitedLongEnough) {
       return <LoadingScreen message={t('guidedContract.paymentReceived')} />;
@@ -249,7 +236,6 @@ function GuidedContract() {
     );
   }
 
-  // The gift practice takes the place of the payment, and is mentioned only where there is one (the plans of 24 months are not on sale).
   const giftOffered = access.giftAvailable && !access.giftConsumed;
 
   return (
@@ -258,9 +244,7 @@ function GuidedContract() {
 
       <BackLink to={`/app/long-rent/leases/${id}`} label={t('concordatofacile.offer.backToLease')} />
 
-      {/* The contract and, beside it from `xl`, the service with its price and its button (under each other on a narrower screen). */}
       <div className="grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(14rem,1fr)_minmax(0,2fr)]">
-        {/* Property and contract details */}
         <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle>{t('concordatofacile.offer.contractDetails')}</CardTitle>
@@ -281,7 +265,6 @@ function GuidedContract() {
           </CardContent>
         </Card>
 
-        {/* Service description and price (ADR-005-R11) */}
         <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle>{t('concordatofacile.offer.serviceTitle')}</CardTitle>
@@ -297,7 +280,6 @@ function GuidedContract() {
               </p>
             </div>
 
-            {/* Five-step process (NF-02) */}
             <div>
               <h3 className="mb-3 text-sm font-semibold">{t('concordatofacile.offer.stepsTitle')}</h3>
               <ol className="space-y-3 text-sm" data-testid="cf-offer-steps">
@@ -324,7 +306,6 @@ function GuidedContract() {
               </ol>
             </div>
 
-            {/* Conditional buttons (NF-02) */}
             <div className="pt-4">
               {giftOffered ? (
                 <Button

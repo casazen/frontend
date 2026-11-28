@@ -242,7 +242,6 @@ describe('Field colors', () => {
       expect(contrastRatio(fallbackColor(error, 'danger-foreground'), surface)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
       expect(contrastRatio(fallbackColor(success, 'success-foreground'), surface)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
     }
-    // The red outline of an invalid control is drawn by the field, whatever the control.
     expect((container.firstElementChild as HTMLElement).className).toContain('[&_[aria-invalid=true]]:outline-destructive');
   });
 });

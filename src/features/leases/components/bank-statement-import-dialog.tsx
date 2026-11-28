@@ -32,7 +32,6 @@ import {
 } from '../lib/bank-import';
 import { fullDay, monthName, monthOfDate, shortDay } from '../lib/rent-register';
 
-/** Where the dialog is: it asks for the file, reads it, asks which column is which, or shows what it found. */
 type Stage =
   | { name: 'choose' }
   | { name: 'reading' }
@@ -43,22 +42,13 @@ interface BankStatementImportDialogProps {
   onClose: () => void;
 }
 
-/** The columns of the first rows the landlord sees when the columns are not recognized (the server sends no more than twelve). */
 const PREVIEW_COLUMNS = 12;
 
-/** What the landlord answered to a table whose columns were not recognized: the mapping, and the problem it answers (to come back to it). */
 interface ColumnsAnswer {
   mapping: BankColumnMapping;
   problem: BankColumnsProblem;
 }
 
-/**
- * Import of a bank statement on the rents («Importa estratto conto», page Canoni). The landlord gives the file their bank exports, the
- * server proposes for each credit the installment it pays, and the landlord confirms: what is sure is already ticked and one click
- * confirms it, what is doubtful waits to be ticked or to have its installment chosen, and nothing is marked paid without the landlord
- * pressing «Conferma». The file is read and not kept: the confirmation sends it again. Declaring paid cannot be taken back, so the
- * confirmation waits six seconds with an «Annulla» that is true (`holdForUndo`: nothing is recorded until they pass).
- */
 export function BankStatementImportDialog({ onClose }: BankStatementImportDialogProps) {
   const { t, i18n } = useTranslation();
   const actions = useRentRegisterActions();
@@ -69,7 +59,6 @@ export function BankStatementImportDialog({ onClose }: BankStatementImportDialog
   const [choice, setChoice] = useState<MappingChoice>({ hasTitles: false, date: '', description: '', amount: '' });
   const [rows, setRows] = useState<ReviewRow[]>([]);
   const [error, setError] = useState<string | null>(null);
-  // The previous import is still in its six seconds (or being recorded): another one cannot start until it has gone.
   const waiting = useHeldKeys().has(BANK_IMPORT_KEY);
 
   async function read(next: File, answer?: ColumnsAnswer) {
@@ -89,7 +78,6 @@ export function BankStatementImportDialog({ onClose }: BankStatementImportDialog
       setRows(initialRows(preview));
       setStage({ name: 'review', preview });
     } catch (cause) {
-      // A table whose titles the importer does not know: the landlord says which column is which, once.
       const problem = answer ? null : columnsProblemOf(cause);
       if (problem) {
         setChoice(initialMappingChoice(problem));
@@ -97,7 +85,6 @@ export function BankStatementImportDialog({ onClose }: BankStatementImportDialog
         return;
       }
       setError(getProblemMessage(cause, t) ?? t('longRentRents.bankImport.choose.readFailed'));
-      // A mapping the file did not accept brings the landlord back to their columns, not to the start: they change one, not all.
       setStage(answer ? { name: 'columns', problem: answer.problem } : { name: 'choose' });
     }
   }
@@ -118,7 +105,6 @@ export function BankStatementImportDialog({ onClose }: BankStatementImportDialog
         if (result.skipped.length > 0) toast.info(t('longRentRents.bankImport.skipped', { count: result.skipped.length }));
       },
     });
-    // Taken meanwhile by another import: the review stays with what the landlord chose, and they are told.
     if (!started) {
       toast.info(t('longRentRents.alreadyHeld'));
       return;
@@ -201,22 +187,15 @@ export function BankStatementImportDialog({ onClose }: BankStatementImportDialog
   );
 }
 
-// ---------------------------------------------------------------- which column is which
-
 interface ColumnsStepProps {
   problem: BankColumnsProblem;
   choice: MappingChoice;
-  /** Why the file could not be read with the last choice, if it could not. */
   error: string | null;
   onChoice: (choice: MappingChoice) => void;
   onBack: () => void;
   onContinue: (mapping: BankColumnMapping) => void;
 }
 
-/**
- * The importer did not recognize the titles of the table: the first rows are shown as they are and the landlord says which column holds
- * the date, the description and the amount. Each column has one role.
- */
 function ColumnsStep({ problem, choice, error, onChoice, onBack, onContinue }: ColumnsStepProps) {
   const { t } = useTranslation();
   const shown = Math.min(Math.max(problem.columnCount, 1), PREVIEW_COLUMNS);
@@ -242,7 +221,6 @@ function ColumnsStep({ problem, choice, error, onChoice, onBack, onContinue }: C
   ];
 
   return (
-    // min-w-0: as a child of the dialog's grid the step would take the width of the table, which scrolls on its own.
     <div className="min-w-0 space-y-4" data-testid="bank-import-columns">
       {error ? <Alert variant="danger" data-testid="bank-import-error">{error}</Alert> : null}
       <div className="overflow-x-auto rounded-md border" role="region" aria-label={t('longRentRents.bankImport.columns.tableLabel')} tabIndex={0}>
@@ -298,25 +276,18 @@ function ColumnsStep({ problem, choice, error, onChoice, onBack, onContinue }: C
   );
 }
 
-// ---------------------------------------------------------------- what was found
-
 interface ReviewStepProps {
   preview: BankImportPreview;
   rows: ReviewRow[];
   onRows: (rows: ReviewRow[]) => void;
   language: string;
   selected: number;
-  /** The previous import is still being recorded: this one waits for it. */
   waiting: boolean;
   onBack: () => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-/**
- * What the file says about the rents. The one thing on the screen is the list of the credits that are sure, already ticked, and one
- * button under it; what is doubtful and what matched nothing is one click away and folded.
- */
 function ReviewStep({ preview, rows, onRows, language, selected, waiting, onBack, onConfirm, onCancel }: ReviewStepProps) {
   const { t } = useTranslation();
   const { sure, toCheck } = splitRows(rows);
@@ -445,7 +416,6 @@ interface FoldProps {
   testId: string;
 }
 
-/** A section that is folded until the landlord opens it: the doubtful and the left over are not what the dialog is about. */
 function Fold({ open, onToggle, title, testId }: FoldProps) {
   const Icon = open ? ChevronDown : ChevronRight;
   return (
@@ -462,12 +432,10 @@ function Fold({ open, onToggle, title, testId }: FoldProps) {
   );
 }
 
-/** Who owes it and what it pays, in one line: «Giulia Verdi · Bilocale Sparano». */
 function installmentTitle(installment: BankImportInstallment, unknownTenant: string): string {
   return `${installment.tenantName ?? unknownTenant} · ${installment.propertyName}`;
 }
 
-/** «Canone di ottobre 2026 · scadenza 5 ott». */
 function installmentWhat(installment: BankImportInstallment, language: string, t: (key: string, options?: Record<string, unknown>) => string): string {
   return t('longRentRents.bankImport.review.rentOf', {
     month: monthName(monthOfDate(installment.periodStart), language),
@@ -477,7 +445,6 @@ function installmentWhat(installment: BankImportInstallment, language: string, t
 
 interface SureRowProps {
   row: ReviewRow;
-  /** The installments another row has chosen and ticked. */
   elsewhere: ReadonlySet<string>;
   language: string;
   onChecked: (checked: boolean) => void;
@@ -523,7 +490,6 @@ function SureRow({ row, elsewhere, language, onChecked }: SureRowProps) {
 
 interface CheckRowProps {
   row: ReviewRow;
-  /** The installments another row has already chosen. */
   elsewhere: ReadonlySet<string>;
   language: string;
   onInstallment: (installmentId: string) => void;
@@ -536,7 +502,6 @@ function CheckRow({ row, elsewhere, language, onInstallment, onChecked }: CheckR
   const amount = formatCurrency(suggestion.amount, suggestion.currency);
   const unknownTenant = t('longRentRents.bankImport.review.tenantUnknown');
   const date = fullDay(suggestion.date, language);
-  // Nothing to tick until a rent is chosen, and not a rent another credit has already taken.
   const blocked = row.installmentId === '' || elsewhere.has(row.installmentId);
 
   return (

@@ -121,7 +121,6 @@ const fromAddress = (address: OwnerAddress): FormState => ({
   country: address.country ?? '',
 });
 
-/** The text of a part of the address, or nothing: the server stores a blank optional part as none. */
 const text = (value: string): string | undefined => (value.trim() === '' ? undefined : value.trim());
 
 function AddressForm({ ownerId, saved, onSaved }: { ownerId: string; saved: OwnerAddress; onSaved: () => void }) {
@@ -133,7 +132,6 @@ function AddressForm({ ownerId, saved, onSaved }: { ownerId: string; saved: Owne
 
   const country = form.country.trim();
   const countryOk = /^[A-Za-z]{2}$/.test(country);
-  // Italy needs the province (the two letters) on the documents: the same rule the server applies.
   const provinceOk = country.toUpperCase() !== 'IT' || form.province.trim() !== '';
   const required = form.street.trim() !== '' && form.postalCode.trim() !== '' && form.town.trim() !== '';
   const valid = required && countryOk && provinceOk;

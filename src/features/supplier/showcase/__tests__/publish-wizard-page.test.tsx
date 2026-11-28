@@ -32,7 +32,6 @@ vi.mock('@/queries/use-supplier-settings', () => ({ useSupplierSettings: () => (
 const PATH = '/app/supplier/showcase/publish';
 const starter = starterContentFor(['cleaning'])!;
 
-/** A showcase that was never written and is ready to be published: the server's answer, with the fields the wizard reads. */
 function content(patch: Partial<ShowcaseContent> = {}): ShowcaseContent {
   return {
     schemaVersion: 1,
@@ -53,7 +52,6 @@ function content(patch: Partial<ShowcaseContent> = {}): ShowcaseContent {
       ],
     },
     bookings: { open: false, blockedBy: ['not_published', 'payments_off'] },
-    // No address: the preview is left out, the tests are about the steps.
     publicPath: null,
     publicUrl: null,
     ...patch,
@@ -83,22 +81,18 @@ describe('"Crea la tua vetrina": the guided creation (SP-13e)', () => {
     api.publish.mockResolvedValue(content({ state: 'Online', version: 2, publicPath: '/fornitori/pulizie-roma', bookings: { open: false, blockedBy: ['payments_off'] } }));
     renderWizard(content());
 
-    // 1. Stile: nothing changed from what the page already shows, so nothing is saved.
     await screen.findByRole('heading', { name: 'Scegli lo stile della vetrina' });
     next();
 
-    // 2. Presentazione: the starting text of the trade is there, and is saved with the version the page was opened on.
     expect(await screen.findByLabelText(/Frase in grande/)).toHaveValue(starter.tagline);
     expect(screen.getByTestId('supplier-showcase-wizard-prefilled')).toBeInTheDocument();
     next();
     await waitFor(() => expect(api.saveDraft).toHaveBeenCalledWith(0, { tagline: starter.tagline, intro: starter.intro }));
     expect(api.saveDraft).toHaveBeenCalledTimes(1);
 
-    // 3. Servizi: the active service is already chosen; every one chosen in the order of the catalog is nothing to save.
     await screen.findByRole('heading', { name: 'Scegli i servizi da mostrare' });
     next();
 
-    // 4. Riepilogo: the last button publishes, with the version the save answered with.
     await screen.findByRole('heading', { name: 'Controlla e pubblica' });
     fireEvent.click(screen.getByTestId('supplier-showcase-wizard-finish'));
     await waitFor(() => expect(api.publish).toHaveBeenCalledWith(1));
@@ -119,7 +113,6 @@ describe('"Crea la tua vetrina": the guided creation (SP-13e)', () => {
     expect(await screen.findByLabelText(/Frase in grande/)).toHaveValue('Ciao');
     next();
 
-    // Said under the field (the field is described by it) and, like in every wizard, repeated in the summary of the step.
     await waitFor(() => expect(screen.getByLabelText(/Frase in grande/)).toHaveAccessibleDescription(/Scrivi almeno 12 caratteri\./));
     expect(screen.getByTestId('wizard-error-summary')).toHaveTextContent('Scrivi almeno 12 caratteri.');
     expect(screen.getByRole('heading', { name: 'Presenta la tua attività' })).toBeInTheDocument();

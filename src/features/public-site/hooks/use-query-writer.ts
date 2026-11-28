@@ -2,9 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 interface WrittenQuery {
-  /** Last query written, rendered or not. */
   latest: URLSearchParams;
-  /** Queries written and not rendered yet, oldest first. */
   pending: string[];
 }
 
@@ -22,11 +20,9 @@ export function useQueryWriter() {
     const state = written.current;
     const index = state.pending.indexOf(searchParams.toString());
     if (index >= 0) {
-      // One of our writes is now rendered; the later ones are still on their way.
       state.pending = state.pending.slice(index + 1);
       if (state.pending.length > 0) return;
     } else {
-      // Navigation from elsewhere (link, back button): it becomes the base of the next edit.
       state.pending = [];
     }
     state.latest = searchParams;

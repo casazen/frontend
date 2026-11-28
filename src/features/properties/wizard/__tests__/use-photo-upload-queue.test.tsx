@@ -33,9 +33,7 @@ describe('usePhotoUploadQueue', () => {
     act(() => result.current.add([jpeg('a.jpg'), jpeg('broken.jpg'), jpeg('c.jpg')]));
     await waitFor(() => expect(result.current.busy).toBe(false));
 
-    // One request per file, in the order chosen, never together: the one that failed does not hold back the next.
     expect(uploadApi.mock.calls.map(([, files]) => (files as File[]).map((file) => file.name))).toEqual([['a.jpg'], ['broken.jpg'], ['c.jpg']]);
-    // The ones that went are gone from the list; the one that did not stays with its own reason, and can be tried again.
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0]).toMatchObject({ status: 'failed' });
     expect(result.current.items[0]!.error).toContain('broken.jpg');
@@ -47,7 +45,6 @@ describe('usePhotoUploadQueue', () => {
     act(() => result.current.add([jpeg('a.jpg'), jpeg('b.jpg'), jpeg('c.jpg')]));
     await waitFor(() => expect(result.current.busy).toBe(false));
 
-    // 19 photos and a cap of 20: room for one. The first goes; the others are refused one by one, without calling the API.
     expect(uploadApi).toHaveBeenCalledTimes(1);
     expect(result.current.items.map((item) => [item.file.name, item.status])).toEqual([
       ['b.jpg', 'failed'],

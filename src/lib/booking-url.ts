@@ -10,21 +10,14 @@ export function buildOrgBookingPath(orgSlug: string): string {
   return `/book/${orgSlug}`;
 }
 
-/** The checkout of a property, with no stay: the stay of the address (`useStayState().linkTo`) is added to it. */
 export function buildPropertyCheckoutPath(orgSlug: string, property: { id: string; slug?: string | null }): string {
   return `${buildPropertyBookingPath(orgSlug, property)}/checkout`;
 }
 
-/** Mirrors the backend `PublicListing.IsPublished` (A2-05): a paused property is never publishable either. */
 export function isPropertyPublishable(property: { isActive: boolean; isPaused: boolean; complianceStatus?: string }): boolean {
   return property.isActive && !property.isPaused && property.complianceStatus === 'Active';
 }
 
-/**
- * Query parameters of the itinerary deep link: `?checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&guests=N`
- * (spec-branded-booking-site AC15, used by the Google Vacation Rentals deep links).
- * `children` is an optional extension: how many of the `guests` are children.
- */
 export const BOOKING_QUERY_KEYS = {
   checkIn: 'checkin',
   checkOut: 'checkout',
@@ -32,7 +25,6 @@ export const BOOKING_QUERY_KEYS = {
   children: 'children',
 } as const;
 
-/** camelCase names written by older versions of the site: still read, never written. */
 const LEGACY_QUERY_KEYS = { checkIn: 'checkIn', checkOut: 'checkOut' } as const;
 
 export const DEFAULT_GUESTS = 2;
@@ -40,7 +32,6 @@ export const DEFAULT_GUESTS = 2;
 export interface BookingSearchParams {
   checkIn: string;
   checkOut: string;
-  /** Total guests, children included. */
   guests: number;
   children: number;
 }
@@ -56,7 +47,6 @@ function readDate(search: URLSearchParams, key: string, legacyKey: string): stri
   return isStayDate(value) ? value : '';
 }
 
-/** Reads the booking parameters, accepting both `checkin`/`checkout` and the legacy `checkIn`/`checkOut`. */
 export function parseBookingSearchParams(search: URLSearchParams): BookingSearchParams {
   const guests = Math.max(1, readCount(search.get(BOOKING_QUERY_KEYS.guests)) ?? DEFAULT_GUESTS);
   const children = Math.min(readCount(search.get(BOOKING_QUERY_KEYS.children)) ?? 0, guests - 1);
@@ -68,7 +58,6 @@ export function parseBookingSearchParams(search: URLSearchParams): BookingSearch
   };
 }
 
-/** Booking parameters in the deep link form (`checkin`, `checkout`, `guests`, `children` when > 0). */
 export function buildBookingQuery(params: BookingSearchParams): URLSearchParams {
   const guests = Number.isFinite(params.guests) ? Math.max(1, Math.trunc(params.guests)) : DEFAULT_GUESTS;
   const children = Number.isFinite(params.children) ? Math.min(Math.max(0, Math.trunc(params.children)), guests - 1) : 0;
@@ -80,10 +69,6 @@ export function buildBookingQuery(params: BookingSearchParams): URLSearchParams 
   return query;
 }
 
-/**
- * `current` with the booking parameters updated by `next`: other parameters are kept and legacy
- * camelCase dates are rewritten in the deep link form.
- */
 export function mergeBookingSearchParams(
   current: URLSearchParams,
   next: Partial<BookingSearchParams>,
@@ -97,7 +82,6 @@ export function mergeBookingSearchParams(
 
 type PropertyRef = { id: string; slug?: string | null };
 
-/** Property page URL carrying the selected stay. */
 export function buildPropertyPageUrl(orgSlug: string, property: PropertyRef, params: BookingSearchParams): string {
   return createPath({
     pathname: buildPropertyBookingPath(orgSlug, property),
@@ -105,7 +89,6 @@ export function buildPropertyPageUrl(orgSlug: string, property: PropertyRef, par
   });
 }
 
-/** Checkout URL of a property carrying the selected stay. */
 export function buildPropertyCheckoutUrl(orgSlug: string, property: PropertyRef, params: BookingSearchParams): string {
   return createPath({
     pathname: buildPropertyCheckoutPath(orgSlug, property),
@@ -113,10 +96,6 @@ export function buildPropertyCheckoutUrl(orgSlug: string, property: PropertyRef,
   });
 }
 
-/**
- * Outcome page of a checkout (BK-07): the real state of the booking, read with its checkout token. Also the Stripe
- * `return_url` of the redirect payment methods, so the guest comes back to their booking, not to an empty checkout.
- */
 export function buildCheckoutOutcomePath(orgSlug: string, bookingId: string, token: string): string {
   return createPath({
     pathname: `/book/${encodeURIComponent(orgSlug)}/booking/${encodeURIComponent(bookingId)}`,
@@ -124,10 +103,6 @@ export function buildCheckoutOutcomePath(orgSlug: string, bookingId: string, tok
   });
 }
 
-/**
- * "Le mie prenotazioni" of the booking site (BK-11). With `bookingCode` the page opens with the code filled in and still
- * asks for the email before showing anything.
- */
 export function buildGuestBookingsPath(orgSlug: string, bookingCode?: string | null): string {
   return createPath({
     pathname: `/book/${encodeURIComponent(orgSlug)}/my-bookings`,

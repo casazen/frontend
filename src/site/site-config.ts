@@ -35,7 +35,6 @@ export function readSiteLegal(env: Record<string, unknown>): SiteLegal {
   };
 }
 
-/** `https://host[:port]` of `VITE_PUBLIC_SITE_URL`, or null when it is missing or not an https origin. */
 export function readSiteOrigin(value: unknown): string | null {
   if (typeof value !== 'string' || !value.trim()) return null;
   try {

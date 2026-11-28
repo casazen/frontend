@@ -6,23 +6,18 @@ import i18n from '@/i18n/config';
 import { getBookingSourceLabel } from '@/lib/i18n-labels';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 
-/** A month (`2026-10`) or a year (`2026`): the two lengths of a package. */
 export type PackagePeriod = ({ kind: 'month' } & Period) | { kind: 'year'; year: number };
 
-/** The first and the last year a package may name: the years of the host reports, as the server takes them. */
 const MIN_YEAR = 2000;
 const MAX_YEAR = 2100;
 
-/** The months the choice of the period offers, counting back from the current one, and the years (the current one and the ones before it): an older period is still asked for by its address. */
 const MONTHS_OFFERED = 24;
 const YEARS_OFFERED = 6;
 
-/** The words of the request and of the address: `2026-10` for a month, `2026` for a year. */
 export function periodKey(period: PackagePeriod): string {
   return period.kind === 'year' ? String(period.year) : periodParam(period);
 }
 
-/** The period the words name, or `null` for anything else (a month that does not exist, a year out of range, a date, an empty or hand-made address): what the server would refuse is never asked. */
 export function parsePackagePeriod(value: string | null | undefined): PackagePeriod | null {
   const word = value?.trim() ?? '';
   if (/^\d{4}$/.test(word)) {
@@ -33,15 +28,10 @@ export function parsePackagePeriod(value: string | null | undefined): PackagePer
   return month.year === 0 ? null : { kind: 'month', ...month };
 }
 
-/** The period of the page without an address: the month that is over, which is the one an accountant is given (the month before today, Europe/Rome). */
 export function defaultPackagePeriod(today: string): PackagePeriod {
   return { kind: 'month', ...defaultPeriod(today) };
 }
 
-/**
- * The periods the choice offers, newest first: the last months and the last years. A period the address names that these do not hold is added to them, so the address wins and the choice
- * always shows what the page is about.
- */
 export function periodChoices(today: string, selected: PackagePeriod): { months: string[]; years: string[] } {
   const thisMonth = { year: Number(today.slice(0, 4)), month: Number(today.slice(5, 7)) };
   const months = Array.from({ length: MONTHS_OFFERED }, (_, index) => periodParam(shiftPeriod(thisMonth, -index)));
@@ -54,19 +44,16 @@ export function periodChoices(today: string, selected: PackagePeriod): { months:
   };
 }
 
-/** The words of a code of the wire (`creditNote`, `bookingCom`): its translation, or the code as it came when the server is newer than this page. */
 export function codeLabel(prefix: string, code: string | null | undefined, t: TFunction): string {
   if (!code) return '';
   const key = `${prefix}.${code}`;
   return i18n.exists(key) ? t(key) : code;
 }
 
-/** The name of a channel: the server writes the booking source in camel case (`bookingCom`), the words of the app are keyed by the name of the value (`BookingCom`). */
 export function channelName(source: string | null | undefined, t: TFunction): string {
   return source ? getBookingSourceLabel(source.charAt(0).toUpperCase() + source.slice(1), t) : '';
 }
 
-/** Who an owner row is about: the name the agency keeps, or why there is none (the properties nobody owns, an owner whose data was erased, an owner with no name yet). */
 export function ownerLabel(owner: { ownerId: string | null; ownerName: string | null; anonymized?: boolean }, t: TFunction): string {
   const name = owner.ownerName?.trim();
   if (name) return name;

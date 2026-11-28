@@ -9,9 +9,7 @@ import i18n from '@/i18n/config';
  * point at a leaf (a string), in every locale.
  */
 const ROOT = join(process.cwd(), 'src');
-/** Read on purpose as an object: `t(key, { returnObjects: true })`. */
 const RETURN_OBJECTS = new Set(['productGuide.sections']);
-/** Known offenders, not part of the cockpit fix: remove an entry when its call site is fixed. */
 const KNOWN_OFFENDERS = new Set(['pages/CampaignsPage.tsx: campaigns.segment']);
 const PLURAL_FORM = /_(zero|one|two|few|many|other)$/;
 

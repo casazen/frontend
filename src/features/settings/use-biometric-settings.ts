@@ -35,10 +35,6 @@ export function useBiometricSettings(enabled: boolean) {
   });
 }
 
-/**
- * Saves the settings. What the server refused (422 with the code of the bound that failed) is not said here: the card tells it next to the boxes, from the error of the mutation, and nothing
- * was saved. The answer is the settings in force, and replaces what the card shows.
- */
 export function useUpdateBiometricSettings() {
   const queryClient = useQueryClient();
 
@@ -72,17 +68,12 @@ export function useIdentitySegments(enabled: boolean) {
   });
 }
 
-/** The list the answer of a write goes into: the segment replaces the one it changed, or is added. A list that was never read is left alone. */
 function writeSegment(queryClient: QueryClient, segment: IdentitySegment) {
   queryClient.setQueryData<IdentitySegments>(IDENTITY_SEGMENTS_QUERY_KEY, (current) =>
     current ? { ...current, segments: withSegment(current.segments, segment) } : current,
   );
 }
 
-/**
- * A new segment, in observation (one that exists already is answered as it is: the page says so and changes nothing). What the server refused (422 with the code of what is wrong) is told by the card from the error of the
- * mutation. The request holds ids and codes only; the mutation does not outlive the card (`gcTime: 0`) and what it keeps of a failure is the answer without the request.
- */
 export function useCreateIdentitySegment() {
   const queryClient = useQueryClient();
 
@@ -104,10 +95,6 @@ export function useCreateIdentitySegment() {
   });
 }
 
-/**
- * The mode of a segment. The reason of a suspension is the staff's own text: it leaves no trace in the cache of the mutations (`gcTime: 0`, and a failure keeps the answer without the request). What the server refused (422)
- * is told by the card from the error; the segment the answer carries replaces the one that was shown.
- */
 export function useSetIdentitySegmentMode() {
   const queryClient = useQueryClient();
 
@@ -128,7 +115,6 @@ export function useSetIdentitySegmentMode() {
   });
 }
 
-/** The models of the verification as platform administrators see them: asked only for them (`enabled`), read again every time the card opens, never kept once it is closed. */
 export function useBiometricModelsStatus(enabled: boolean) {
   return useQuery({
     queryKey: BIOMETRIC_MODELS_QUERY_KEY,

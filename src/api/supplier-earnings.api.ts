@@ -3,7 +3,6 @@ import axios from '@/lib/axios';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type { SupplierEarningsParams, SupplierEarningsResponse } from '@/types/supplier-earnings';
 
-/** The filters that are set, as the query of the server wants them (an empty one is not sent). */
 function queryOf({ tab, from, to, clientId, page, pageSize }: SupplierEarningsParams): Record<string, string | number> {
   return {
     ...(tab && tab !== 'tutti' ? { tab } : {}),
@@ -15,10 +14,6 @@ function queryOf({ tab, from, to, clientId, page, pageSize }: SupplierEarningsPa
   };
 }
 
-/**
- * A page of the completed and paid jobs of the supplier with gross, commission and net, and the figures above them (`summary`, which
- * the filters do not change). Every amount is in cents and made by the server. The answer carries money: it is never cached.
- */
 export async function fetchSupplierEarnings(params: SupplierEarningsParams): Promise<SupplierEarningsResponse> {
   return ApiClient.get<SupplierEarningsResponse>('/supplier/earnings', queryOf(params));
 }

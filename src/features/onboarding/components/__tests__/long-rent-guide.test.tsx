@@ -54,7 +54,6 @@ describe('LongRentGuide', () => {
       'href',
       '/app/long-rent/properties/new?first=1',
     );
-    // A lease needs a property: no link yet.
     expect(screen.getByTestId('long-rent-guide-lease')).toHaveAttribute('data-state', 'todo');
     expect(screen.queryByRole('link', { name: i18n.t('longRentGuide.steps.lease.cta') })).not.toBeInTheDocument();
   });

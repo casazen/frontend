@@ -5,34 +5,25 @@ import { ConcordatoFacileApi } from '@/api/concordatofacile.api';
 import { getProblemCode } from '@/lib/api-errors';
 import type { CfSyncState } from '@/types/concordatofacile.types';
 
-/** Query key for CF access state. */
 const CF_ACCESS_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'access', leaseId] as const;
 
-/** 409 of the checkout: the lease already has the service (paid, gift) or has paid and the payment is not recorded yet (CF-FIX). */
 const CF_ALREADY_PURCHASED_CODE = 'concordatofacile_already_purchased';
 
-/** True for the 409 `concordatofacile_already_purchased` of the checkout. */
 export function isCfAlreadyPurchased(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 409 && getProblemCode(error.response.data) === CF_ALREADY_PURCHASED_CODE;
 }
 
-/** 409 of the link: the privacy notice was not accepted for this lease (CF-FLOW, backend): the person has to accept it first. */
 const CF_PRIVACY_NOT_ACCEPTED_CODE = 'concordatofacile_privacy_not_accepted';
 
-/** True for the 409 `concordatofacile_privacy_not_accepted` of the link. */
 export function isCfPrivacyNotAccepted(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 409 && getProblemCode(error.response.data) === CF_PRIVACY_NOT_ACCEPTED_CODE;
 }
 
-/** Back from the payment the access is read again this often (the webhook of Stripe can arrive after the person does)... */
 const CF_ACCESS_POLL_MS = 2_000;
-/** ...for about this long (CF-FLOW): then the person is told that the activation takes a moment and can check again. */
 export const CF_ACCESS_POLL_LIMIT_MS = 40_000;
 
 interface CfAccessOptions {
-  /** Read the access again every ~2 s while it is not active: the return from the payment (`?checkout=success`). The caller ends it. */
   watch?: boolean;
-  /** Without it nothing is asked (a caller that only needs the access of some leases). */
   enabled?: boolean;
 }
 
@@ -112,7 +103,6 @@ function goToCfForm(url: string, replace: boolean): void {
 }
 
 interface OpenCfFormOptions {
-  /** The page that opens the form is only a step on the way (the passage page): its history entry is replaced and not kept. */
   replace?: boolean;
 }
 
@@ -129,14 +119,11 @@ export function useOpenCfForm(leaseId: string, { replace = false }: OpenCfFormOp
     mutationFn: () => ConcordatoFacileApi.generateLink(leaseId),
     onSuccess: ({ url }) => goToCfForm(url, replace),
     onError: (error) => {
-      // The privacy notice is not accepted (the server is the one that knows): read the access again, and the sheet asks for it.
       if (isCfPrivacyNotAccepted(error)) void queryClient.invalidateQueries({ queryKey: CF_ACCESS_QUERY_KEY(leaseId) });
     },
   });
   const { reset } = mutation;
 
-  // Back from the form through the cache of the browser: the page is as it was left, so the button is given back and the access, which
-  // now says the form was opened, is read again.
   useEffect(() => {
     const onShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
@@ -150,15 +137,11 @@ export function useOpenCfForm(leaseId: string, { replace = false }: OpenCfFormOp
   return mutation;
 }
 
-/** Query key for the sync of the lease of the guided service with its practice (CF-DONE). */
 export const CF_SYNC_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'sync', leaseId] as const;
 
-/** While the server reads the documents the sync is asked again this often (ms)... */
 export const CF_SYNC_POLL_MS = 3_000;
-/** ...at most this many times (about six minutes: the reading of a scanned contract is given four): then the person reloads. */
 const CF_SYNC_POLL_LIMIT = 120;
 
-/** The states in which the server is still reading a document: the answer will change by itself. */
 const CF_SYNC_READING: readonly CfSyncState[] = ['ReadingContract', 'ReadingReceipt'];
 
 /**
@@ -186,7 +169,6 @@ export function useCfSync(leaseId: string, { enabled }: { enabled: boolean }) {
   });
 }
 
-/** Query key for the lease of a CF practice. */
 const CF_PRACTICE_LEASE_QUERY_KEY = (practiceId: string) => ['concordatofacile', 'practice-lease', practiceId] as const;
 
 /**
@@ -203,14 +185,8 @@ export function useCfPracticeLease(practiceId: string) {
   });
 }
 
-/** Query key for CF status. */
 const CF_STATUS_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'status', leaseId] as const;
 
-/**
- * Get practice status for a lease (ADR-008-R15, ADR-008-R16).
- * Refetches on mount and polls based on nextUpdateAt. Asked only where the lease has the access and is the draft made for the
- * partner (the sheet of the contract, CF-FLOW): `enabled` keeps every other caller from reading the partner's API.
- */
 export function useCfStatus(leaseId: string, { enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: CF_STATUS_QUERY_KEY(leaseId),
@@ -220,7 +196,6 @@ export function useCfStatus(leaseId: string, { enabled = true }: { enabled?: boo
     // No retries when it fails (the server already tries three times): the sheet says the status is not available and goes on.
     retry: false,
     refetchInterval: (data) => {
-      // Compute refetch interval from nextUpdateAt (ADR-008-R16)
       if (!data?.state?.data?.nextUpdateAt) return false;
       const nextUpdate = new Date(data.state.data.nextUpdateAt).getTime();
       const now = Date.now();

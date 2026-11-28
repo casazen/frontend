@@ -17,7 +17,6 @@ import { INBOX_PATH } from './requests/request-model';
 import { useRequestActions } from './requests/use-request-actions';
 import { NEW_SERVICE_PATH } from './services/lib/service-paths';
 
-/** Two columns from a wide screen, as the Home of Affitti brevi: the day on the left (60 %), what waits on the right. */
 const TWO_COLUMNS = 'grid gap-8 xl:has-[>:nth-child(2)]:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start';
 
 /**
@@ -43,7 +42,6 @@ function TosReacceptanceNotice() {
   );
 }
 
-/** A supplier who has not finished the activation is not visible to the hosts yet: the page says so and leads back to it. A suspended one has the banner of the shell. */
 function ActivationNotice() {
   const { t } = useTranslation();
   const { data: dashboard } = useSupplierDashboard();
@@ -59,11 +57,6 @@ function ActivationNotice() {
   );
 }
 
-/**
- * The home of the supplier, "Oggi": one highlighted block (the requests to answer and the jobs of the next days), then what waits
- * ("Da fare"), three numbers and the next step of the profile. Each part loads, fails and tries again on its own: one that fails does
- * not hide the others.
- */
 export function SupplierDashboardPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;

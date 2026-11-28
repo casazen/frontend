@@ -25,7 +25,6 @@ const WRAPPING_BUTTON = 'h-auto min-h-11 w-full whitespace-normal py-2 text-cent
 interface PlanRowProps {
   plan: BillingPlan;
   action: PlanAction;
-  /** Properties the org has now, to say what going down to this plan would mean. */
   properties: number | undefined;
   /** Tells why a plan cannot be bought, unless the page has already said that no plan can. */
   showUnavailableHint: boolean;
@@ -38,7 +37,6 @@ function PlanRow({ plan, action, properties, showUnavailableHint, portal, onChoo
   const price = planPrice(plan);
   const over = action === 'current' ? null : propertiesOverAllowance(plan, properties);
 
-  // An amount only when there is one (AM-D28): never a zero that nobody set, never an amount for a plan that cannot be bought.
   const priceText =
     price !== null
       ? t('accountBilling.compare.price', { price: formatPlanPrice(price, plan.currency, i18n.language) })
@@ -117,11 +115,9 @@ interface PlanCompareProps {
   detailsRef: Ref<HTMLDetailsElement>;
   plansQuery: UseQueryResult<BillingPlan[]>;
   subscription: BillingSubscription;
-  /** The plan the page calls the person's own (see `pickShownTier`). */
   tier: PlanTier;
   usage: PlanUsage;
   portal: PortalHandle;
-  /** The backend says the org already has a subscription: the page reads it again, and the plans lead to the portal. */
   onAlreadySubscribed: () => void;
   /**
    * Tells that, with the guided registration, Starter has no module (INC-23): only for an org that registered that way, since the
@@ -130,7 +126,6 @@ interface PlanCompareProps {
   showModulesNote?: boolean;
 }
 
-/** The modules whose features stay locked on Starter with the guided registration, in the words of «Stato dei moduli». */
 const LOCKED_MODULES = ['compliance', 'direct-booking', 'channels', 'operations'] as const;
 
 /**

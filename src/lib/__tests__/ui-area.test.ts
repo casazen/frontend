@@ -9,7 +9,6 @@ describe('uiAreaFromPath', () => {
     ['/app/supplier/inbox', 'supplier'],
     ['/app/admin', 'admin'],
     ['/app/admin/users', 'admin'],
-    // The customer's administration (decision D1): same accent as `admin`, no route yet.
     ['/app/account/people', 'account'],
   ])('uiAreaFromPath_%s_Is%s', (pathname, area) => {
     expect(uiAreaFromPath(pathname)).toBe(area);
@@ -25,7 +24,6 @@ describe('uiAreaFromPath', () => {
     '/app/no-access',
     '/app/unknown/page',
     '/book/villa/property/casa-mare',
-    // Only `/app/<area>` is an area: the same word elsewhere is not.
     '/short-rent',
     '/other/short-rent',
     '/applications/short-rent',

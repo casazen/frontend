@@ -25,7 +25,6 @@ import { PricingSuggestionsSection } from './components/pricing-suggestions-sect
 
 const PROPERTIES_PATH = '/app/short-rent/properties';
 
-/** The page while the rules load: the shape of the page, no spinner in the middle of nothing. */
 function PricingSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="pricing-loading">
@@ -60,14 +59,12 @@ function rulesOf(config: PricingAdapterConfig): SavePricingAdapterConfigRequest 
   };
 }
 
-/** Review nightly prices here; edit the property's seasonal rules on demand. */
 export function PricingDashboardPage() {
   const { t } = useTranslation();
   const { id: propertyId } = useParams<{ id: string }>();
 
   const configQuery = usePricingAdapterConfig(propertyId!);
   const suggestionsQuery = useSeasonalSuggestions(propertyId!);
-  // The name is a courtesy of the header: the page does not wait for it and does not fail without it.
   const property = useProperty(propertyId!);
 
   const saveConfig = useSavePricingAdapterConfig(propertyId!);

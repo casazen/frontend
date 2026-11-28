@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { AI_CONTENT_NOTICE_KEYS, type AiContentKind } from './ai-content-notice-keys';
 
 interface AiContentNoticeProps {
-  /** Show the notice. Mount it next to AI-generated content only, with the flag the API gives (never a constant). */
   visible?: boolean;
   kind?: AiContentKind;
 }

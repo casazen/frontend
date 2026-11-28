@@ -4,9 +4,7 @@ import { Images } from 'lucide-react';
 import { PhotoViewer } from '@/features/public-site/components/PhotoViewer';
 import { SiteMedia } from './site-media';
 
-/** The photos of a service the page shows (the API sends up to six; the first is the cover). */
 const MAX_PHOTOS = 6;
-/** How many the mosaic of a wide screen shows: the big one and two beside it. The rest are in the viewer. */
 const MOSAIC_PHOTOS = 3;
 
 const PHOTO_CLASS = 'vd-g';
@@ -14,15 +12,10 @@ const MAIN_PHOTO_CLASS = 'vd-g vd-g--main';
 
 interface ServiceGalleryProps {
   photos: string[];
-  /** The name of the service: the text of each photo and the title of the viewer. */
   name: string;
   category: string;
 }
 
-/**
- * The photos of a service: a mosaic on a wide screen, a strip to swipe on a phone, each opening in the viewer (arrows, swipe, Esc).
- * A service with no photo shows the plain fill of its trade instead (VT-D19), never a made-up picture.
- */
 export function ServiceGallery({ photos, name, category }: ServiceGalleryProps) {
   const { t } = useTranslation();
   const [viewer, setViewer] = useState<number | null>(null);

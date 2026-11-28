@@ -4,7 +4,6 @@ import { useExactMoney } from '@/hooks/use-exact-money';
 
 interface WireAmountProps {
   amount: number;
-  /** The currency of the figure as the data says it. It is never assumed: a figure with none is drawn without a symbol and says so. */
   currency: string | null | undefined;
   className?: string;
   testId?: string;

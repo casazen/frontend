@@ -29,26 +29,16 @@ import type {
 } from '@/types/checkin-wizard.types';
 import type { StayGuestSubmit } from '@/types/public-checkin.types';
 
-/** The steps of the host wizard, in order. The result ("What happens now") is the confirmation screen of the shell, not a step. */
 export const CHECKIN_WIZARD_STEPS = ['guests', 'documents', 'checks', 'tax', 'send'] as const;
 export type CheckInWizardStepId = (typeof CHECKIN_WIZARD_STEPS)[number];
 
-/**
- * What the form of the wizard holds: the guests, with the new fields and the tourist tax exemption they came with, and, where the regime asks it
- * (`askVehiclePlate`, canton Ticino), the plate of the car of the stay. Without `vehiclePlate` the form does not ask for one and a save sends none.
- */
 export interface CheckInWizardValues {
   guests: StayGuestFormValues[];
   vehiclePlate?: string;
 }
 
-/**
- * The address a "Fix" or the end of a failed save points at: the step and, when there is one, the id of the field to focus
- * (`?step=documents&focus=guest-0-documentNumber`).
- */
 export const FOCUS_PARAM = 'focus';
 
-/** The form values of a guest the server has, as the host edits them. The document number is masked by the API: the host types it again. */
 export function guestValuesFromWizard(guest: CheckInWizardGuest): StayGuestFormValues {
   const bornInItaly = guest.bornInItaly;
   const documentType = guest.documentType ?? '';
@@ -91,44 +81,29 @@ export function guestValuesFromWizard(guest: CheckInWizardGuest): StayGuestFormV
   };
 }
 
-/**
- * The guests the form starts with: the ones of the state in record order (the booker alone, unsaved, when none is registered) and, up to
- * the guests the booking declares, empty members of the first guest's family or group.
- */
 export function wizardValuesFromState(state: CheckInWizardState): CheckInWizardValues {
   const declared = Math.min(MAX_STAY_GUESTS, Math.max(1, state.booking.declaredGuests));
   const guests = state.guests.slice(0, MAX_STAY_GUESTS).map(guestValuesFromWizard);
   if (guests.length === 0) guests.push(stayGuestDefaults(declared > 1 ? 'HeadOfFamily' : 'SingleGuest'));
   if (!isLeaderType(guests[0].type)) guests[0].type = declared > 1 ? 'HeadOfFamily' : 'SingleGuest';
   while (guests.length < declared) guests.push(stayGuestDefaults(followerTypeOf(guests[0].type)));
-  // The plate of the stay is a field of the form only where the regime asks it; the plate on file starts it.
   return state.askVehiclePlate === true ? { guests, vehiclePlate: state.booking.vehiclePlate ?? '' } : { guests };
 }
 
-/** The statistical fields the region of the property requires (the `requiredGuestFields` of the state). */
 export function statisticalFieldsOf(state: CheckInWizardState): StatisticalGuestField[] {
   return requiredStatisticalFields(state.requiredGuestFields);
 }
 
-/**
- * What a property in Switzerland asks on top of the record (NF-132, the `requiredGuestFields` of the state): the document of every guest the police
- * file notifies and the home of each guest. None for an Italian stay, whose steps are then the ones they have always been.
- */
 export function swissRulesOfState(state: CheckInWizardState): SwissStayRules {
   return swissRulesOf(state.requiredGuestFields, state.booking.checkIn);
 }
 
-/** The step the wizard opens on: the one the server suggests; "nothing left to do" opens the last step, where the host can confirm again. */
 export function initialStepOf(state: CheckInWizardState): CheckInWizardStepId {
   const suggested = state.suggestedStep;
   if (suggested === 'result') return 'send';
   return (CHECKIN_WIZARD_STEPS as readonly string[]).includes(suggested) ? (suggested as CheckInWizardStepId) : 'guests';
 }
 
-/**
- * The request body of `PUT …/checkin-wizard/guests`: every guest, the exemption of the tourist tax as the host received it, and the home the host
- * holds (NF-132): the server takes the list as the whole truth, so a save that left them out would erase them.
- */
 export function toGuestsPayload(
   values: CheckInWizardValues,
   statisticalFields: readonly StatisticalGuestField[],
@@ -137,7 +112,6 @@ export function toGuestsPayload(
   return toStayGuestSubmits(values.guests, { statisticalFields, swiss, withTaxExemption: true, keepStatistical: true, keepResidenceAddress: true });
 }
 
-/** What a save of the guests sends: the list, and the plate of the stay where the form asks it (an empty one clears it; none leaves the stored one). */
 export function toGuestsSave(
   values: CheckInWizardValues,
   statisticalFields: readonly StatisticalGuestField[],
@@ -161,25 +135,18 @@ export function guestsSignature(
   return JSON.stringify(vehiclePlate === undefined ? guests : { guests, vehiclePlate });
 }
 
-/** The rules of the guests step: the personal data of each guest, the order of the guests, the statistical fields the region requires, the plate. */
 export function guestsStepSchema(statisticalFields: readonly StatisticalGuestField[], swiss: SwissStayRules = NO_SWISS_RULES) {
   return z.object({ guests: createStayGuestListSchema(statisticalFields, 'personal', swiss), vehiclePlate: stayVehiclePlateSchema });
 }
 
-/** The rules of the document of every guest who needs one (in Switzerland every guest the police file notifies), as the server wants them to save. */
 function documentsSchemaOf(swiss: SwissStayRules) {
   return createStayGuestListSchema([], 'document', swiss);
 }
 
-/** True when every guest who needs a document has it complete (the number typed, not only on file): the server saves no guest without it. */
 export function documentsReadyToSave(values: CheckInWizardValues, swiss: SwissStayRules = NO_SWISS_RULES): boolean {
   return documentsSchemaOf(swiss).safeParse(values.guests).success;
 }
 
-/**
- * The rules of the documents step. When the host changed nothing (`isUnchanged`) there is nothing to save, so a document that is only on
- * file (its number masked) is not asked again; as soon as something changed, the list is saved as a whole and the numbers have to be typed.
- */
 export function documentsStepSchema(isUnchanged: (values: CheckInWizardValues) => boolean, swiss: SwissStayRules = NO_SWISS_RULES) {
   const documentsSchema = documentsSchemaOf(swiss);
   return z
@@ -192,10 +159,8 @@ export function documentsStepSchema(isUnchanged: (values: CheckInWizardValues) =
     });
 }
 
-/** The step a field of a guest belongs to, and the id the field has on that step (`guest-<position>-<field>`). */
 interface IssueFieldTarget {
   step: 'guests' | 'documents';
-  /** The field of the form (`StayGuestFormValues`). */
   field: keyof StayGuestFormValues;
 }
 
@@ -234,12 +199,10 @@ const DOCUMENT_FORM_FIELDS: ReadonlySet<keyof StayGuestFormValues> = new Set([
   'documentExpiresOn',
 ]);
 
-/** The step that shows a field of the guests form: the document fields are on the documents step, the others on the guests step. */
 export function stepOfGuestField(field: keyof StayGuestFormValues): 'guests' | 'documents' {
   return DOCUMENT_FORM_FIELDS.has(field) ? 'documents' : 'guests';
 }
 
-/** Where a "Fix" of the checks leads: the step of the field and the field to focus (none for an issue of the stay as a whole). */
 export interface IssueTarget {
   step: 'guests' | 'documents';
   fieldId: string | null;
@@ -251,7 +214,6 @@ export function issueTarget(issue: Pick<CheckInIssue, 'position' | 'field'>): Is
   return { step: target.step, fieldId: issue.position === null ? null : `guest-${issue.position}-${target.field}` };
 }
 
-/** The id of an issue field's label (`checkin.wizard.field.<field>`), written out for the i18n test. */
 export const ISSUE_FIELD_LABEL_KEYS: Readonly<Record<string, string>> = {
   guests: 'checkin.wizard.field.guests',
   type: 'checkin.wizard.field.type',
@@ -276,7 +238,6 @@ export const ISSUE_FIELD_LABEL_KEYS: Readonly<Record<string, string>> = {
   documentExpiresOn: 'checkin.wizard.field.documentExpiresOn',
 };
 
-/** The plain-words sentence of each issue code (`checkin.wizard.checks.issue.<code>`), written out for the i18n test. */
 export const ISSUE_TEXT_KEYS: Readonly<Record<string, string>> = {
   guest_field_missing: 'checkin.wizard.checks.issue.guest_field_missing',
   guest_code_missing: 'checkin.wizard.checks.issue.guest_code_missing',
@@ -286,12 +247,10 @@ export const ISSUE_TEXT_KEYS: Readonly<Record<string, string>> = {
   guests_count_mismatch: 'checkin.wizard.checks.issue.guests_count_mismatch',
 };
 
-/** The issues in the order the checks step shows them: the blocking ones first, then the warnings, each group in the order of the server. */
 export function sortedIssues(issues: readonly CheckInIssue[]): CheckInIssue[] {
   return [...issues.filter((issue) => issue.blocking), ...issues.filter((issue) => !issue.blocking)];
 }
 
-/** What a failed save (or confirmation) points at: the 422 `checkin_not_ready` of the confirmation. */
 export const CHECKIN_NOT_READY_CODE = 'checkin_not_ready';
 
 /**
@@ -303,7 +262,6 @@ export function exemptionOf(position: number, code: string): GuestExemption[] {
   return [{ position, code: code || null }];
 }
 
-/** The text of the line "guests in Octorate" of the result, from what the confirmation did. */
 export type OctorateResultKind = 'sent' | 'nothingToSend' | 'senderNotChannelManager' | 'notConnected' | 'notActive' | 'failed' | 'partlyFailed';
 
 export function octorateResultKind(octorate: CheckInConfirmation['octorate']): OctorateResultKind {
@@ -324,12 +282,10 @@ export function octorateResultKind(octorate: CheckInConfirmation['octorate']): O
   }
 }
 
-/** Guests that Octorate refused or could not take now (the confirmation lists each one's outcome). */
 export function failedGuestPositions(octorate: CheckInConfirmation['octorate']): number[] {
   return octorate.guests.filter((guest) => guest.outcome === 'Failed').map((guest) => guest.position);
 }
 
-/** How the tourist tax stands for the person at the send step and the result: to collect, collected by the channel, not known. */
 export type TaxOutlook = 'toCollect' | 'collectedByChannel' | 'missingRate' | 'collectorNeeded' | 'notCalculable' | 'none';
 
 export function taxOutlook(tax: StayTouristTax | null | undefined): TaxOutlook {
@@ -341,19 +297,12 @@ export function taxOutlook(tax: StayTouristTax | null | undefined): TaxOutlook {
   return 'toCollect';
 }
 
-/**
- * The breakdown of the stay (ADR-037-R6): nights, guests, exempt guests, the night limit when it applied, and the total. The API sends
- * the tax guest by guest, so the figures are read from the lines: a guest who pays but has fewer taxable nights than nights has met a
- * limit (the cap of nights or the season of the rate).
- */
 export interface TaxBreakdown {
   nights: number;
   guests: number;
   exemptGuests: number;
   payingGuests: number;
-  /** The most taxable nights of a paying guest. */
   taxableNights: number;
-  /** A paying guest has fewer taxable nights than the stay has nights: a night cap or a season limits the tax. */
   capApplied: boolean;
   /** What a paying guest pays for one night, when every paying guest pays the same (null otherwise, or when nobody pays). */
   perPersonPerNight: number | null;
@@ -391,10 +340,8 @@ export function rateEffectiveFrom(declaredFrom: string | null | undefined, check
   return arrival < first ? arrival : first;
 }
 
-/** The fields of a guest that the reading of a document photo can fill. */
 export type ReadableGuestField = 'firstName' | 'lastName' | 'gender' | 'dateOfBirth' | 'documentType' | 'documentNumber' | 'documentExpiresOn';
 
-/** The order the fields of a reading are offered in. */
 export const READABLE_GUEST_FIELDS: readonly ReadableGuestField[] = [
   'lastName',
   'firstName',
@@ -436,11 +383,8 @@ export function formValuesFromReading(fields: DocumentReadingFields | null | und
   return Object.fromEntries(Object.entries(values).filter(([, value]) => value !== '')) as Partial<Record<ReadableGuestField, string>>;
 }
 
-/** The reading of a field against what the host already typed: nothing to ask when empty or equal; a conflict when they differ. */
 export interface ReadingMerge {
-  /** Fields that were empty and now hold what the photo shows. */
   filled: ReadableGuestField[];
-  /** Fields the host had filled in differently: kept as typed until the host asks for the photo's value. */
   conflicts: Array<{ field: ReadableGuestField; typed: string; read: string }>;
 }
 

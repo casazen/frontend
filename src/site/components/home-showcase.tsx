@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { INTEGRATION_GROUPS, type IntegrationEntry, type IntegrationGroup, type IntegrationGroupId } from '../integrations-catalog';
 import { Section } from './site-blocks';
 
-/** One tab stop per panel group. Arrow keys move focus and activate the adjacent panel. */
 function navigateTabs(event: KeyboardEvent<HTMLDivElement>) {
   const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
   const index = tabs.findIndex(tab => tab === event.target);
@@ -22,16 +21,13 @@ function navigateTabs(event: KeyboardEvent<HTMLDivElement>) {
   tabs[next].click();
 }
 
-/** The best known sales channels, in the order they are shown right under the first screen of the home page. */
 const MAIN_CHANNELS = ['Booking.com', 'Airbnb', 'Vrbo', 'Expedia', 'Agoda', 'Hotels.com', 'HomeToGo', 'Holidu'] as const;
 
 const OTA = INTEGRATION_GROUPS.find((group) => group.id === 'ota')?.entries ?? [];
 
-/** Number of channels and tools of the whole catalogue, rounded down to the hundred ("oltre 300"). */
 const CATALOGUE_SIZE = INTEGRATION_GROUPS.reduce((total, group) => total + group.entries.length, 0);
 const CATALOGUE_ROUNDED = Math.floor(CATALOGUE_SIZE / 100) * 100;
 
-/** Logos shown at once in a category: the rest opens in "Mostra tutti". */
 const VISIBLE_LOGOS = 12;
 
 function LogoTile({ entry, size = 'md' }: { entry: IntegrationEntry & { logo: string }; size?: 'md' | 'lg' }) {
@@ -50,7 +46,6 @@ function hasLogo(entry: IntegrationEntry): entry is IntegrationEntry & { logo: s
   return Boolean(entry.logo);
 }
 
-/** The panel of one category: the first logos, then "Mostra tutti" with the rest of the logos and the names without a logo. */
 function CategoryPanel({ group, active }: { group: IntegrationGroup; active: boolean }) {
   const { t } = useTranslation();
   const logos = group.entries.filter(hasLogo);
@@ -96,10 +91,6 @@ function CategoryPanel({ group, active }: { group: IntegrationGroup; active: boo
   );
 }
 
-/**
- * The main sales channels as logos, right under the first screen of the home page (and of the short-rental page): what CasaZen
- * connects to, at a glance. The whole catalogue is `ChannelsCatalogue`. The copy is in `site.home.channels.*`.
- */
 export function ChannelsStrip() {
   const { t } = useTranslation();
   return (
@@ -123,10 +114,6 @@ export function ChannelsStrip() {
   );
 }
 
-/**
- * The whole catalogue of sales channels and tools by category, with "Mostra tutti" for the long ones (no page of its own: it
- * is a block of the home page). A name with no logo is shown as text. Without a script every panel but the first is hidden.
- */
 export function ChannelsCatalogue() {
   const { t } = useTranslation();
   const [active, setActive] = useState<IntegrationGroupId>('ota');
@@ -164,7 +151,6 @@ export function ChannelsCatalogue() {
   );
 }
 
-/** A screenshot of the app in a browser window: the images are the app with example data, never a mock-up. */
 export function BrowserFrame({ src, alt }: { src: string; alt: string }) {
   return (
     <div className="cz-media-frame border border-ink-700/15 bg-white shadow-soft">
@@ -188,7 +174,6 @@ const EXPLORER_TABS: readonly { key: ExplorerKey; image?: string }[] = [
   { key: 'lease', image: '/site/lease.webp' },
 ];
 
-/** The guest check-in on a phone: a short user-controlled clip, with its first frame as the poster (and for those who cannot play it). */
 function PhoneVideo({ label }: { label: string }) {
   return (
     <div className="mx-auto w-full max-w-[240px] overflow-hidden rounded-[2.2rem] border-[7px] border-ink-900 bg-ink-900 shadow-soft sm:max-w-[270px]">
@@ -267,10 +252,6 @@ export function ProductShowcase({ only }: { only?: readonly ExplorerKey[] } = {}
   );
 }
 
-/**
- * "Esempi di siti vetrina": the public site of a host (booking site) and the one of a supplier (showcase), recorded from the app
- * with example data (invented names). The copy is in `site.home.examples.*`.
- */
 export function SiteExamples() {
   const { t } = useTranslation();
   const items = [

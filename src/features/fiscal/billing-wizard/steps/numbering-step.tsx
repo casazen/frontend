@@ -5,21 +5,14 @@ import { Input } from '@/components/ui/input';
 import { SERIES_MAX, SERIES_YEAR_PLACEHOLDER, seriesOf, type BillingWizardValues } from '../billing-wizard-schema';
 
 interface NumberingStepProps {
-  /** The year of the preview: the year of today in Rome, as the server numbers the documents. */
   year: number;
 }
 
-/** The number of the first document of a series, as the document will carry it: the series and the progressive, `2026/1`. */
 function previewOf(series: string, year: number): string {
   const resolved = seriesOf(series, year);
   return resolved === '' ? '' : `${resolved}/1`;
 }
 
-/**
- * Step 3, «Numerazione»: the series of the documents to the guests and of the invoices to the owners, each with the number the first document of the year will carry. The
- * server numbers consecutively and without gaps, so the preview says the form of the number and not the one a document will get: the progressive goes on from the last one
- * issued. The year is written `{year}`. A series is saved explicitly with this step, even when it is the one the server proposed.
- */
 export function NumberingStep({ year }: NumberingStepProps) {
   const { t } = useTranslation();
   const {

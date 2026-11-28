@@ -17,20 +17,13 @@ import type { ComplianceProofKind } from '@/types';
 import { MAX_RECEIPT_FLATS, formatPeriod, isMonthKind, listedMonths } from '../lib/archive-model';
 import { ReceiptRecoverySteps } from './receipt-recovery-steps';
 
-/** What a dialog starts from: the property and the day or month the page is filtered to, or the row of the report it was opened from. */
 export interface ProofUploadPrefill {
   propertyId?: string;
   kind?: ComplianceProofKind;
-  /** `yyyy-MM-dd`, for a receipt of an Alloggiati communication. */
   day?: string;
-  /** `yyyy-MM`, for the proof of a month (ISTAT, tourist tax). */
   period?: string;
 }
 
-/**
- * What the dialog needs of a property: its id and its name (the `Property` of the list has both), and how it is let. The list of the API says nothing of the country of a flat, so none is
- * asked for here.
- */
 export interface ProofUploadProperty {
   id: string;
   name: string;
@@ -40,17 +33,13 @@ export interface ProofUploadProperty {
 
 const MONTH = /^\d{4}-\d{2}$/;
 const FIRST_DAY = '2000-01-01';
-/** What a proof may be: the server judges it on its content, this only spares a round trip for a file that is plainly something else. */
 const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
-/** What the file picker offers: the types and the extensions (a phone and some systems read the extensions better). */
 const FILE_ACCEPT = ['.pdf', '.jpg', '.jpeg', '.png', ...ACCEPTED_TYPES];
 
 interface ProofUploadDialogProps {
   open: boolean;
   onClose: () => void;
-  /** The properties of the caller, for the choice of one (the server decides which ones the caller reaches). */
   properties: ReadonlyArray<ProofUploadProperty>;
-  /** The kinds the person may upload: the tax kinds only with the permission that records a payment. */
   kinds: readonly ComplianceProofKind[];
   prefill?: ProofUploadPrefill;
   /** The portal of Alloggiati Web the archive sends (https): the guide «Recupera la ricevuta» opens it. */
@@ -83,7 +72,6 @@ function OpenProofUploadDialog({ onClose, properties, kinds, prefill, alloggiati
     <Dialog
       open
       onOpenChange={(next) => {
-        // While the file is on its way the dialog stays: closing it would hide an answer that is still to come.
         if (!next && !pending) onClose();
       }}
     >
@@ -98,14 +86,10 @@ interface UploadFormProps extends Omit<ProofUploadDialogProps, 'open'> {
 
 function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPortalUrl, upload }: UploadFormProps) {
   const { t, i18n } = useTranslation();
-  // The flags are read again from the server when the dialog opens: the provider reads them once a session, and the deletion cannot be undone, so a tab opened before the flag was switched
-  // on must not save a receipt on the old value. Until that read is over nothing is saved (`flagsRead`).
   const { flags, settled: flagsRead } = useFeatureFlagsReadAgain();
-  // The pages ask for the short-rent flats already; a list that was not filtered still never offers a flat let long-term (it owes no communication, and the receipt would be tied to it).
   const properties = listed.filter((flat) => flat.rentalMode !== 'Long');
   const today = todayInRome();
   const pending = upload.isPending;
-  // The deletion of the photos of the documents after a receipt cannot be undone: while its flag is on the host is told before saving, and after.
   const purgeOn = flags.purgeDocumentsAfterReceipt;
 
   const startKind = kinds.find((candidate) => candidate === prefill?.kind) ?? kinds[0];
@@ -113,34 +97,25 @@ function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPor
   const [kind, setKind] = useState<ComplianceProofKind | ''>(startKind ?? '');
   const [day, setDay] = useState(prefill?.day ?? '');
   const [month, setMonth] = useState(prefill?.period && MONTH.test(prefill.period) ? prefill.period : '');
-  // The flats a receipt covers besides the one it is filed under (which it always covers): what the host added.
   const [others, setOthers] = useState<readonly string[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [fileProblem, setFileProblem] = useState(false);
 
   const isReceipt = kind === 'AlloggiatiReceipt';
   const monthKind = kind !== '' && isMonthKind(kind);
-  // The months offered are the recent ones, and the one the form starts from when it is older.
   const months = listedMonths(today).concat(month && !listedMonths(today).includes(month) ? [month] : []);
   const when = monthKind ? month : day;
   const dayProblem = !monthKind && day !== '' && (day > today || day < FIRST_DAY);
 
-  // The flats a receipt may cover: the flats of the list, one by one (the server answers 422 when one of several is outside Italy, which the list cannot tell: the host is told then).
-  // With one flat only there is nothing to choose, and the receipt covers it.
   const primaryFlat = properties.find((flat) => flat.id === propertyId);
   const flatsOffered = isReceipt && primaryFlat !== undefined && properties.length > 1;
   const addedFlats = flatsOffered ? properties.filter((flat) => flat.id !== propertyId && others.includes(flat.id)).slice(0, MAX_RECEIPT_FLATS - 1) : [];
-  // The flats the receipt covers, the one it is filed under first: exactly what the summary asks about and what the upload sends.
   const covered = propertyId === '' ? [] : [propertyId, ...addedFlats.map((flat) => flat.id)];
 
-  // An upload of a receipt that the server answers with the stays it proves is told in this layer; any other answer closes it, as it always did.
   const outcome = upload.isSuccess && typeof upload.data.coveredStays === 'number' ? upload.data : undefined;
   const coverageAsked = isReceipt && covered.length > 0 && day !== '' && !dayProblem && outcome === undefined;
   const coverage = useReceiptCoverage(day, covered, coverageAsked);
-  // Before an upload that cannot be undone (the photos of the documents go) the host reads what it will touch: the summary has to be there.
   const summaryRequired = purgeOn && isReceipt;
-  // A summary that failed to answer (not one the server refused: changing the flats mends that one) must not shut the save for good, nor in silence: the failure says why the save waits, and the
-  // host may go on without the count by confirming that the deletion cannot be undone. The confirmation is for the question it was given for (the day and the flats), never for the next one.
   const question = `${day}|${covered.join(',')}`;
   const [confirmedFor, setConfirmedFor] = useState<string | null>(null);
   const mayGoOnWithoutSummary = summaryRequired && coverageAsked && coverage.isError && summaryRefusal(coverage.error) === undefined;
@@ -150,7 +125,6 @@ function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPor
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
-    // `ready` says a property, a kind, a day or month and a good file are there: the types follow from it.
     if (!ready || pending) return;
     upload.mutate(
       {
@@ -158,12 +132,10 @@ function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPor
         kind,
         day: monthKind ? `${month}-01` : day,
         file,
-        // A receipt that covers more than its own flat names them all, the flat it is filed under included; with one flat there is no list, which the server reads as that flat alone.
         ...(isReceipt && covered.length > 1 ? { propertyIds: covered } : {}),
       },
       {
         onSuccess: (saved) => {
-          // A receipt the server tells the stays it proves stays open to tell them (the outcome); anything else is done.
           if (typeof saved.coveredStays !== 'number') onClose();
         },
       },
@@ -174,7 +146,6 @@ function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPor
     const chosen = files[0] ?? null;
     upload.reset();
     setFile(chosen);
-    // A file that plainly is not a PDF, a JPEG or a PNG is told at once; one with no type the browser knows is left to the server, which reads its content.
     setFileProblem(chosen !== null && chosen.type !== '' && !ACCEPTED_TYPES.includes(chosen.type));
   };
 
@@ -215,7 +186,6 @@ function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPor
               <p className="text-muted-foreground" data-testid="proof-upload-outcome-purge">
                 {t('complianceArchive.upload.outcome.purge')}
               </p>
-              {/* The job that deletes writes the line of the send log some moments after the upload and the backend sends no event for it: the page does not refresh by itself, and this says so. */}
               <p className="text-muted-foreground" data-testid="proof-upload-outcome-purge-log">
                 {t('complianceArchive.upload.outcome.purgeLog')}
               </p>
@@ -385,13 +355,9 @@ function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPor
 }
 
 interface FlatsChoiceProps {
-  /** The flats the receipt may cover, the one it is filed under first. */
   flats: readonly ProofUploadProperty[];
-  /** The flat the receipt is filed under: it is always covered, so it is ticked and cannot be unticked. */
   primaryId: string;
-  /** The ids of the other flats the host ticked. */
   added: readonly string[];
-  /** The receipt names as many flats as one summary can carry: the ones not ticked wait. */
   full: boolean;
   disabled: boolean;
   onToggle: (id: string, covers: boolean) => void;
@@ -436,11 +402,6 @@ function FlatsChoice({ flats, primaryId, added, full, disabled, onToggle }: Flat
   );
 }
 
-/**
- * What the server answered to the question about the receipt when the answer is about the question itself and asking again would get the same: a flat it does not find (404) or flats
- * a receipt cannot cover (422 `compliance_proof_coverage_invalid`, a flat outside Italy among several). The host changes the flats, which asks a new question: no «Riprova» then.
- * Any other failure is a failure to answer, which may pass.
- */
 function summaryRefusal(error: unknown): 'notFound' | 'coverageInvalid' | undefined {
   if (getHttpStatus(error) === 404) return 'notFound';
   return complianceArchiveErrorCode(error) === COMPLIANCE_ARCHIVE_ERROR.proofCoverageInvalid ? 'coverageInvalid' : undefined;
@@ -448,11 +409,8 @@ function summaryRefusal(error: unknown): 'notFound' | 'coverageInvalid' | undefi
 
 interface CoverageSummaryProps {
   coverage: ReturnType<typeof useReceiptCoverage>;
-  /** The deletion of the photos of the documents after a receipt is on: the summary says it touches the stays it counts. */
   purge: boolean;
-  /** An upload is on its way: nothing of the layer can be pressed. */
   busy: boolean;
-  /** Offered only while the deletion is on and the summary failed to answer: the host may save without the count by confirming that the deletion cannot be undone. */
   goOn?: { confirmed: boolean; onConfirm: (confirmed: boolean) => void };
 }
 
@@ -468,7 +426,6 @@ function CoverageSummary({ coverage, purge, busy, goOn }: CoverageSummaryProps) 
   if (coverage.isError) {
     const refusal = summaryRefusal(coverage.error);
     const reason = getProblemMessage(coverage.error, t);
-    // The deletion is on: whatever the reason, the host is told why the save waits (and the reason first, when the server gave one). With it off nothing is waiting and nothing is said of it.
     const failed = purge ? t('complianceArchive.upload.coverage.failedPurge') : (reason ?? t('complianceArchive.upload.coverage.failed'));
     return (
       <div className="space-y-3" data-testid="proof-upload-coverage-failure">

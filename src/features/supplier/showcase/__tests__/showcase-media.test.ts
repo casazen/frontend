@@ -12,7 +12,6 @@ import {
 
 const info = (name: string, type: string, size = 1000) => ({ name, type, size });
 
-/** The key itself: the tests read which text was chosen, not what it says. */
 const t = (key: string) => key;
 
 function failed(status: number | null, data: unknown = {}): AxiosError {
@@ -82,7 +81,6 @@ describe('Making a photo smaller before it is sent', () => {
   it('leaves a heavy file as it is when the browser cannot decode it (the server has the last word)', async () => {
     const heavy = new File([new Uint8Array(2 * 1024 * 1024)], 'foto.jpg', { type: 'image/jpeg' });
 
-    // There is no image decoder in the test environment: the file comes back untouched.
     expect(await prepareShowcaseImage(heavy, 'cover')).toBe(heavy);
   });
 });

@@ -8,15 +8,8 @@ import type { StayState } from '@/features/public-site/stay/stay-state';
 import { siteLocale } from '@/lib/site-language';
 import type { PublicStaysResult } from '@/types/public-stays.types';
 
-/** The home page shows this many homes; «Vedi tutte» leads to the results with the rest. */
 const HOME_MAX_HOUSES = 12;
 
-/**
- * The homes of the site (DB-07b): a grid of cards, each with its photos, the heart, the mark, the place and the price. While no dates
- * are chosen the price is the lowest night of the next 30 days and a line says so; with dates it is the total of the quote for
- * those nights, and every card opens its home with the same dates. The id `property-grid` is where «Verifica disponibilità» of
- * the header scrolls to.
- */
 export function HousesSection({
   orgSlug,
   result,
@@ -31,8 +24,6 @@ export function HousesSection({
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const locale = siteLocale(i18n.language);
-  // The prices and the line above them are what the server answered for ITS dates: while the answer for the stay just chosen is on
-  // its way the previous one stays on the page and keeps saying its own dates, never a mix. The links carry the stay chosen now.
   const answered = result.checkIn && result.checkOut ? { checkIn: result.checkIn, checkOut: result.checkOut } : null;
   const hasDates = Boolean(stay.checkIn && stay.checkOut);
   const shown = result.items.slice(0, HOME_MAX_HOUSES);

@@ -8,10 +8,6 @@ import { useLongRentServiceRequests } from '@/queries/use-service-requests';
 import { ServiceRequestForm } from './service-request-form';
 import { ServiceRequestsCard } from './service-requests-card';
 
-/**
- * Supplier requests of a long-term property (D2): for the property, never a booking, through the long-rent endpoints
- * (`/long-rent/service-requests`). The request button needs `property.write` in long-rent.
- */
 export function LongRentServiceRequests({ propertyId }: { propertyId: string }) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();

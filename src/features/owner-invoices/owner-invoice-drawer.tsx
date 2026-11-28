@@ -13,7 +13,6 @@ import { isDraft, isIssued } from './owner-invoice-model';
 import { hasNoCurrency } from './use-invoice-money';
 
 interface OwnerInvoiceDrawerProps {
-  /** The invoice to open; `null` closes the drawer, and nothing is read while it is closed. */
   invoiceId: string | null;
   onClose: () => void;
 }
@@ -43,7 +42,6 @@ function DrawerBody({ invoiceId }: { invoiceId: string }) {
   let description = t('ownerInvoice.detail.description');
   let content;
   if (getHttpStatus(query.error) === 404) {
-    // A 404 is the invoice that is no longer there, whatever the cache still holds from an earlier read (a failed read keeps the old data).
     content = (
       <Alert variant="warning" role="alert" title={t('ownerInvoice.detail.notFound')} data-testid="owner-invoice-detail-not-found">
         {t('ownerInvoice.detail.notFoundBody')}
@@ -58,7 +56,6 @@ function DrawerBody({ invoiceId }: { invoiceId: string }) {
   } else if (query.isError) {
     content = <OwnerAccountingError error={query.error} title={t('ownerInvoice.panel.loadError')} onRetry={() => void query.refetch()} />;
   } else if (invoice === null) {
-    // The server refused the read to this person (403): the access is not there, and nothing is drawn in its place.
     content = (
       <Alert variant="warning" role="alert" title={t('ownerInvoice.detail.forbiddenTitle')} data-testid="owner-invoice-detail-forbidden">
         {t('ownerInvoice.detail.forbidden')}
@@ -83,7 +80,6 @@ function DrawerBody({ invoiceId }: { invoiceId: string }) {
   );
 }
 
-/** «Marta Rossi · novembre 2026»: whose invoice it is and for which month, from what the server sent (an owner without a name by the start of its id, a month it does not give is left out). */
 function ownerAndPeriodOf(invoice: OwnerInvoice, t: ReturnType<typeof useTranslation>['t'], month: (year: number, month: number) => string): string {
   const owner = invoice.ownerName?.trim() || (invoice.ownerId ? t('ownerAccounting.owner.unnamed', { id: shortId(invoice.ownerId) }) : '');
   const period = invoice.periodYear !== null && invoice.periodMonth !== null ? month(invoice.periodYear, invoice.periodMonth) : '';
@@ -104,7 +100,6 @@ function InvoiceDetail({ invoice }: { invoice: OwnerInvoice }) {
         ) : isIssued(invoice) ? (
           <Badge variant="success">{t('ownerInvoice.status.Issued')}</Badge>
         ) : (
-          // A state of a later server: told by its code, never as an invoice that is complete.
           <Badge variant="outline">{invoice.status}</Badge>
         )}
         {invoice.kind === 'CreditNote' ? <Badge variant="outline">{t('ownerInvoice.detail.creditNote')}</Badge> : null}

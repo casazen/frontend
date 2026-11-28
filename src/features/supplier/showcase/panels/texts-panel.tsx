@@ -16,10 +16,8 @@ import { isRefused, type PanelProps } from './panel-types';
 
 const L = SHOWCASE_LIMITS;
 
-/** `list` with the item at `index` replaced. */
 const replaceAt = <T,>(list: readonly T[], index: number, item: T): T[] => list.map((current, position) => (position === index ? item : current));
 
-/** A block of the panel: a heading, what it is for, and its fields. */
 function Block({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
     <section className="space-y-3">
@@ -41,7 +39,6 @@ function Block({ title, hint, children }: { title: string; hint?: string; childr
  */
 export function TextsPanel({ doc, change, invalid, categories }: PanelProps & { categories: string[] }) {
   const { t } = useTranslation();
-  // A starting text for the trade, offered (never filled in by itself) while the sentence, the introduction or the tips are empty.
   const starter = starterContentFor(categories);
   const fill = starter ? starterFill(doc, starter) : null;
   const applyStarter = () => {
@@ -49,7 +46,6 @@ export function TextsPanel({ doc, change, invalid, categories }: PanelProps & { 
     change(fill.patch);
     toastUndo(t('supplier.showcase.editor.starter.applied'), { undo: () => change(fill.inverse) });
   };
-  // The AI help, only while the server says a provider answers; what it wrote is marked as a draft until the supplier changes it.
   const assist = useShowcaseTextSuggestionStatus();
   const aiAvailable = assist.data?.available === true;
   const [applied, setApplied] = useState<AppliedAi>({});

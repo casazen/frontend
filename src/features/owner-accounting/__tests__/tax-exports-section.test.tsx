@@ -46,7 +46,6 @@ function renderSection(props: Partial<Parameters<typeof TaxExportsSection>[0]> =
   );
 }
 
-/** Presses the button of one file once it is enabled and waits until the file is saved (`saves` is how many files were saved by then), so the next press finds the page ready. */
 async function makeFile(testId: string, saves: number) {
   await waitFor(() => expect(screen.getByTestId(testId)).toBeEnabled());
   fireEvent.click(screen.getByTestId(testId));
@@ -87,14 +86,12 @@ describe('the exports of the withholding follow the flag as the backend does', (
   it('TaxExports_WithTheFlagOn_EveryFileOfTheYearIsOffered_AndEachAsksTheServerForItsOwnFormat', async () => {
     renderSection();
 
-    // One file at a time: the page asks nothing while one is being made, so each press waits for its button to be enabled and for the file to be saved.
     await makeFile('tax-export-cu-xlsx', 1);
     await makeFile('tax-export-tax770-csv', 2);
     await makeFile('tax-export-contracts-xlsx', 3);
     expect(api.downloadCuData).toHaveBeenCalledWith(2026, 'xlsx');
     expect(api.download770Data).toHaveBeenCalledWith(2026, 'csv');
     expect(api.downloadContractsCommunication).toHaveBeenCalledWith(2026, 'xlsx');
-    // The communication of the contracts says when it is due and that CasaZen sends nothing.
     expect(screen.getByTestId('tax-export-contracts')).toHaveTextContent('30 giugno 2027');
     expect(screen.getByTestId('tax-exports')).toHaveTextContent(i18n.t('ownerAccounting.exports.note'));
   });
@@ -134,7 +131,6 @@ describe('a file is made once and told in words when it fails', () => {
 
     const failure = await screen.findByTestId('tax-export-contracts-failure');
     expect(failure).toHaveTextContent(i18n.t('ownerAccounting.exports.noAccess'));
-    // The other files are not told to fail, and the page is still the page.
     expect(screen.queryByTestId('tax-export-tax770-failure')).toBeNull();
     expect(saved).not.toHaveBeenCalled();
   });
@@ -176,7 +172,6 @@ describe('the CU needs the annual data, and its prospects are one for each owner
     expect(screen.getByTestId('tax-export-cu-xlsx')).toBeDisabled();
     const none = screen.getByTestId('tax-export-cu-none');
     expect(within(none).getByRole('link')).toHaveAttribute('href', '/app/account/owner-close?period=2026-11');
-    // The 770 and the communication do not need them.
     expect(screen.getByTestId('tax-export-tax770-csv')).toBeEnabled();
   });
 
@@ -191,7 +186,6 @@ describe('the CU needs the annual data, and its prospects are one for each owner
     const onRetry = vi.fn();
     renderSection({ dataset: undefined, datasetError: { error: new Error('Network Error'), onRetry } });
 
-    // Not a wait that never ends: the failure is told with the way to try again, and no file of the CU is asked meanwhile.
     const failure = screen.getByTestId('tax-export-cu-load-error');
     expect(screen.getByTestId('tax-export-cu-csv')).toBeDisabled();
     expect(screen.getByTestId('tax-export-cu-xlsx')).toBeDisabled();

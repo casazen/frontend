@@ -6,12 +6,6 @@ import { ConcordatoAssessmentPanel } from '../components/concordato-assessment-p
 import { Disclosure } from './disclosure';
 import { storedRentAnswer } from './guide-answers';
 
-/**
- * «Il canone rientra nei limiti dell'accordo?» (LR-GUIDE-1), for a canone concordato lease. A lease made in CasaZen already holds the
- * range the server computed when it was created: the window answers from it in a sentence, with the calculation behind a click and the
- * calculator, started from the same data, for a new try. A lease that holds none (brought in already signed, or made by the guided
- * service) starts from the calculator itself.
- */
 export function ConcordatoRangeCheck({ lease }: { lease: LeaseDetail }) {
   const { t } = useTranslation();
   const assessment = lease.concordatoAssessment;

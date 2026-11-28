@@ -11,25 +11,14 @@ import { instantToCome } from '../../long-rent/long-rent-request-model';
 import { INTERVENTIONS_PATH, interventionPath, marketplaceForPropertyPath, requestInterventionPath } from '../paths';
 import type { RequestValues } from './request-model';
 
-/**
- * What the wizard ended with: the answer of the creation and the name of the supplier it was sent to (the answer names it, the wizard
- * remembers it), or the choice of an external partner, which sent nothing to CasaZen.
- */
 export type RequestSent = { kind: 'request'; request: ServiceRequest; supplierName: string } | { kind: 'external' };
 
 interface RequestDoneProps {
-  /** Without it (the last screen opened again after a reload) the screen says what is true of every request. */
   sent: RequestSent | undefined;
   values: RequestValues;
   stayId?: string;
 }
 
-/**
- * «Cosa succede ora» after the request is made. Only true things: the supplier has the request and answers (accepts, refuses or proposes
- * another time), until when it has to answer when the server says so, that the host is told, and that cancelling is free until the work
- * starts. «Vedi la richiesta» leads to its page, «Fai un'altra richiesta» to a new wizard for the same property. With an external partner
- * nothing was sent: the work is organised on the partner's site and it is not followed in Interventi.
- */
 export function RequestDone({ sent, values, stayId }: RequestDoneProps) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
@@ -37,7 +26,6 @@ export function RequestDone({ sent, values, stayId }: RequestDoneProps) {
   const receipt = location.state?.interventionId;
   useEffect(() => {
     if (sent?.kind === 'request' && receipt !== sent.request.id) {
-      // Keep only the server id in this history entry. A reload reads the current request status from its detail page.
       void navigate({ pathname: location.pathname, search: location.search }, { replace: true, state: { interventionId: sent.request.id } });
     }
   }, [sent, receipt, navigate, location.pathname, location.search]);

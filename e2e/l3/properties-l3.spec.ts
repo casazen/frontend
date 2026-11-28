@@ -1,10 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { requireE2eCredentials } from '../helpers/env';
 
-/**
- * L3 — real API (local InMemory or staging). No page.route mocks on /api/properties.
- * Run: npm run test:e2e:local   or   E2E_STAGING=1 npm run test:e2e:staging-gj
- */
 test.describe('L3 properties & health', () => {
   test.skip(!process.env.E2E_LOCAL && !process.env.E2E_STAGING, 'Set E2E_LOCAL=1 or E2E_STAGING=1');
   test.setTimeout(120_000);
@@ -18,7 +14,6 @@ test.describe('L3 properties & health', () => {
   });
 
   test('AC: authenticated GET /api/properties returns 200 (not 500)', async ({ page }) => {
-    // Staging UI requests use the Vite proxy to the real Railway API.
     const apiBase = process.env.E2E_STAGING === '1'
       ? '/api'
       : (process.env.E2E_LOCAL_API_URL ?? 'http://localhost:5000/api');

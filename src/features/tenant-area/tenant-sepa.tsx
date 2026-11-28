@@ -63,7 +63,6 @@ export function TenantSepaSettings({ leaseId }: { leaseId: string }) {
   </Card>;
 }
 
-/** A manual payment remains a separate, explicit confirmation even while automatic collection is enabled. */
 export function TenantSepaPayment({ leaseId, dueId, amount, currency }: { leaseId: string; dueId: string; amount: number; currency: string }) {
   const { t } = useTranslation();
   const qc = useQueryClient();

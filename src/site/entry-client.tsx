@@ -7,10 +7,6 @@ import { readSiteLegal } from './site-config';
 import { SITE_PAGES, type SitePageId } from './site-pages';
 import './site.css';
 
-/**
- * Browser start of a page of the public site (SEO-VETRINA): hydrates the static HTML in Italian, as it was rendered, then
- * switches to English when the visitor chose it in the app. The page links work without this script.
- */
 const root = document.getElementById('root');
 const pageId = root?.dataset.sitePage as SitePageId | undefined;
 const year = Number(root?.dataset.siteYear);

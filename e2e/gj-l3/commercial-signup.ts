@@ -21,13 +21,10 @@ export async function provisionLegacyCommercialSignup(page: Page, profile: 'owne
   const provisioned = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/api/users/onboarding'));
   await page.getByTestId('onboarding-consents-continue').click();
   expect((await provisioned).ok()).toBeTruthy();
-  // This assertion follows any redirect initiated by onboarding and its guard; it never initiates another one.
   await expect(page.locator('#signup-billing-country')).toBeVisible({ timeout: 30_000 });
 }
 
-/** Drives signup in the UI, then simulates Stripe's signed subscription webhook in the disposable stack. */
 export async function completeCommercialSignup(page: Page, profile: 'owner' | 'long-rent'): Promise<void> {
-  // Platform administrators can voluntarily create an organization through the existing onboarding.
   const legacyHeading = page.getByRole('heading', { name: /Da dove vuoi iniziare/i });
   const profileCard = page.getByTestId('signup-profile-owner');
   await expect(legacyHeading.or(profileCard)).toBeVisible({ timeout: 30_000 });
@@ -68,7 +65,6 @@ export async function completeCommercialSignup(page: Page, profile: 'owner' | 'l
     const result = await page.request.get(`${stack.apiUrl}/users/me`, { headers });
     return result.ok() && !(await result.json() as { commercialSetupRequired: boolean }).commercialSetupRequired;
   }, { timeout: 60_000 }).toBe(true);
-  // An administrator's default home remains the staff console; open its newly configured host area.
   if (legacy) {
     await page.goto(profile === 'long-rent' ? '/app/long-rent/properties/new?first=1' : '/app/short-rent/properties/create?first=1');
     return;

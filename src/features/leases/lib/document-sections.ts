@@ -1,7 +1,6 @@
 import type { TFunction } from 'i18next';
 import type { LeaseDocumentSection, LeaseReading, LeaseReadingDocument, LeaseReadingWarning } from '@/types';
 
-/** The words of the warnings the reading can find in a contract file; any other code says the general sentence. */
 const WARNING_CODES: ReadonlySet<string> = new Set([
   'attestation_comune_differs',
   'attestation_dates_differ',
@@ -18,19 +17,16 @@ const WARNING_CODES: ReadonlySet<string> = new Set([
   'term_too_short',
 ]);
 
-/** The contract document the screen speaks about: the one the import will use, else the first that was read into sections. */
 export function readContractDocument(reading: LeaseReading): LeaseReadingDocument | undefined {
   return reading.documents.find((document) => document.id === reading.contractDocumentId) ?? reading.documents.find((document) => (document.sections?.length ?? 0) > 0);
 }
 
-/** «pp. 1–6», or «p. 3» for a section of a single page. */
 function pagesOf(t: TFunction, section: Pick<LeaseDocumentSection, 'firstPage' | 'lastPage'>): string {
   return section.firstPage === section.lastPage
     ? t('leaseDocs.page', { first: section.firstPage })
     : t('leaseDocs.pages', { first: section.firstPage, last: section.lastPage });
 }
 
-/** «Contratto (pp. 1–6), attestazione (pp. 7–10), scheda di calcolo (pp. 11–14)»: what the reading recognized in the file, in page order. */
 export function recognizedParts(t: TFunction, sections: readonly LeaseDocumentSection[]): string {
   return sections
     .map((section, index) => {

@@ -54,7 +54,6 @@ describe('checkout outcome', () => {
     expect(isIntermediateView('awaitingHost', null)).toBe(true);
     expect(isIntermediateView('failed', null)).toBe(false);
     expect(isIntermediateView('confirmed', null)).toBe(false);
-    // A late payment may still be confirmed again or refunded (BK-04).
     expect(isIntermediateView('expired', 'succeeded')).toBe(true);
     expect(isIntermediateView('expired', null)).toBe(false);
     expect(isFinalView('expired')).toBe(true);
@@ -70,7 +69,6 @@ describe('checkout outcome', () => {
       (sum, delay) => sum + delay,
       0,
     );
-    // One round of polling lasts minutes, not hours.
     expect(total).toBeLessThan(10 * 60_000);
   });
 });

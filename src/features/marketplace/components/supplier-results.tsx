@@ -6,7 +6,6 @@ import { SupplierFiltersBar } from './supplier-filters';
 import { SupplierGrid } from './supplier-grid';
 import { SuppliersError, SuppliersLoading } from './suppliers-state';
 
-/** The part of a query of the suppliers that a list needs. */
 interface SuppliersQuery {
   data: SupplierListResponse | undefined;
   isLoading: boolean;
@@ -19,16 +18,10 @@ interface SuppliersQuery {
 interface SupplierResultsProps {
   query: SuppliersQuery;
   filters: SupplierFilters;
-  /** What is said when there is no supplier at all and nothing narrowed the list: for a category, that the network is not there yet. */
   emptyText: string;
-  /** The list is narrowed by words (the search): with none left to show, they can be taken away. */
   onClearSearch?: () => void;
 }
 
-/**
- * A list of suppliers with its order and «Solo verificati» (MKT), for a category and for a search: loading, failed with «Riprova»,
- * nothing there (and why: no network around the property, or the words or the filter left none), then the cards.
- */
 export function SupplierResults({ query, filters, emptyText, onClearSearch }: SupplierResultsProps) {
   const { t } = useTranslation();
 

@@ -6,14 +6,11 @@ import { Select } from '@/components/ui/select';
 import { monthChoices, monthName } from '../lib/rent-register';
 
 interface RentMonthPickerProps {
-  /** The month shown, `yyyy-MM`. */
   month: string;
-  /** This month in Rome: the choices are the last twelve months, this one and the next three around it. */
   currentMonth: string;
   onChange: (month: string) => void;
 }
 
-/** The month of the register: an arrow each way and the list of the months, one control for the keyboard and one for the finger. */
 export function RentMonthPicker({ month, currentMonth, onChange }: RentMonthPickerProps) {
   const { t, i18n } = useTranslation();
   const selectId = useId();

@@ -19,13 +19,11 @@ export const SAVED_VIEWS_VERSION = 1;
 export const SAVED_VIEWS_LIMIT = 12;
 export const SAVED_VIEW_NAME_MAX = 40;
 const QUERY_MAX = 800;
-/** Fired on `window` after a write: the `storage` event only reaches the other tabs. */
 export const SAVED_VIEWS_EVENT = 'casazen:list-views-changed';
 
 export interface SavedView {
   id: string;
   name: string;
-  /** The query string of the view, as `listStateToParams` writes it (`chip=arrivals&sort=from:asc`). */
   query: string;
 }
 
@@ -45,7 +43,6 @@ export function readSavedViewsRaw(key: string): string | null {
   }
 }
 
-/** The views in a stored value; whatever is not valid is left out. */
 export function parseSavedViews(raw: string | null): SavedView[] {
   if (!raw) return [];
   try {
@@ -67,10 +64,6 @@ export function parseSavedViews(raw: string | null): SavedView[] {
 
 export type SaveViewResult = { ok: true; views: SavedView[] } | { ok: false; reason: 'empty' | 'limit' | 'too-long' };
 
-/**
- * `views` with a new one. A name that is already there (whatever the capitals) keeps its place and takes the new query: saving
- * "again" is updating. Past the limit nothing is added, and the person is told.
- */
 export function withSavedView(views: readonly SavedView[], draft: { name: string; query: string }, id: string): SaveViewResult {
   const name = draft.name.trim().slice(0, SAVED_VIEW_NAME_MAX);
   if (!name) return { ok: false, reason: 'empty' };
@@ -85,7 +78,6 @@ export function withoutSavedView(views: readonly SavedView[], id: string): Saved
   return views.filter((view) => view.id !== id);
 }
 
-/** Writes the views (an empty list removes the entry). `false` when the storage would not take them. */
 export function writeSavedViews(key: string, views: readonly SavedView[]): boolean {
   try {
     if (views.length === 0) window.localStorage.removeItem(key);
@@ -97,7 +89,6 @@ export function writeSavedViews(key: string, views: readonly SavedView[]): boole
   return true;
 }
 
-/** An id for a new view. */
 export function newSavedViewId(): string {
   return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
     ? crypto.randomUUID()

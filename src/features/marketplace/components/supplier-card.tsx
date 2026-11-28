@@ -10,17 +10,10 @@ import { VerifiedBadge } from './verified-badge';
 
 interface SupplierCardProps {
   supplier: SupplierPicker;
-  /** The optional sections some card of the grid has: every card keeps the same rows. */
   rows: SupplierCardRows;
-  /** Opens the supplier in the drawer; `opener` is the card, which gets the focus back when the drawer closes. */
   onOpen: (supplier: SupplierPicker, opener: HTMLElement) => void;
 }
 
-/**
- * A supplier of the list: its name, the «Consigliato» (SP-REL, only on the best-ranked one) and «Verificato» badges, the categories,
- * the "from" price and, only if it is measured, how fast it answers. The whole card opens the supplier in the drawer (with the keyboard too); no commission is shown (D3). The cards
- * of a row line up section by section (`AlignedCard`): a section that this supplier lacks is an empty `<div />`.
- */
 export function SupplierCard({ supplier, rows, onOpen }: SupplierCardProps) {
   const { t, i18n } = useTranslation();
   const facts = supplierFacts(supplier, t, i18n.language);
@@ -38,7 +31,6 @@ export function SupplierCard({ supplier, rows, onOpen }: SupplierCardProps) {
         onOpen(supplier, event.currentTarget);
       }}
       data-testid={`marketplace-supplier-${supplier.orgId}`}
-      // The whole card opens the supplier: it lifts under the pointer and sinks under the finger (`CARD_LIFT`, UX round 2026-11).
       className={cn('min-w-0 cursor-pointer py-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring', CARD_LIFT)}
     >
       <div className="flex items-start justify-between gap-x-3">
@@ -50,7 +42,6 @@ export function SupplierCard({ supplier, rows, onOpen }: SupplierCardProps) {
           </span>
         ) : null}
       </div>
-      {/* The categories as one line of words («Pulizie · Manutenzione»), not a badge each: the two badges above are the only marks of the card. */}
       <p className="mt-1 break-words text-sm text-foreground/75" data-testid="marketplace-supplier-categories">
         {supplier.categories.map((category) => getServiceCategoryLabel(category, t)).join(' · ')}
       </p>

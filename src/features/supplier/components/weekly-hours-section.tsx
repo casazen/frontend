@@ -12,22 +12,16 @@ import { formatBands, weekdayOf } from '../lib/supplier-agenda';
 import { WeeklyHoursEditor } from './weekly-hours-editor';
 
 interface WeeklyHoursSectionProps {
-  /** The hours are being changed (the block at the top of the page that asks for them opens the editor too). */
   editing: boolean;
   onEditingChange: (editing: boolean) => void;
 }
 
-/**
- * The hours the supplier works in a normal week, one line a day (all the bands of the day), with the way to change them: the editor opens in
- * this place, up to three bands a day (SP-07b). Today's line is marked.
- */
 export function WeeklyHoursSection({ editing, onEditingChange }: WeeklyHoursSectionProps) {
   const { t } = useTranslation();
   const { data, isLoading, isError, refetch } = useSupplierHours();
   const todayName = weekdayOf(todayInRome());
   const configured = (data?.days ?? []).some((day) => day.bands.length > 0);
 
-  // The editor opens far from the block that asked for it: bring it into view and put the keyboard on its first day.
   useEffect(() => {
     if (editing) focusHoursSection();
   }, [editing]);

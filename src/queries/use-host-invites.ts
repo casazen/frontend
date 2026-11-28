@@ -12,7 +12,6 @@ import type { HostInviteRequest, HostInvitesParams } from '@/types/host-invites'
 
 const KEY = ['host-invites'] as const;
 
-/** A page of the host invites of the scope (admin: all, host: own), filtered and paginated by the server. */
 export function useHostInvites(scope: HostInviteScope, params: HostInvitesParams) {
   return useQuery({
     queryKey: [...KEY, scope, 'list', params],
@@ -24,7 +23,6 @@ export function useHostInviteQuota() {
   return useQuery({ queryKey: [...KEY, 'quota'], queryFn: fetchHostInviteQuota });
 }
 
-/** A new, resent or revoked invite changes the list and the quota. */
 function useInvalidateHostInvites() {
   const queryClient = useQueryClient();
   return () => queryClient.invalidateQueries({ queryKey: KEY });
@@ -35,7 +33,6 @@ export function useCreateHostInvite(scope: HostInviteScope) {
   return useMutation({
     mutationFn: (payload: HostInviteRequest) => createHostInvite(scope, payload),
     onSuccess: invalidate,
-    // A refused invite (quota, taken email) can change the quota shown.
     onError: invalidate,
   });
 }

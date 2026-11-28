@@ -3,13 +3,8 @@ import { MAINTENANCE_URGENCY_WIRE } from '@/features/maintenance-requests/model'
 import enLocale from './locales/en.json';
 import itLocale from './locales/it.json';
 
-/**
- * Words of the app that must not contradict what the code does or each other (the review of the guide, 2026-11-27: INC-26, 28, 41, 42, 45, 47):
- * one name for a thing, one path in the iCal guide, one word per urgency, and no promise that the e-mail of an invitation waits for a check.
- */
 type Tree = { [key: string]: string | string[] | Tree };
 
-/** Every string of a locale, by its path (`a.b.c`; arrays as `a.b.0`). */
 function flatten(tree: Tree, prefix = ''): Map<string, string> {
   const out = new Map<string, string>();
   for (const [key, value] of Object.entries(tree)) {
@@ -47,7 +42,6 @@ describe.each(both)('the words of the app (%s)', (_language, texts) => {
     expect(steps).not.toMatch(/Calendar →/);
     const [channelHint] = endingWith('.exportBookingSteps');
     expect(channelHint).toBeDefined();
-    // The two places speak of the same section, with the same words.
     const section = texts === italian ? /sincronizzare i calendari/ : /syncing calendars/;
     expect(steps).toMatch(section);
     expect(channelHint).toMatch(section);
@@ -69,7 +63,6 @@ describe.each(both)('the words of the app (%s)', (_language, texts) => {
   });
 
   it('CallsTheUrgencyByTheSameWordInEveryScreen_WhateverTheValueSentToTheServer', () => {
-    // The tenant wizard keeps its keys (bassa, normale, urgente) and the values it sends (Normal, High, Emergency).
     expect(MAINTENANCE_URGENCY_WIRE).toEqual({ bassa: 'Normal', normale: 'High', urgente: 'Emergency' });
     const pairs: Array<[string, string, string]> = [
       ['bassa', 'Normal', 'urgencyNormal'],

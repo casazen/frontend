@@ -10,33 +10,24 @@ import type {
 } from '@/types/org-team.types';
 import { isRentalArea, type PickerProperty, type RentalArea } from '../team-properties';
 
-/** The roles an invitation can give: never the owner. Whether the caller may give each one is for the matrix of the roles to say. */
 export const INVITE_ROLES = ['Admin', 'PropertyManager', 'Collaborator', 'Accountant'] as const;
 
 export type InviteRole = (typeof INVITE_ROLES)[number];
 
-/** What the owner answers in the wizard of the invitation; the wizard holds them as the values of its form and keeps a draft. */
 export interface InviteValues {
-  /** Name and surname, as the owner knows the person: it is in the team page and in the email. */
   name: string;
   email: string;
-  /** The language of the emails of the invitation. */
   language: OrgInvitationLanguage;
   role: InviteRole;
-  /** `short-rent`, `long-rent`: at least one (an administrator has every active area). */
   areas: string[];
   scope: OrgPropertyScope;
-  /** The properties of a collaborator «Solo alcuni». */
   propertyIds: string[];
 }
 
-/** Name of the flow: the draft is kept under it, for the signed-in person in their own organization. */
 export const INVITE_WIZARD_ID = 'account-invite';
 
-/** Name and email are another person's data: they are never written to the draft, the owner types them again after a reload. */
 export const INVITE_DRAFT_EXCLUDE: readonly string[] = ['name', 'email'];
 
-/** Backend `CreateOrgInvitationRequest.Name`: no `<`, `>`, `@`, `/`, `\` and no control character (it goes into an email). */
 const NAME_PATTERN = /^[^<>@/\\\p{C}]*$/u;
 const NAME_MAX = 200;
 const EMAIL_MAX = 255;
@@ -44,7 +35,6 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type StepSchema = ZodType<unknown, FieldValues>;
 
-/** The addresses already in the org, lowercase: who is in the team and who has an invitation that has not been answered. */
 export interface KnownEmails {
   members: ReadonlySet<string>;
   pending: ReadonlySet<string>;
@@ -57,12 +47,6 @@ export function knownEmails(members: readonly OrgMember[] | undefined, invitatio
   };
 }
 
-/**
- * The rules of the steps, checked before the next one opens (the messages are i18n keys, as in every form). The email is checked as
- * it is written: its shape, whether the person is already in the team and whether an invitation is already waiting for it. The role
- * has to be one the caller may give (`assignable`, from the matrix; unknown until it is read, and then the backend decides): an
- * administrator cannot nominate another administrator, and an address that asks for it does not get past the step.
- */
 export function inviteStepSchemas(known: KnownEmails, availableAreas: readonly RentalArea[], assignable?: readonly OrgRole[]): { who: StepSchema; role: StepSchema; where: StepSchema } {
   return {
     who: z.object({
@@ -87,14 +71,12 @@ export function inviteStepSchemas(known: KnownEmails, availableAreas: readonly R
         .enum(INVITE_ROLES, 'team.invite.errors.roleRequired')
         .refine((role) => !assignable || assignable.includes(role), 'team.invite.errors.roleNotAllowed'),
     }),
-    // An administrator has every area whatever was ticked (the picker does not even offer them): it needs none of its own.
     where: z
       .object({ role: z.string(), areas: z.array(z.string()) })
       .refine((values) => availableAreas.some((area) => values.role === 'Admin' || values.areas.includes(area)), { path: ['areas'], error: 'team.invite.errors.areaRequired' }),
   };
 }
 
-/** What `?role=` of the address can ask for: «Invita il commercialista» (`?role=accountant`) and the like. */
 const ROLE_FROM_ADDRESS: Record<string, InviteRole> = {
   admin: 'Admin',
   manager: 'PropertyManager',
@@ -104,7 +86,6 @@ const ROLE_FROM_ADDRESS: Record<string, InviteRole> = {
 
 export interface InviteDefaults {
   values: InviteValues;
-  /** The address asked for something (`?role`, `?property`, `?area`): a draft from before must not take its place. */
   prefilled: boolean;
 }
 
@@ -120,7 +101,6 @@ export function inviteDefaults(search: URLSearchParams, language: OrgInvitationL
   const roleParam = search.get('role');
   if (roleParam && Object.hasOwn(ROLE_FROM_ADDRESS, roleParam)) {
     values.role = ROLE_FROM_ADDRESS[roleParam];
-    // Everything but the collaborator works wherever the org has something: all active areas, the person can take one off.
     if (values.role !== 'Collaborator') values.areas = [...availableAreas];
     prefilled = true;
   }
@@ -144,16 +124,13 @@ export function inviteDefaults(search: URLSearchParams, language: OrgInvitationL
   return { values, prefilled };
 }
 
-/** The role sees everything: the administrator. Its areas are all the active ones, whatever was ticked, and it cannot be limited. */
 export function hasFullAccess(role: OrgRole): boolean {
   return role === 'Owner' || role === 'Admin';
 }
 
-/** What the invitation will really carry: the areas and the properties that make sense for the role and for each other. */
 export interface InviteScope {
   areas: RentalArea[];
   scope: OrgPropertyScope;
-  /** The properties of a «Solo alcuni» collaborator, only those of the areas it works in. */
   propertyIds: string[];
 }
 
@@ -169,7 +146,6 @@ export function inviteScopeOf(values: InviteValues, properties: readonly PickerP
   return { areas, scope: limited ? 'Selected' : 'All', propertyIds };
 }
 
-/** The body of `POST /api/orgs/me/invitations`. */
 export function toInvitationRequest(values: InviteValues, properties: readonly PickerProperty[] | undefined, availableAreas: readonly RentalArea[]): CreateOrgInvitationRequest {
   const { areas, scope, propertyIds } = inviteScopeOf(values, properties, availableAreas);
   return {

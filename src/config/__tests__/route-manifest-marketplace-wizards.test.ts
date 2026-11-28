@@ -18,7 +18,6 @@ describe('route manifest: the guided activation wizards of the Marketplace (E09/
     expect(entry?.context).toBe('short-rent');
     expect(entry?.requiredPermissions).toEqual(['ota.write']);
 
-    // Who may only read the integrations cannot activate one: the backend refuses it too.
     const readOnly = (_context: string, permission: string) => permission !== 'ota.write';
     expect(entry && hasEntryPermission(entry, readOnly)).toBe(false);
     expect(entry && hasEntryPermission(entry, () => true)).toBe(true);
@@ -51,13 +50,11 @@ describe('route manifest: the guided activation wizards of the Marketplace (E09/
   });
 
   it('RouteManifest_Wizards_AreTheAddressesTheCardsOfTheMarketplaceLeadTo', () => {
-    // The pages of the marketplace build these addresses (`marketplace-paths`): the routes are the ones they point to.
     expect(marketplaceActivationPath('Channel', '142')).toBe('/app/short-rent/marketplace/activate/channel/142');
     expect(marketplaceFunctionRequestPath('chat')).toBe('/app/short-rent/marketplace/request/chat');
     expect(marketplacePartnerActivationPath('beds24')).toBe('/app/short-rent/marketplace/partners/beds24/activate');
   });
 
-  // The first import of a page pulls in the whole wizard (its steps, the guided panel of the channel manager): slow on a loaded machine, hence the room.
   it.each(WIZARDS)('RouteManifest_Wizard_%s_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async (path) => {
     const page = await entryOf(path)?.component();
 

@@ -10,30 +10,18 @@ import { useComune, useComuneDatasetStatus, useComuneSearch } from '@/queries/us
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import type { Comune } from '@/types/comune.types';
 
-/** Pause in typing before the search is sent: one request per word, not per key. */
 const SEARCH_DEBOUNCE_MS = 250;
 
 interface ComunePickerProps {
-  /** Id of the input: the caller's `<Label htmlFor>` points at it. */
   id: string;
   /** ISTAT code of the comune chosen (text, leading zeros kept), or null when none is. */
   istatCode: string | null;
-  /** Called with the comune picked from the list, or null when the choice is cleared. */
   onChange: (comune: Comune | null) => void;
-  /**
-   * What the caller already knows about the chosen comune (e.g. the stored city), shown while its details load or
-   * when the API does not know the code any more.
-   */
   fallbackName?: string | null;
   disabled?: boolean;
   invalid?: boolean;
   placeholder?: string;
-  /** `aria-describedby` of the input (hints and errors of the caller). */
   describedBy?: string;
-  /**
-   * Rendered under the "list not available" notice, so the form can still be filled in without the list (a free-text
-   * field). Without it the picker only shows the notice.
-   */
   unavailableFallback?: ReactNode;
   className?: string;
   'data-testid'?: string;
@@ -63,7 +51,6 @@ export function ComunePicker({
   const statusId = useId();
   const status = useComuneDatasetStatus();
 
-  // The comune picked in this session is known at once; a stored code is read from the API.
   const [picked, setPicked] = useState<Comune | null>(null);
   const stored = useComune(istatCode && picked?.istatCode !== istatCode ? istatCode : null);
   const chosen: Comune | null = istatCode
@@ -81,10 +68,8 @@ export function ComunePicker({
   const items = search.data?.items ?? [];
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // A search that answers "list not available" after the status said it was: the list was removed meanwhile.
   const datasetAvailable = status.data?.datasetAvailable === true && search.data?.datasetAvailable !== false;
 
-  // The highlighted option, kept inside the list whatever the answers that arrive meanwhile.
   const activeIndex = items.length === 0 ? -1 : Math.min(Math.max(highlighted, 0), items.length - 1);
 
   const choose = (comune: Comune) => {
@@ -119,7 +104,6 @@ export function ComunePicker({
       setOpen(true);
       setHighlighted(items.length === 0 ? 0 : activeIndex <= 0 ? items.length - 1 : activeIndex - 1);
     } else if (event.key === 'Enter') {
-      // Never submits the form while the list is open: Enter picks the highlighted comune.
       if (open && activeIndex >= 0 && items[activeIndex]) {
         event.preventDefault();
         choose(items[activeIndex]);
@@ -132,7 +116,6 @@ export function ComunePicker({
     }
   };
 
-  // The list of the comuni is loading, or could not be checked: said as it is, never as "not available".
   if (status.isPending) {
     return (
       <div className={cn('space-y-1', className)} data-testid={testId}>
@@ -201,7 +184,6 @@ export function ComunePicker({
       className={cn('relative space-y-1', className)}
       data-testid={testId}
       onBlur={(event) => {
-        // Leaving the picker drops what was typed without a choice; the choice already made stays.
         if (!containerRef.current?.contains(event.relatedTarget as Node | null)) stopTyping();
       }}
     >
@@ -226,7 +208,6 @@ export function ComunePicker({
             setText(event.target.value);
           }}
           onFocus={(event) => {
-            // Start from an empty query: the chosen comune stays until another is picked or the field is cleared.
             if (!typing) event.currentTarget.select();
           }}
           onKeyDown={onKeyDown}
@@ -262,7 +243,6 @@ export function ComunePicker({
               aria-selected={index === activeIndex}
               data-testid={`comune-option-${comune.istatCode}`}
               className={cn('cursor-pointer rounded-sm px-2 py-1.5', index === activeIndex && 'bg-accent text-accent-foreground')}
-              // mousedown, not click: the input must not lose focus (and drop the list) before the choice is made.
               onMouseDown={(event) => {
                 event.preventDefault();
                 choose(comune);

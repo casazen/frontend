@@ -31,7 +31,6 @@ function wrapper(client = new QueryClient({ defaultOptions: { queries: { retry: 
   return ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
 
-/** No answer at all: the call may or may not have reached the server. */
 function lostAnswer(): AxiosError {
   return new AxiosError('Network Error', AxiosError.ERR_NETWORK);
 }
@@ -64,7 +63,6 @@ describe('the send of a reply and of the host review does not go out twice (E05/
       expect(keys).toHaveLength(2);
       expect(keys[0]).toBe(keys[1]);
       expect(String(keys[0])).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
-      // The call is made for the id of the review, which the key of the page holds.
       expect(vi.mocked(otaReviewsApi.replyToOtaReview).mock.calls[0].slice(0, 2)).toEqual([ID, 'Grazie del soggiorno.']);
     });
 
@@ -122,7 +120,6 @@ describe('the send of a reply and of the host review does not go out twice (E05/
       });
 
       const keys = keysOf(vi.mocked(otaReviewsApi.replyToOtaReview).mock.calls);
-      // A 409 is an answer: the next attempt is a new one. A 502 may hide a call that was taken: the next attempt is the same one.
       expect(keys[0]).not.toBe(keys[1]);
       expect(keys[1]).toBe(keys[2]);
     });
@@ -147,7 +144,6 @@ describe('the send of a reply and of the host review does not go out twice (E05/
       expect(toast.success).toHaveBeenCalledTimes(1);
       expect(toast.warning).toHaveBeenCalledWith(expect.stringContaining('Non sappiamo ancora'));
 
-      // A refusal says why, in words, and is no success either.
       await act(async () => {
         await result.current.mutateAsync('Tre.');
       });
@@ -238,8 +234,6 @@ describe('the send of a reply and of the host review does not go out twice (E05/
   });
 });
 
-// A reply that «waits for the check» turns into «published» (or into an error) when the job that reads the channel finds it: no push tells it, so the section of a booking that stays open
-// has to ask again by itself, as the open review does (E05/F06/US02, NF-69).
 describe('the reviews of a booking that stays open are read again by themselves', () => {
   const reviewsOfTheBooking: BookingReviews = {
     bookingId: 'b-1',
@@ -254,7 +248,6 @@ describe('the reviews of a booking that stays open are read again by themselves'
   });
 
   afterEach(() => {
-    // The page is closed first (its interval stops), then the clock is the real one again.
     cleanup();
     vi.useRealTimers();
   });
@@ -263,7 +256,6 @@ describe('the reviews of a booking that stays open are read again by themselves'
     vi.useFakeTimers();
     renderHook(() => useBookingReviews('b-1', true), { wrapper: wrapper() });
 
-    // The first reading is when the page opens.
     await vi.advanceTimersByTimeAsync(0);
     expect(otaReviewsApi.getBookingReviews).toHaveBeenCalledTimes(1);
 
@@ -298,16 +290,12 @@ describe('the reviews of a booking that stays open are read again by themselves'
   });
 });
 
-// The words of a public reply and of the host's review are personal data (they speak of a guest): a send that fails keeps the answer of the server and nothing of the request that
-// carried them, and what the mutation holds is dropped as soon as nobody watches it (`withoutRequest`, `gcTime: 0`) (E05/F06/US02, privacy).
 describe('what a failed send of the words of the host leaves behind', () => {
-  /** A failure as axios builds it: it holds the request that was sent, and the body of that request holds the words. */
   function failureOfTheRequest(body: unknown, status: number, code: string): AxiosError {
     const config = { headers: new AxiosHeaders(), method: 'post', url: '/reviews/ota/x/reply', data: JSON.stringify(body) } as InternalAxiosRequestConfig;
     return new AxiosError('failed', String(status), config, {}, { status, data: { code }, statusText: '', headers: {}, config });
   }
 
-  /** What the hook throws for a send that fails. */
   async function thrownBy(send: () => Promise<unknown>): Promise<AxiosError> {
     let caught: unknown;
     await act(async () => {
@@ -326,7 +314,6 @@ describe('what a failed send of the words of the host leaves behind', () => {
 
   it('useReplyToReview_FailedSend_KeepsTheCodeOfTheAnswerAndNothingOfTheWordsAndTheMutationIsDroppedWhenNobodyWatches', async () => {
     const original = failureOfTheRequest({ text: 'Il signor Rossi era scortese, grazie lo stesso.' }, 502, 'octorate_unavailable');
-    // The failure that axios throws does hold the words: the check below is about what the hook does with it.
     expect(original.config?.data).toContain('Rossi');
     vi.mocked(otaReviewsApi.replyToOtaReview).mockRejectedValue(original);
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -335,15 +322,12 @@ describe('what a failed send of the words of the host leaves behind', () => {
     const failure = await thrownBy(() => result.current.mutateAsync('Il signor Rossi era scortese, grazie lo stesso.'));
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // What a screen turns into words stays: the status and the body of the answer.
     expect(failure.response?.status).toBe(502);
     expect(failure.response?.data).toEqual({ code: 'octorate_unavailable' });
-    // The request does not: not in what is thrown, not in what the mutation holds while it is watched.
     expect(failure.config?.data).toBeUndefined();
     expect(JSON.stringify(failure)).not.toMatch(/Rossi/);
     expect(JSON.stringify(result.current.error)).not.toMatch(/Rossi/);
 
-    // Nobody watches it any more: nothing of it stays in the cache of the mutations.
     unmount();
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });

@@ -6,7 +6,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useSeoTopComuni } from '@/queries/use-admin-seo';
 
-/** Window of the widget: the last 30 days (#300 AC9). */
 const TOP_COMUNI_DAYS = 30;
 
 /**

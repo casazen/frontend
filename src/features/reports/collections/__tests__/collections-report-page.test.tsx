@@ -21,7 +21,6 @@ vi.mock('@/hooks/use-workspace', () => ({
 }));
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn() } }));
 vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/file-download')>()), saveBlobAs: vi.fn() }));
-// The list of the properties, as the hook answers it: with `enabled: false` nothing is asked and there is nothing to choose from.
 const useProperties = vi.hoisted(() => vi.fn());
 vi.mock('@/queries/use-properties', () => ({ useProperties }));
 const PROPERTIES = [
@@ -43,7 +42,6 @@ const UNAVAILABLE_CREDITS: CollectionsReport['credits'] = {
   channels: { available: false, reportedBy: 'channelManager', rows: [], staysWithoutNet: 0 },
 };
 
-/** 1.234,56 EUR over three days, by two payment methods and two channels; the credits are not stored. */
 const COLLECTIONS: CollectionsReport = {
   title: 'Incassato per data, per cassa, dal 01/09/2026 al 30/09/2026',
   basis: 'cash',
@@ -91,7 +89,6 @@ function balanceRow(overrides: Partial<BalancesToCollectReport['rows'][number]>)
 
 type Answer = unknown | (() => unknown);
 
-/** What the server answers to each of the reads of the page; a function is asked at every call. */
 interface Server {
   collections: Answer;
   balances: Answer;
@@ -126,7 +123,6 @@ function renderPage(initialPath = '/app/short-rent/reports/collections') {
   return { client, ...view };
 }
 
-/** The calls of the page to one of the reads. */
 const callsTo = (url: string) => get.mock.calls.filter(([called, config]) => called === url && !(config as { params?: { format?: string } } | undefined)?.params?.format);
 
 describe('CollectionsReportPage (NF-97)', () => {
@@ -136,7 +132,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     granted.clear();
     granted.add('short-rent:payment.read');
     granted.add('short-rent:property.read');
-    // 24 September 2026 is "today" in Rome in these tests: the page opens on September.
     freezeClock(NOON_UTC);
     await i18n.changeLanguage('it');
   });
@@ -146,7 +141,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     vi.useRealTimers();
   });
 
-  // Money: the total, every amount and every share are the server's, written as they are; every cut shows the server's total.
   it('Page_Collections_ShowsTheServerTotalAndTheThreeViewsOfTheSameData', async () => {
     serve({ collections: ok(COLLECTIONS), balances: ok(NOTHING_TO_COLLECT) });
     renderPage();
@@ -155,13 +149,11 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(screen.getByTestId('collections-total-count')).toHaveTextContent('3 pagamenti');
     expect(callsTo('/reports/collections')[0]![1]).toMatchObject({ params: { from: '2026-09-01', to: '2026-09-30' } });
 
-    // By date: a row for each bucket of the server, a day without payments a real zero, and the server's total under them.
     const byDate = screen.getByTestId('collections-by-date');
     expect(within(byDate).getAllByTestId('collections-by-date-row')).toHaveLength(3);
     expect(within(byDate).getByTestId('collections-by-date-total')).toHaveTextContent(/1\.?234,56/);
     expect(within(byDate).getAllByTestId('collections-by-date-row')[2]).toHaveTextContent('0,00');
 
-    // By method: the amount, the payments and the share the server gives.
     fireEvent.click(screen.getByTestId('collections-view-method'));
     const byMethod = await screen.findByTestId('collections-by-method');
     const [card, transfer] = within(byMethod).getAllByTestId('collections-by-method-row');
@@ -172,16 +164,12 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(transfer).toHaveTextContent('19%');
     expect(within(byMethod).getByTestId('collections-by-method-total')).toHaveTextContent(/1\.?234,56/);
 
-    // By channel.
     fireEvent.click(screen.getByTestId('collections-view-channel'));
     const byChannel = await screen.findByTestId('collections-by-channel');
     expect(within(byChannel).getAllByTestId('collections-by-channel-row')[1]).toHaveTextContent('Airbnb');
     expect(within(byChannel).getByTestId('collections-by-channel-total')).toHaveTextContent(/1\.?234,56/);
   });
 
-  // Money: the server adds every property in the currency of the property, with no conversion, and sends no currency with the total and the
-  // cuts. A euro sign would be false for a house in francs, so the figures are the number alone and the page says why above them. The rows
-  // that do carry a currency (the credits, the balances) keep it.
   it('Page_FiguresOfTheCollections_HaveNoCurrencySymbolAndTheNoteIsAboveThem', async () => {
     const withFrancs: CollectionsReport = {
       ...COLLECTIONS,
@@ -203,7 +191,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(note).toHaveTextContent('Importi nella valuta di ogni immobile, sommati senza conversione.');
     expect(note.compareDocumentPosition(total) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
-    // The headline and the three cuts: the number alone, no euro sign, no code.
     const ANY_CURRENCY = /€|EUR|CHF|\$/;
     expect(screen.getByTestId('collections-total-amount')).toHaveTextContent(/^1\.?234,56$/);
     expect(total).not.toHaveTextContent(ANY_CURRENCY);
@@ -213,7 +200,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     fireEvent.click(screen.getByTestId('collections-view-channel'));
     expect(await screen.findByTestId('collections-by-channel')).not.toHaveTextContent(ANY_CURRENCY);
 
-    // The credits of the same page keep the currency of each row.
     expect(screen.getByTestId('collections-credits-stripe-row')).toHaveTextContent('55,00 CHF');
   });
 
@@ -247,7 +233,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(screen.queryByTestId('collections-by-date')).toBeNull();
   });
 
-  // Permission: without payment.read the page asks the server for nothing at all, and says so.
   it('Page_WithoutPaymentRead_AsksTheServerForNothing', async () => {
     granted.clear();
     serve({ collections: ok(COLLECTIONS), balances: ok(NOTHING_TO_COLLECT) });
@@ -259,9 +244,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(screen.queryByTestId('collections-export-csv')).toBeNull();
   });
 
-  // Permission: the list of the properties is another permission (property.read). Without it the list is not asked for (the server would
-  // answer 403 and the shared client would send the app to the page of the missing access): there is no property to choose and the report
-  // covers the whole scope of the person.
   it('Page_WithoutPropertyRead_DoesNotAskForTheListOfPropertiesAndTheReportCoversTheWholeScope', async () => {
     granted.delete('short-rent:property.read');
     serve({ collections: ok(COLLECTIONS), balances: ok(NOTHING_TO_COLLECT) });
@@ -275,10 +257,8 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(callsTo('/reports/balances-to-collect')[0]![1]!.params).toEqual({});
   });
 
-  // Permission: a 403 is said in the page; it is not a report with nothing in it and not the page of the missing access.
   it('Page_403_SaysTheReportIsNotOpenToThePersonOnceAndShowsNoFigure', async () => {
     serve({ collections: { status: 403, data: {} }, balances: { status: 403, data: {} } });
-    // The API turns a 403 into `null`; here the whole stack runs, so the mock answers what axios would resolve with.
     renderPage();
 
     expect(await screen.findByTestId('collections-forbidden')).toHaveTextContent('Non hai accesso a questo report.');
@@ -287,7 +267,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(screen.queryByTestId('collections-balances')).toBeNull();
   });
 
-  // Trust: a 404 (a property that is not the person's) is "not found", also when the cache still holds the old figures of the same read.
   it('Page_404AfterFigures_IsNotFoundAndTheOldFiguresGoAway', async () => {
     let answer: unknown = ok(COLLECTIONS);
     serve({ collections: () => answer, balances: ok(NOTHING_TO_COLLECT) });
@@ -322,8 +301,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(screen.getByTestId('collections-total-amount')).toBeInTheDocument();
   });
 
-  // Money / privacy: the balances link to the booking, show no guest, say "not available" for a figure the channel did not report, and
-  // never put two currencies in one table with one total.
   it('Balances_TwoCurrencies_AreTwoTablesEachWithTheServerTotalOfItsCurrency', async () => {
     const balances: BalancesToCollectReport = {
       ...NOTHING_TO_COLLECT,
@@ -348,11 +325,9 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(within(sections[1]!).getByTestId('collections-balances-currency')).toHaveTextContent('EUR');
     expect(within(sections[1]!).getAllByTestId('collections-balance-row')).toHaveLength(2);
     expect(within(sections[1]!).getByTestId('collections-balance-total')).toHaveTextContent('600,00 €');
-    // No figure of one currency in the table of the other.
     expect(sections[0]).not.toHaveTextContent('€');
     expect(sections[1]).not.toHaveTextContent('CHF');
 
-    // The channel's own reservation: collected is not available (never derived, never zero) and says where the balance comes from.
     const channelRow = within(sections[0]!).getByTestId('collections-balance-row');
     expect(channelRow).toHaveTextContent('Non disponibile');
     expect(within(channelRow).getByTestId('collections-balance-reported')).toBeInTheDocument();
@@ -383,7 +358,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(await screen.findByTestId('collections-balances-empty')).toHaveTextContent('Non c’è nulla da incassare');
   });
 
-  // Trust: credits that the server does not have are said in one sentence and shown with no figure; a total that is partly unknown says so.
   it('Credits_NotAvailable_AreOneSentenceAndNoFigureNeverZero', async () => {
     serve({ collections: ok(COLLECTIONS), balances: ok(NOTHING_TO_COLLECT) });
     renderPage();
@@ -430,11 +404,9 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(screen.getByTestId('collections-credits-reported')).toHaveTextContent('Indicati dal channel manager');
     expect(screen.getByTestId('collections-credits-channel-row')).toHaveTextContent('412,30 €');
     expect(screen.getByTestId('collections-credits-channels-partial')).toHaveTextContent('1 soggiorno');
-    // No vendor is named to the person.
     expect(screen.getByTestId('collections-credits')).not.toHaveTextContent(/stripe|octorate/i);
   });
 
-  // Data: both days are required and checked before the call; a period the server would refuse is asked for nowhere, not even in the file.
   it('Period_TypedDaysWithAMissingDay_AreToldBeforeTheCallAndNothingIsAsked', async () => {
     serve({ collections: ok(COLLECTIONS), balances: ok(NOTHING_TO_COLLECT) });
     renderPage();
@@ -463,13 +435,11 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(callsTo('/reports/collections')).toHaveLength(1);
   });
 
-  // Data: the days are the calendar days of Europe/Rome, with the right last day of the month (28, 29, 30, 31), `yyyy-MM-dd`.
   it.each([
     { name: 'ThirtyDayMonth', now: NOON_UTC, preset: 'thisMonth', from: '2026-09-01', to: '2026-09-30' },
     { name: 'LeapFebruary', now: '2028-03-01T10:00:00Z', preset: 'lastMonth', from: '2028-02-01', to: '2028-02-29' },
     { name: 'ShortFebruary', now: '2027-03-15T10:00:00Z', preset: 'lastMonth', from: '2027-02-01', to: '2027-02-28' },
     { name: 'ThirtyOneDayMonth', now: '2026-12-10T10:00:00Z', preset: 'thisMonth', from: '2026-12-01', to: '2026-12-31' },
-    // 22:30 UTC of 31 March is already 1 April in Rome (CEST): the month is April, not March.
     { name: 'LateEveningIsTheNextDayInRome', now: '2026-03-31T22:30:00Z', preset: 'thisMonth', from: '2026-04-01', to: '2026-04-30' },
     { name: 'LateEveningOfTheSeptemberDay', now: LATE_EVENING_UTC, preset: 'thisMonth', from: '2026-09-01', to: '2026-09-30' },
   ])('Period_AsksTheDaysOfRome_$name', async ({ now, preset, from, to }) => {
@@ -485,7 +455,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(callsTo('/reports/collections').at(-1)![1]!.params.from).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
-  // Permission / data: a chosen property narrows the report and the balances, and the file asks for it too.
   it('Property_Chosen_NarrowsTheReportTheBalancesAndTheFile', async () => {
     serve({ collections: ok(COLLECTIONS), balances: ok(NOTHING_TO_COLLECT), file: () => Promise.resolve({ status: 200, data: new Blob(['x'], { type: 'text/csv' }) }) });
     renderPage();
@@ -502,8 +471,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(fileCall[1]).toMatchObject({ params: { from: '2026-09-01', to: '2026-09-30', propertyId: 'p-2', format: 'csv' }, responseType: 'blob' });
   });
 
-  // Money / data: the file comes from the authenticated API, is saved with a name made of the report and its days, and both buttons stay
-  // off while a request is on its way, so a second click cannot ask for a second file.
   it('Export_WhileAFileIsOnItsWay_BothButtonsAreOffAndTheFileIsSavedUnderTheNameOfTheDays', async () => {
     let finish: (value: unknown) => void = () => undefined;
     const csv = new Blob(['Totale;1234,56'], { type: 'text/csv' });
@@ -542,7 +509,6 @@ describe('CollectionsReportPage (NF-97)', () => {
     expect(fileCall[1]).toMatchObject({ params: { format: 'xlsx' }, responseType: 'blob' });
   });
 
-  // Trust: a file with too many rows is told in words (narrow the period), the person can try again, and nothing is saved.
   it('Export_TooManyRows_IsToldInWordsAndNothingIsSaved', async () => {
     serve({
       collections: ok(COLLECTIONS),
@@ -554,7 +520,6 @@ describe('CollectionsReportPage (NF-97)', () => {
 
     fireEvent.click(screen.getByTestId('collections-export-xlsx'));
 
-    // The cap is said in words: too many rows, the most a sheet can have, and what to do about it.
     const failureText = await screen.findByTestId('collections-export-failure');
     expect(failureText).toHaveTextContent('Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe.');
     expect(failureText).toHaveTextContent('Scegli un periodo più breve e riprova.');

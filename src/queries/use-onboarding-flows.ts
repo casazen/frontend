@@ -3,14 +3,8 @@ import { onboardingApi } from '@/api/onboarding.api';
 import { ONBOARDING_FLOW_KEYS, type FlowPropertiesQuery, type OnboardingFlowKey } from '@/types/onboarding.types';
 import { ONBOARDING_STATUS_KEY } from './use-onboarding-status';
 
-/** The lists of the properties of each flow (`GET /onboarding/flows/{flow}/properties`, NF-106): what a change of a flow invalidates. */
 export const ONBOARDING_FLOWS_KEY = ['onboarding', 'flows'] as const;
 
-/**
- * The six flows over the properties the caller reaches, with how many properties are active, to complete and not available in each (`flows` of
- * `GET /onboarding/status`, NF-106). It is the activation checklist read through its own members: the same query, so a change one screen makes is
- * seen by the other. Derived by the server on every read from what other screens change, so it is read again at every visit.
- */
 export function useFlowSummaries(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ONBOARDING_STATUS_KEY,
@@ -38,11 +32,6 @@ export function useFlowProperties(flow: OnboardingFlowKey | undefined, params: F
   });
 }
 
-/**
- * The same page of properties (same page, size and search) for each of the six flows, one read each, in the order of `ONBOARDING_FLOW_KEYS`: the table of
- * the summary puts the flows side by side. Every flow lists every property the caller reaches, by name, so the same page holds the same properties in
- * each. The reads share their keys with `useFlowProperties`, so a list that is already on screen is not asked again.
- */
 export function useFlowMatrix(params: Omit<FlowPropertiesQuery, 'state'>, options?: { enabled?: boolean }) {
   return useQueries({
     queries: ONBOARDING_FLOW_KEYS.map((flow) => ({

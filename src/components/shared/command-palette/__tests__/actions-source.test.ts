@@ -20,7 +20,6 @@ describe('the actions of the palette (UI-06)', () => {
     });
     expect(byId(items, 'action:new-property')).toMatchObject({ label: 'Aggiungi un immobile', to: '/app/short-rent/properties/create' });
     expect(byId(items, 'action:new-payment')).toMatchObject({ label: 'Registra un pagamento', to: '/app/short-rent/payments/create' });
-    // Nothing of the other areas, no channel (the flag is off), no change of area (there is one).
     expect(byId(items, 'action:new-lease')).toBeUndefined();
     expect(byId(items, 'action:connect-channel')).toBeUndefined();
     expect(items.some((entry) => entry.id.startsWith('action:switch-area'))).toBe(false);
@@ -77,7 +76,6 @@ describe('the actions of the palette (UI-06)', () => {
       subtitle: 'Contratti, inquilini, scadenze e canoni',
       to: '/app/long-rent',
     });
-    // Not to the area the user is in.
     expect(byId(items, 'action:switch-area:short-rent')).toBeUndefined();
   });
 
@@ -138,7 +136,6 @@ describe('the actions of the palette (UI-06)', () => {
     const context = makeContext({ areas: ['short-rent', 'long-rent'], flags: { otaPartnerApi: true } });
     const paths = new Set(ROUTE_MANIFEST.map((entry) => entry.path));
 
-    // The home of another area is the one the workspace gives (the API says it): it is not a page asked of the manifest.
     const pages = actionsSource.getItems(context).filter((candidate) => candidate.to && !candidate.id.startsWith('action:switch-area'));
     expect(pages.length).toBeGreaterThan(4);
     for (const entry of pages) {

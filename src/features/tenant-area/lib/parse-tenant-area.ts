@@ -201,7 +201,6 @@ function updatesOf(value: unknown): TenantMaintenanceUpdate[] {
   return value.flatMap((item) => {
     if (!isRecord(item)) return [];
     const author = typeof item.author === 'string' ? item.author : typeof item.from === 'string' ? item.from : null;
-    // A message from the supplier (quote, price, commercial terms) is not for the tenant.
     if (author && author !== 'Manager' && author !== 'Tenant') return [];
     const body = typeof item.text === 'string' ? item.text : typeof item.body === 'string' ? item.body : '';
     if (body.trim() === '') return [];
@@ -209,10 +208,6 @@ function updatesOf(value: unknown): TenantMaintenanceUpdate[] {
   });
 }
 
-/**
- * Keeps only what a tenant may see. Supplier name, price, quote and payment fields on the payload are dropped, so they
- * cannot be rendered even when the API still sends the host view.
- */
 export function parseTenantMaintenance(data: unknown): TenantMaintenanceRequest {
   const path = '/tenant-area/contracts/:id/maintenance/:id';
   if (!isRecord(data)) fail(path);

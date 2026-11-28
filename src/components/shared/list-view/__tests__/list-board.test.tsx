@@ -21,14 +21,12 @@ beforeEach(async () => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  // `elementFromPoint` is put in place by the tests that drag.
   Reflect.deleteProperty(document, 'elementFromPoint');
 });
 
 const column = (id: string) => document.querySelector<HTMLElement>(`[data-board-column="${id}"]`)!;
 const card = (id: string) => screen.getByTestId(`list-board-card-${id}`);
 
-/** The ghost of the card being dragged: a fixed copy of it, outside the board. */
 const ghost = () => document.body.querySelector<HTMLElement>('[data-board-ghost]');
 
 function pointerAt(target: Element | null) {
@@ -209,7 +207,6 @@ describe('ListView, dragging a card with the mouse', () => {
     pointerAt(column('confirmed'));
 
     press(within(card('s1')).getByText('2026-10-12 → 2026-10-15'));
-    // Not yet picked up: it has not moved far enough to be more than a click.
     fireEvent.pointerMove(window, { clientX: 12, clientY: 12 });
     expect(ghost()).toBeNull();
 
@@ -307,7 +304,6 @@ describe('ListView, dragging a card with the mouse', () => {
     await settle();
 
     expect(clicked).not.toHaveBeenCalled();
-    // The click after that one is the person's again.
     fireEvent.click(link);
     expect(clicked).toHaveBeenCalledTimes(1);
   });

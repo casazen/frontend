@@ -16,7 +16,6 @@ interface CorrectionDialogProps {
   onOpenChange: (open: boolean) => void;
   ownerId: string;
   ownerName: string;
-  /** The currency of the statements of the owner (a correction is made in it); asked when the page does not know it. */
   currency: string | undefined;
 }
 

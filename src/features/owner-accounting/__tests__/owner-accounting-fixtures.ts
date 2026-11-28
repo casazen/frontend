@@ -13,7 +13,6 @@ import type {
   TaxReportingDataset,
 } from '@/types';
 
-/** A month long past: the page may always close it, whatever day the tests run. */
 export const YEAR = 2025;
 export const MONTH = 1;
 export const OWNER_ID = '11111111-1111-4111-8111-111111111111';
@@ -121,7 +120,6 @@ export function payout(overrides: Partial<OwnerPayout> = {}): OwnerPayout {
   };
 }
 
-/** One stay of the facts of a payout, read from the ledger: a stay of 4 nights in the property of the tests, collected by the agency in CasaZen, in the base. */
 export function stayFact(overrides: Partial<PayoutStayFact> = {}): PayoutStayFact {
   return {
     bookingId: BOOKING_ID,
@@ -149,7 +147,6 @@ export function stayFact(overrides: Partial<PayoutStayFact> = {}): PayoutStayFac
   };
 }
 
-/** The facts of a payout as the server reads them: one stay in the base, in euro, with the rule of the tests (21%). */
 export function payoutFacts(overrides: Partial<PayoutFacts> = {}): PayoutFacts {
   return {
     source: 'ledger',

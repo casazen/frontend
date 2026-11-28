@@ -12,14 +12,8 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 
 interface PartLaunchPanelProps {
   partKey?: OnboardingPartKey;
-  /** The page that does the part, resolved against the manifest; `null` when no page is registered (yet) or the person may not open it. */
   launch: ResolvedLaunch | null;
-  /** «Riprendi» for a part that was started, «Fai ora» for one that was not. */
   resuming: boolean;
-  /**
-   * The part has no one way in: it is done, or nobody provides it, or it waits for another one (the part says why instead), or it lists the properties that need doing, each with
-   * its own way in (the notification of the guests in Switzerland).
-   */
   blocked?: boolean;
 }
 

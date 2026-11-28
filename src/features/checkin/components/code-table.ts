@@ -2,9 +2,7 @@ import type { AlloggiatiCodeEntryDto, AlloggiatiCodeList, AlloggiatiCodeTable } 
 
 /** How the forms reach the official Alloggiati tables: guest portal (by token) or host (authenticated). */
 export interface CodeTableSource {
-  /** Scope of the query cache (e.g. the portal token, or `host`). */
   scope: string;
-  /** Tables imported by an admin: only these offer codes. */
   availableTables: readonly AlloggiatiCodeTable[];
   search: (list: AlloggiatiCodeList, query: string) => Promise<AlloggiatiCodeEntryDto[]>;
 }
@@ -16,12 +14,10 @@ const LIST_TABLES: Record<AlloggiatiCodeList, AlloggiatiCodeTable[]> = {
   luoghi: ['Comuni', 'Stati'],
 };
 
-/** True when at least one table of the list has been imported. */
 export function isListAvailable(source: CodeTableSource, list: AlloggiatiCodeList): boolean {
   return LIST_TABLES[list].some((table) => source.availableTables.includes(table));
 }
 
-/** Text shown for an entry. A citizenship uses the adjective (Italiano), a comune keeps its province. */
 export function codeEntryLabel(entry: AlloggiatiCodeEntryDto, purpose: 'place' | 'citizenship' = 'place'): string {
   if (purpose === 'citizenship') return entry.citizenshipLabel || entry.description;
   return entry.province ? `${entry.description} (${entry.province})` : entry.description;

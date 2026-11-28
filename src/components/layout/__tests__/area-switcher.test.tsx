@@ -10,7 +10,6 @@ vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
 import { useWorkspace } from '@/hooks/use-workspace';
 
 function context(contextKey: AppContextKey): ContextBootstrapDto {
-  // The name the backend sends is not the one the user sees any more.
   return { contextKey, displayName: `backend ${contextKey}`, roleKey: contextKey, permissions: [], defaultRoute: `/app/${contextKey}` };
 }
 
@@ -29,7 +28,6 @@ function arrange(contextKeys: AppContextKey[], org: string | null = 'Casa Rossi 
   });
 }
 
-/** The shell reads the organization once and hands its name down. */
 function renderSwitcher(contextKey: AppContextKey, props: { collapsed?: boolean } = {}) {
   return render(<AreaSwitcher contextKey={contextKey} organizationName={organization} {...props} />);
 }
@@ -78,19 +76,16 @@ describe('AreaSwitcher (UI-04a)', () => {
       const trigger = screen.getByRole('button', { name: 'Area attuale: Affitti brevi. Cambia area' });
       expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
       expect(trigger).toHaveAttribute('aria-expanded', 'false');
-      // The visible text is part of the accessible name (WCAG 2.5.3): name and organization.
       expect(trigger).toHaveTextContent('Affitti brevi');
       expect(trigger).toHaveTextContent('Casa Rossi Srl');
     });
 
     it('AreaSwitcher_Opened_ListsOnlyTheAreasOfTheUserInOrderWithTheirDescription', async () => {
-      // Contexts in a different order than the selector, and the backend names are not shown.
       arrange(['admin', 'supplier', 'short-rent']);
       renderSwitcher('supplier');
       openByKeyboard(screen.getByTestId('area-switcher'));
 
       const menu = await screen.findByRole('menu');
-      // Radix names the menu after the button that opens it.
       expect(menu).toHaveAccessibleName('Area attuale: Portale fornitori. Cambia area');
       expect(screen.getByTestId('area-switcher')).toHaveAttribute('aria-expanded', 'true');
       const options = within(menu).getAllByRole('menuitemradio');
@@ -204,7 +199,6 @@ describe('AreaSwitcher (UI-04a)', () => {
 
       const tile = container.querySelector('[data-area]');
       expect(tile).toHaveAttribute('data-area', 'short-rent');
-      // The accent is `--color-primary`, which the area sets on <html> (UI-01).
       expect(tile).toHaveClass('bg-primary', 'text-primary-foreground');
     });
   });

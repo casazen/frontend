@@ -7,7 +7,6 @@ import { BeforeAfterSlider } from './before-after-slider';
 import { Reveal } from './reveal';
 import { SectionHead } from './section-head';
 
-/** The comparisons and the photos the home shows; the supplier can have more, the page stays one idea. */
 const MAX_COMPARISONS = 2;
 const MAX_PHOTOS = 8;
 

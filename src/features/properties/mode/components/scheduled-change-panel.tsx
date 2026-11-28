@@ -12,9 +12,7 @@ interface ScheduledChangePanelProps {
   propertyId: string;
   propertyName: string;
   area: ModeArea;
-  /** The change that waits for its day. */
   change: PropertyModeChange;
-  /** Where the person goes once the change is withdrawn: where they came from. */
   backTo: string;
 }
 

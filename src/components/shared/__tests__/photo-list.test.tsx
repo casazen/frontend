@@ -24,7 +24,6 @@ function renderList(props: Partial<PhotoListProps> = {}) {
   return { onChange, ...view };
 }
 
-/** The owner of the list: it saves the new order and passes it back, as a screen does after the answer of the API. */
 function Owner({ initial = ITEMS, ...props }: Partial<PhotoListProps> & { initial?: PhotoListItem[] }) {
   const [items, setItems] = useState(initial);
   return (
@@ -38,10 +37,6 @@ function Owner({ initial = ITEMS, ...props }: Partial<PhotoListProps> & { initia
   );
 }
 
-/**
- * An owner that answers later, as a server does: busy while it saves, the new order only once it has answered (or never, when it
- * refuses). `outcomes` says what each save does, in turn.
- */
 function SlowOwner({ outcomes }: { outcomes: ('saved' | 'refused')[] }) {
   const [items, setItems] = useState(ITEMS);
   const [busy, setBusy] = useState(false);
@@ -124,7 +119,6 @@ describe('PhotoList', () => {
     later.focus();
     fireEvent.click(later);
 
-    // The photo is second now, and its "later" button has the focus: the keyboard can go on moving it.
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Sposta la foto 2 dopo' }));
     expect(screen.getAllByRole('img').map((img) => img.getAttribute('alt'))).toEqual(['Foto b', 'Foto a', 'Foto c']);
   });
@@ -135,7 +129,6 @@ describe('PhotoList', () => {
     const later = screen.getByRole('button', { name: 'Sposta la foto 1 dopo' });
     later.focus();
     fireEvent.click(later);
-    // Saving: nothing has moved yet, and the list says it is busy.
     expect(screen.getAllByRole('img').map((img) => img.getAttribute('alt'))).toEqual(['Foto a', 'Foto b', 'Foto c']);
     expect(screen.getByRole('list')).toHaveAttribute('aria-busy', 'true');
 
@@ -162,7 +155,6 @@ describe('PhotoList', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sposta la foto 1 dopo' }));
     fireEvent.click(screen.getByRole('button', { name: 'Sposta la foto 2 dopo' }));
 
-    // Photo "a" is last: it cannot go later any more, so the focus is on "earlier", which it can still do.
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Sposta la foto 3 prima' }));
     expect(screen.getAllByRole('img').map((img) => img.getAttribute('alt'))).toEqual(['Foto b', 'Foto c', 'Foto a']);
   });
@@ -255,7 +247,6 @@ describe('PhotoList', () => {
   it('PhotoList_PhotoThatDoesNotLoadOrIsARelativePath_ShowsTheFallbackNotABrokenImage', () => {
     renderList({ items: [{ url: 'https://cdn.example/rotta.jpg', alt: 'Foto rotta' }, { url: '/uploads/vecchia.jpg', alt: 'Foto vecchia' }] });
 
-    // A relative path (the old disk of the container) is never an <img>: on the web host it would load index.html.
     expect(screen.queryByRole('img', { name: 'Foto vecchia' })).not.toBeInTheDocument();
     expect(screen.getAllByText('Foto non disponibile')).toHaveLength(1);
 
@@ -275,7 +266,6 @@ describe('PhotoList', () => {
   });
 
   it('PhotoList_ChangeOfOrder_ReturnsUrlsInTheSameOrderAsTheItems', () => {
-    // The items come in the order c, b, a: moving the first one later swaps c and b.
     const { onChange } = renderList({ items: [...ITEMS].reverse() });
 
     fireEvent.click(screen.getByRole('button', { name: 'Sposta la foto 1 dopo' }));
@@ -302,7 +292,6 @@ describe('PhotoList', () => {
 
       act(() => ref.current?.focusAfterRemoval(1));
 
-      // "c" is the second photo now, and it is its "remove" button that has the focus: the keyboard can go on.
       expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Togli la foto 2' }));
     });
 

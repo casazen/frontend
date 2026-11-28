@@ -26,7 +26,6 @@ import { usePeopleRows, type PersonRow } from './people-rows';
 import { areaName } from './team-labels';
 import { ACCOUNT_ROLES_PATH } from './team-paths';
 
-/** One area of the preview: the pages the person finds in its menu (the main ones, and those of «Altro» behind a click), or why it cannot enter. */
 function AreaBlock({ menu }: { menu: AreaMenu }) {
   const { t } = useTranslation();
   const titleId = useId();
@@ -73,7 +72,6 @@ function AreaBlock({ menu }: { menu: AreaMenu }) {
   );
 }
 
-/** The properties the person reaches with the role shown: every one of them, or the ones it was given (named when the list of the member can be read). */
 function ReachedProperties({
   row,
   allOfThem,
@@ -96,10 +94,6 @@ function ReachedProperties({
   return granted.length > 0 ? <ul role="list" className="grid gap-2 text-sm">{granted.map((name, index) => <li key={index} className="break-words border-l-2 border-border pl-3">{name}</li>)}</ul> : <p className="text-sm">{t('team.drawer.noProperties')}</p>;
 }
 
-/**
- * The preview itself, once the person and the matrix are known. The role shown is the one of the person, or the one tried in
- * «E se fosse…» (`?role=` in the address): nothing is changed until «Rendi … » opens the dialog of the role and the person saves it.
- */
 function PersonPreview({ row, callerRole, roles }: { row: PersonRow; callerRole: OrgRole | null; roles: OrgRoleInfo[] }) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
@@ -107,13 +101,11 @@ function PersonPreview({ row, callerRole, roles }: { row: PersonRow; callerRole:
   const [dialog, setDialog] = useState<'role' | 'access' | null>(null);
 
   const current = roles.find((candidate) => candidate.role === row.role);
-  // The roles worth trying: the person's own and the ones the caller may give (never the owner's); the owner has nothing to try.
   const tryable = roles.filter((candidate) => candidate.role === row.role || (candidate.assignable && candidate.role !== 'Owner'));
   const asked = searchParams.get('role');
   const trying = asked === row.role ? undefined : tryable.find((candidate) => candidate.role === asked);
   const shown = trying ?? current;
 
-  // Another role reaches the whole org (only the collaborator can be limited to some properties); the areas stay the person's own.
   const scope = shown?.scopeSupported ? row.propertyScope : 'All';
   const own = useOrgMemberProperties(row.id, row.kind === 'member' && scope === 'Selected');
   const granted = own.data ? own.data.properties.filter((property) => property.granted).map((property) => property.name) : null;
@@ -136,7 +128,6 @@ function PersonPreview({ row, callerRole, roles }: { row: PersonRow; callerRole:
   const choose = (role: OrgRole) => setSearchParams(role === row.role ? {} : { role }, { replace: true });
   const backToToday = () => setSearchParams({}, { replace: true });
 
-  // The one main action is the change of the role; whoever may not change it is offered the roles page instead, and the rest is in «⋯».
   const secondary: PageHeaderMenuItem[] = [];
   if (may.editAccess) secondary.push({ label: t('team.actions.access.label'), onClick: () => setDialog('access'), testId: 'preview-edit-access' });
   if (may.changeRole) secondary.push({ label: t('team.roles.title'), to: ACCOUNT_ROLES_PATH, testId: 'preview-roles-link' });
@@ -259,12 +250,6 @@ function PersonPreview({ row, callerRole, roles }: { row: PersonRow; callerRole:
   );
 }
 
-/**
- * «Cosa vede» (AM-04b-FU2), in the Amministrazione: what one person of the team finds in CasaZen: for each area, whether it can enter
- * and the pages of its menu (read from the route manifest with the permissions of its role, the way the menus themselves decide), the
- * properties it reaches, and what it can do there. «E se fosse…» tries another role without changing anything; «Rendi … » then opens
- * the dialog of the role on that choice. It reads what the page of the people reads (`GET /orgs/me/members`, `/invitations`, `/roles`).
- */
 export function PersonPreviewPage() {
   const { t } = useTranslation();
   const { key = '' } = useParams<{ key: string }>();
@@ -272,7 +257,6 @@ export function PersonPreviewPage() {
   const rolesQuery = useOrgRoles();
 
   const row = rows?.find((candidate) => candidate.key === key);
-  // The one who looks is the row that is itself: the owner or an administrator, which decides what it may do to the others.
   const callerRole = rows?.find((candidate) => candidate.isMe && candidate.kind === 'member')?.role ?? null;
   const roles = Array.isArray(rolesQuery.data?.roles) ? rolesQuery.data.roles : undefined;
 

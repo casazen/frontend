@@ -25,7 +25,6 @@ interface OperationRowProps {
   testId: string;
 }
 
-/** An operation in one row: what it is, where it stands in a sentence, and the button that opens its window (the same look as a tool of the guide). */
 function OperationRow({ title, summary, openLabel, onOpen, testId }: OperationRowProps) {
   return (
     <li className="min-w-0 space-y-2 py-4" data-testid={testId}>
@@ -46,7 +45,6 @@ interface RowProps {
   onOpen: () => void;
 }
 
-/** The notice of non-renewal: when it is on time, or that it was marked as sent, or that it is recorded in the contract. */
 function DisdettaRow({ lease, operations, onOpen }: RowProps) {
   const { t, i18n } = useTranslation();
   const { disdetta } = operations;
@@ -74,10 +72,6 @@ function DisdettaRow({ lease, operations, onOpen }: RowProps) {
   );
 }
 
-/**
- * The renewal: that it can be recorded now (the last stretch before the end of the period), or that it was and where the contract goes on to.
- * While a new renewal can be recorded the old record is history and the row offers the form.
- */
 function RenewalRow({ lease, operations, onOpen }: RowProps) {
   const { t, i18n } = useTranslation();
   const { renewal } = operations;
@@ -98,7 +92,6 @@ function RenewalRow({ lease, operations, onOpen }: RowProps) {
   );
 }
 
-/** The confirmation of the need of a transitory lease: by which day, or that the letter was marked as sent. */
 function NeedConfirmationRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   const { t, i18n } = useTranslation();
   const sent = letterState(operations, 'ConfermaEsigenza')?.sent;
@@ -158,7 +151,6 @@ function CedolareRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   );
 }
 
-/** The minutes of the handover of the property: the lease is ending, so the day it ends and what to prepare. */
 function HandoverRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   const { t, i18n } = useTranslation();
 
@@ -173,7 +165,6 @@ function HandoverRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   );
 }
 
-/** The return of the security deposit: that the statement can be worked out once the lease is ending, that the draft was marked as sent, or how much was returned. */
 function DepositRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   const { t, i18n } = useTranslation();
   const { deposit } = operations;
@@ -200,7 +191,6 @@ function DepositRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   );
 }
 
-/** The withdrawal of the tenant: to record, or recorded with the day the lease ends. */
 function WithdrawalRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   const { t, i18n } = useTranslation();
   const recorded = operations.withdrawal.recorded;

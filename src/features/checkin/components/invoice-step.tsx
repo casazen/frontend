@@ -9,7 +9,6 @@ import type { InvoiceDataField } from '@/types';
 import { emptyInvoiceStep, type InvoiceAnswer, type PublicCheckInFormValues } from '../schemas/checkin.schema';
 
 interface InvoiceStepProps {
-  /** The booking already has the data of an invoice recipient (the context says so, never what it is): the guest is told and may send others. */
   hasInvoiceData: boolean;
 }
 

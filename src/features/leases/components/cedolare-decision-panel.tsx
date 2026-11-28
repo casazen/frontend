@@ -33,7 +33,6 @@ const NOTE_CODES = [
   'questura_not_replaced',
 ];
 
-/** Same bounds as the backend request (`CedolareAdvisoryRequest`). */
 const LIMITS = {
   writtenPages: [1, 1_000],
   lines: [1, 100_000],
@@ -47,10 +46,8 @@ function formatPercent(value: number): string {
   return percentFormat.format(value);
 }
 
-/** Italian thousands separators ("20.000", "1.250,50"): the dots go, the decimal comma becomes a dot. */
 const ITALIAN_THOUSANDS = /^\d{1,3}(\.\d{3})+(,\d+)?$/;
 
-/** Parses an optional field: `undefined` when empty, `null` when invalid. */
 function parseField(value: string, [min, max]: readonly [number, number], integer: boolean): number | undefined | null {
   const trimmed = value.trim().replace(/\s/g, '');
   if (!trimmed) return undefined;
@@ -101,7 +98,6 @@ export function CedolareDecisionPanel({ leaseId, input, onInputChange }: Props) 
   );
 }
 
-/** The sentence the window opens with, and what to do whichever regime is chosen. */
 function Verdict({ data }: { data: CedolareAdvisory }) {
   const { t } = useTranslation();
   const outcome = regimeOutcome(data);
@@ -121,7 +117,6 @@ function Verdict({ data }: { data: CedolareAdvisory }) {
   );
 }
 
-/** The two regimes side by side: a few lines each, in plain words. */
 function Options({ data }: { data: CedolareAdvisory }) {
   const { t } = useTranslation();
   const { cedolare, ordinary } = data;
@@ -173,7 +168,6 @@ function Option({ title, chosen, testId, children }: { title: string; chosen: bo
   );
 }
 
-/** How the figures were worked out, with the rules behind them and what the estimate leaves out. */
 function Breakdown({ data }: { data: CedolareAdvisory }) {
   const { t } = useTranslation();
   const { cedolare, ordinary } = data;
@@ -220,7 +214,6 @@ function Breakdown({ data }: { data: CedolareAdvisory }) {
   );
 }
 
-/** Where the rules are read: the pages the server cites for its figures, as links. */
 function Sources({ data }: { data: CedolareAdvisory }) {
   const { t } = useTranslation();
   const { cedolare, ordinary } = data;
@@ -369,7 +362,6 @@ function Irpef({ irpef }: { irpef: CedolareAdvisory['ordinary']['irpef'] }) {
   );
 }
 
-/** The questions that refine the estimate, all optional: what CasaZen cannot know about the contract and about the landlord. */
 function RefineEstimate({
   pending,
   onSubmit,
@@ -393,7 +385,6 @@ function RefineEstimate({
       otherTaxableIncomeEur: parseField(otherIncome, LIMITS.otherTaxableIncomeEur, false),
     };
     const anyInvalid = Object.values(parsed).some((value) => value === null);
-    // Pages and copies go together: one without the other cannot give the stamp duty.
     const pagesWithoutCopies = (parsed.writtenPages === undefined) !== (parsed.copies === undefined);
     if (anyInvalid || pagesWithoutCopies) {
       setInvalid(true);

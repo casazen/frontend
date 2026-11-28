@@ -1,7 +1,3 @@
-/**
- * The page of the guest check-in lives under `/checkin/{token}` (`PublicSiteLinks.GuestCheckIn` of the server): the token is a secret that opens it. The link is the run of
- * characters with no space that holds that path, whatever comes before it (`https://…`) or after it.
- */
 const CHECK_IN_LINK = /\S*\/checkin\/\S+/gi;
 
 /**

@@ -52,7 +52,6 @@ function Conversation({ site, propertyId }: { site: string; propertyId: string }
     retry: false,
     refetchInterval: (state) => getHttpStatus(state.state.error) === 404 ? false : 12_000,
   });
-  // Without a saved key (or after an interrupted first send), collect the identity needed to open the conversation.
   const startsChat = !access || (!query.data && getHttpStatus(query.error) === 404);
   const loadFailed = !startsChat && !query.data && query.isError;
   const loading = !startsChat && !query.data && !loadFailed;

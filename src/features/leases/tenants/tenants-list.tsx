@@ -10,37 +10,23 @@ import type { TenantListView, TenantRow } from '@/types';
 import { longRentTenantPath } from './paths';
 import { tenantCitizenshipText, tenantEndText, tenantLeaseLine, tenantName, tenantPunctualityText } from './tenant-format';
 
-/** The new contract is where a tenant starts: nobody is added to the list by hand. */
 const LEASE_CREATE_PATH = '/app/long-rent/leases/new';
 
-/**
- * The quick filters of the list and the view of `GET /long-rent/tenants?view=` each one asks the server for. `All` is the plain list,
- * with no parameter. The views are the server's: the list does not work out from the leases who is a former tenant.
- */
 const CHIP_VIEWS: Readonly<Record<string, TenantListView>> = {
   current: 'Current',
   former: 'Former',
   all: 'All',
 };
 
-/** The view of the API for a quick filter of the list. */
 export function tenantViewOfChip(chip: string): TenantListView {
   return CHIP_VIEWS[chip] ?? 'Current';
 }
 
-/** "950,00 €/mese" of the lease the person is described by. */
 function rentLine(tenant: TenantRow, t: TFunction): string | null {
   const first = tenant.leases[0];
   return first && first.monthlyRent > 0 ? t('leases.monthlyRentValue', { amount: formatCurrency(first.monthlyRent) }) : null;
 }
 
-/**
- * The people of the long-term area on the unified list (LR-09), in `server` mode: the quick filters are the views the server knows
- * and the search is the one of the server (`?q=`: the name, in either order, and the property), so the list shows the rows as the API
- * gives them and has no order or filter of its own. At most four columns: the person (with the citizenship and the e-mail the server
- * masked), the lease (property, stage and rent), the punctuality and the end. No phone, no document, no message (decisions D3, D4,
- * LR-D23), and no CSV: a list of names and e-mails is not something to carry away.
- */
 export function buildTenantsList(t: TFunction, language: string, canCreateLease: boolean): ListDefinition<TenantRow> {
   return defineList<TenantRow>({
     key: 'long-rent-tenants',
@@ -131,7 +117,6 @@ export function buildTenantsList(t: TFunction, language: string, canCreateLease:
   });
 }
 
-/** The list of tenants in the words of the person; it follows the language. */
 export function useTenantsList(canCreateLease: boolean): ListDefinition<TenantRow> {
   const { t, i18n } = useTranslation();
   return useMemo(() => buildTenantsList(t, i18n.language, canCreateLease), [t, i18n.language, canCreateLease]);

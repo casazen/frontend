@@ -35,7 +35,6 @@ export interface GuestSupplierOrder {
   decision: string | null;
 }
 
-/** Poll visible order lists while the other party can still change the outcome. */
 export const GUEST_ORDER_REFRESH_MS = 15_000;
 
 export function orderNeedsUpdates(order: GuestSupplierOrder): boolean {

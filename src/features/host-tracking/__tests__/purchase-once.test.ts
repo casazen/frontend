@@ -2,10 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CONSENT_STORAGE_KEY } from '@/lib/cookie-consent';
 import { MAX_REMEMBERED_PURCHASES, PURCHASES_STORAGE_KEY, forgetSentPurchases, purchaseOnce } from '../purchase-once';
 
-/**
- * A booking is one `purchase` of the agency's analytics, never two (E41/F04/US01/T01, NF-149). Money data: a second push of the same booking counts its
- * value twice in the agency's reports. What remembers it is the own `localStorage` of the agency's domain, written only after the consent.
- */
 const stored = () => JSON.parse(window.localStorage.getItem(PURCHASES_STORAGE_KEY) ?? 'null') as string[] | null;
 
 function accept() {
@@ -25,7 +21,6 @@ describe('purchaseOnce', () => {
     accept();
     const push = vi.fn();
 
-    // The first view of the confirmation pushes; a reload, a second tab and the link of the e-mail opened a week later are all the same call again.
     expect(purchaseOnce('booking-1', push)).toBe(true);
     expect(purchaseOnce('booking-1', push)).toBe(false);
     expect(purchaseOnce('booking-1', push)).toBe(false);
@@ -78,7 +73,6 @@ describe('purchaseOnce', () => {
     expect(stored()?.[0]).toBe('booking-10');
     expect(stored()?.at(-1)).toBe(`booking-${MAX_REMEMBERED_PURCHASES + 9}`);
 
-    // The most recent one is still remembered; the one that fell off the list is not.
     expect(purchaseOnce(`booking-${MAX_REMEMBERED_PURCHASES + 9}`, push)).toBe(false);
     expect(purchaseOnce('booking-0', push)).toBe(true);
     expect(stored()).toHaveLength(MAX_REMEMBERED_PURCHASES);
@@ -106,7 +100,6 @@ describe('purchaseOnce', () => {
       throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
     });
 
-    // "Once" could not be kept, so the purchase is not counted.
     expect(purchaseOnce('booking-1', push)).toBe(false);
 
     expect(push).not.toHaveBeenCalled();
@@ -120,7 +113,6 @@ describe('purchaseOnce', () => {
       seenByThePush = stored();
     });
 
-    // A crash between the two loses one purchase and never counts one twice.
     expect(seenByThePush).toEqual(['booking-1']);
   });
 
@@ -133,7 +125,6 @@ describe('purchaseOnce', () => {
 
     expect(window.localStorage.getItem(PURCHASES_STORAGE_KEY)).toBeNull();
     expect(window.localStorage.getItem(CONSENT_STORAGE_KEY)).toBe('accepted');
-    // With nothing to forget it does nothing, and a booking that is opened again after the statistics are allowed once more is pushed again.
     expect(() => forgetSentPurchases()).not.toThrow();
     expect(purchaseOnce('booking-1', vi.fn())).toBe(true);
   });

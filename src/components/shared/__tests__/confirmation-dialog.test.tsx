@@ -199,7 +199,6 @@ describe('ConfirmationDialog (UI-07: requireText and consequences)', () => {
       fireEvent.click(confirmButton());
 
       await waitFor(() => expect(onConfirm).toHaveBeenCalledTimes(1));
-      // The dialog is on the page outside the form, but inside it for React: its own submit has to stop there.
       expect(onSubmit).not.toHaveBeenCalled();
     });
   });

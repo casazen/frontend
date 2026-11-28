@@ -13,14 +13,12 @@ export type RentExpenseCadence = 'Monthly' | 'Bimonthly' | 'Quarterly' | 'Semian
 
 export interface TenantExpenseProposal {
   source: TenantExpenseSource;
-  /** One installment, in euros. */
   installmentAmount: number;
   lastInstallmentAmount: number;
   installments: number;
   annualAmount: number;
   previousConsuntivo: number | null;
   preventivo: number | null;
-  /** True when the amount waits for the consuntivo. A later call must keep the same request. */
   settledAtConsuntivo: boolean;
   periodId: string | null;
   periodLabel: string | null;

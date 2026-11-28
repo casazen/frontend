@@ -6,7 +6,6 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { retryTransientErrors } from '@/lib/query-client';
 import type { ReportReviewPayload, ReviewInviteStatus, SubmitReviewPayload } from '@/types';
 
-/** Reviews per page, on the public page and in the host's list: "Carica altre" asks for the next page. */
 const REVIEWS_PAGE_SIZE = 10;
 
 const PUBLIC_REVIEWS_KEY = 'public-reviews';
@@ -14,12 +13,10 @@ const REVIEW_LINK_KEY = 'review-link';
 const HOST_REVIEWS_KEY = 'host-reviews';
 const REVIEW_INVITE_KEY = 'review-invite';
 
-/** The next page number of a page of reviews, or `undefined` once the last one was read. */
 function nextPageOf(page: { page: number; pageSize: number; totalCount: number }): number | undefined {
   return page.page * page.pageSize < page.totalCount ? page.page + 1 : undefined;
 }
 
-/** The public reviews of a property of the booking site, newest first, a page at a time. */
 export function usePublicReviews(orgSlug: string | undefined, propertyId: string | undefined) {
   return useInfiniteQuery({
     queryKey: [PUBLIC_REVIEWS_KEY, orgSlug, propertyId],
@@ -42,7 +39,6 @@ export function useReviewLink(bookingId: string | undefined, token: string | und
   });
 }
 
-/** The guest's review. No toast: the page shows the outcome (the review published, or what went wrong) itself. */
 export function useSubmitReview(bookingId: string) {
   const queryClient = useQueryClient();
 
@@ -56,7 +52,6 @@ export function useSubmitReview(bookingId: string) {
   });
 }
 
-/** The reviews of the host's properties, newest first. They change from outside (a guest writes), so the list is read again on every visit. */
 export function useHostReviews() {
   return useInfiniteQuery({
     queryKey: [HOST_REVIEWS_KEY],
@@ -68,7 +63,6 @@ export function useHostReviews() {
   });
 }
 
-/** The one answer of the host to a review. */
 export function useReplyToReview() {
   const queryClient = useQueryClient();
 
@@ -82,7 +76,6 @@ export function useReplyToReview() {
   });
 }
 
-/** The report of a review to CasaZen. */
 export function useReportReview() {
   const queryClient = useQueryClient();
 
@@ -96,19 +89,16 @@ export function useReportReview() {
   });
 }
 
-/** Whether the host can ask the guest of a booking for a review, and what already happened; nothing is read while `enabled` is false. */
 export function useReviewInviteStatus(bookingId: string, enabled: boolean) {
   return useQuery({
     queryKey: [REVIEW_INVITE_KEY, bookingId],
     queryFn: () => hostReviewsApi.getInviteStatus(bookingId),
     enabled: enabled && Boolean(bookingId),
     retry: retryTransientErrors(1),
-    // The guest may write the review meanwhile: the state is read again each time the booking is opened.
     refetchOnMount: 'always',
   });
 }
 
-/** Asks the guest for the review: the one email, sent by this call only. */
 export function useSendReviewInvite(bookingId: string) {
   const queryClient = useQueryClient();
 
@@ -119,7 +109,6 @@ export function useSendReviewInvite(bookingId: string) {
       toast.success(i18n.t('hostReviews.toast.inviteSent'));
     },
     onError: (error) => {
-      // A second ask, or a review that arrived meanwhile: the panel shows the real state.
       void queryClient.invalidateQueries({ queryKey: [REVIEW_INVITE_KEY, bookingId] });
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('hostReviews.toast.inviteFailed'));
     },

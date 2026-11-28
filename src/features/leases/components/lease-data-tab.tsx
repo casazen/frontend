@@ -11,7 +11,6 @@ import { isLeasePlaceholderDate, leasePropertyLine } from '../lib/lease-list-for
 import { leaseSheetPath } from '../lib/lease-next-step';
 import { leaseNotBegun, leaseTermEnd, leaseTermFacts, longDay } from '../lifecycle/lifecycle-format';
 
-/** The statuses from which a lease has a plan of the rents to show (the plan is made for a contract signed by everyone). */
 const HAS_RENT_PLAN: readonly LeaseDetail['status'][] = ['Signed', 'RegistrationPending', 'SentToProvider', 'Registered'];
 
 function Fact({ label, children, testId }: { label: string; children: ReactNode; testId?: string }) {
@@ -25,10 +24,6 @@ function Fact({ label, children, testId }: { label: string; children: ReactNode;
   );
 }
 
-/**
- * The people of the lease: name, role and, masked by the server, fiscal code and e-mail. Under the role, the day the landlord checked the
- * identity document when they did (LR-12): a date and nothing more, the document itself is not kept (decision LR-D3).
- */
 export function PartyList({ parties }: { parties: LeaseDetail['parties'] }) {
   const { t, i18n } = useTranslation();
 
@@ -56,7 +51,6 @@ export function PartyList({ parties }: { parties: LeaseDetail['parties'] }) {
               </p>
             ) : null}
           </div>
-          {/* Masked by the server: the clear fiscal code and email never reach the browser (A7-17). */}
           <div className="min-w-0 space-y-0.5 break-words text-sm sm:text-right">
             <p>
               <span className="text-foreground/70">{t('leases.fiscalCodeMasked')}: </span>
@@ -89,12 +83,9 @@ export function PartyList({ parties }: { parties: LeaseDetail['parties'] }) {
 export function LeaseDataTab({ lease, onRequestErasure }: { lease: LeaseDetail; onRequestErasure?: () => void }) {
   const { t } = useTranslation();
   const parties = lease.parties ?? [];
-  // A draft keeps starting values (a date in the year 3000, a rent of 0) for what was not typed yet: shown as to be set.
   const toDefine = t('leaseSheet.toDefine');
   const day = (date: string) => (isLeasePlaceholderDate(date) ? toDefine : formatDate(date));
   const termFacts = leaseTermFacts(lease, t);
-  // A contract signed by everyone whose first day has not come cannot be ended early (LR-TERM): what cancels it is said, with the days of
-  // the rules of the server and no state of its own.
   const rules = useLongRentRules().data;
   const notBegun = leaseNotBegun(lease, todayInRome());
   const conditions = (
@@ -171,7 +162,6 @@ export function LeaseDataTab({ lease, onRequestErasure }: { lease: LeaseDetail; 
             {t('leaseLifecycle.terminate.notStarted', { days: rules.registrationDays })}
           </p>
         ) : null}
-        {/* A notice that came after the last day to give it: said without a number, and CasaZen does not judge it (LR-D29). */}
         {lease.noticeWarning ? (
           <p className="text-sm text-foreground/70" data-testid="lease-notice-warning">
             {t('leaseLifecycle.notice.possiblyLate')}

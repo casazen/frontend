@@ -22,11 +22,6 @@ import { parseTimelineZoom, resolveCalendarAnchor, timelineQuery } from './lib/h
 const BOOKINGS_PATH = '/app/short-rent/bookings';
 const LINK = 'h-auto min-h-11 whitespace-normal py-2';
 
-/**
- * The item a drawer of the Timeline shows. The calendar has no read by id: the item is found in the read of the days on screen,
- * which the address holds (`?from=`, `?zoom=`, `?propertyId=`) and which is the very entry of the cache that the page has just
- * filled, so opening a drawer asks the server for nothing. An address shared with `?detail=` loads the same days itself.
- */
 function useCalendarItem(id: string) {
   const [searchParams] = useSearchParams();
   const query = timelineQuery(
@@ -42,12 +37,10 @@ function useCalendarItem(id: string) {
 
 interface ItemDrawerProps<T extends HostCalendarItem> {
   id: string;
-  /** The kind of item this drawer is for: an id of another kind (an address typed by hand) is not found. */
   matches: (item: HostCalendarItem) => item is T;
   children: (item: T, property: HostCalendarProperty | undefined) => ReactNode;
 }
 
-/** Loading, error ("Riprova") and not found around the content of a drawer of the Timeline. */
 function ItemDrawer<T extends HostCalendarItem>({ id, matches, children }: ItemDrawerProps<T>) {
   const { t } = useTranslation();
   const { calendar, item, property } = useCalendarItem(id);
@@ -72,8 +65,6 @@ function ItemDrawer<T extends HostCalendarItem>({ id, matches, children }: ItemD
 const isBlockItem = (item: HostCalendarItem): item is HostCalendarIcalItem | HostCalendarBlockItem => item.type === 'Ical' || item.type === 'Block';
 const isIcalItem = (item: HostCalendarItem): item is HostCalendarIcalItem => item.type === 'Ical';
 
-/* --------------------------------------------------------------------------------------------- Portal and block */
-
 function BlockContent({ item, property, close }: { item: HostCalendarIcalItem | HostCalendarBlockItem; property?: HostCalendarProperty; close: () => void }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -89,7 +80,6 @@ function BlockContent({ item, property, close }: { item: HostCalendarIcalItem | 
           propertyId={item.propertyId}
           canWrite={workspace?.hasPermission('short-rent', 'booking.write') ?? false}
           canWriteProperty={workspace?.hasPermission('short-rent', 'property.write') ?? false}
-          // The guest tab: the check-in link of the new stay is sent from there (CO-09).
           onStayCreated={(booking) => navigate(`${BOOKINGS_PATH}/${booking.id}?tab=guest`)}
           onBlockDeleted={close}
         />
@@ -103,7 +93,6 @@ function BlockContent({ item, property, close }: { item: HostCalendarIcalItem | 
   );
 }
 
-/** A reservation of a portal, a block of its calendar: where it comes from, the stay it can become and the way to its calendars. */
 export function IcalDrawerContent({ id, close }: DetailContentProps) {
   return (
     <ItemDrawer id={id} matches={isIcalItem}>
@@ -112,7 +101,6 @@ export function IcalDrawerContent({ id, close }: DetailContentProps) {
   );
 }
 
-/** The host's own block: why the nights are closed and, if the host may, the way to open them again. */
 export function BlockDrawerContent({ id, close }: DetailContentProps) {
   return (
     <ItemDrawer id={id} matches={(item): item is HostCalendarBlockItem => item.type === 'Block'}>
@@ -121,7 +109,6 @@ export function BlockDrawerContent({ id, close }: DetailContentProps) {
   );
 }
 
-/** The name of the drawer of a portal's reservation or of a block: the same words as the panel of the month. */
 export function BlockDrawerTitle({ id }: DetailTitleProps) {
   const { t } = useTranslation();
   const { item } = useCalendarItem(id);

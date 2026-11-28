@@ -5,7 +5,6 @@ import i18n from '@/i18n/config';
 import type { MarketplaceCatalogEntry } from '@/types';
 import { PartnerCard } from '../partner-card';
 
-// Made up, as the real partners are entered by the administrator and written nowhere in the code.
 const PARTNER: MarketplaceCatalogEntry = {
   kind: 'Partner',
   code: 'test-cleaning',
@@ -43,7 +42,6 @@ describe('PartnerCard (a partner of the catalog)', () => {
 
     const card = screen.getByTestId('marketplace-partner-test-cleaning');
     expect(within(card).getByRole('heading', { level: 3 })).toHaveTextContent('TEST Cleaning');
-    // The line under the name is the benefit the catalog gives, in the language of the interface; nothing is written in the card.
     expect(card).toHaveTextContent('Cleaning for short stays.');
     expect(card).toHaveTextContent('Pulizie');
     expect(card).toHaveTextContent('Manutenzione');
@@ -57,7 +55,6 @@ describe('PartnerCard (a partner of the catalog)', () => {
     expect(link).toHaveAttribute('target', '_blank');
     expect(link.getAttribute('rel')).toContain('noopener');
     expect(link.getAttribute('rel')).toContain('noreferrer');
-    // The address is the one of the catalog as it is: no parameter, no fragment, nothing about the host or its guests.
     expect(link.getAttribute('href')).not.toMatch(/[?#]/);
     expect(link).toHaveAccessibleName('Scopri TEST Cleaning (si apre in una nuova scheda)');
   });

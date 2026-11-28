@@ -10,29 +10,18 @@ import { GUIDANCE_ICONS } from './guidance-icons';
 import { MrzPositionIllustration } from './mrz-position-illustration';
 
 interface IdentityDocumentCaptureProps {
-  /** The last photo could not be compared: the guest takes it again. */
   refused: boolean;
-  /** What to change in the photo, as codes of the API (empty when it gave none). */
   guidanceCodes: readonly string[];
-  /** The side of the document the next photo is of: the front first (a passport is complete with it), the back when the answer said the document has two sides. */
   side: DocumentSide;
-  /** The document has two sides (the Italian electronic identity card): the page says which photo of the two this is. */
   twoSided: boolean;
-  /** The side with the face was received and is good: the back is what is asked now. */
   frontReceived: boolean;
-  /** A call of the step is in flight, or the photo for one is being made ready (this one or another): the buttons and the file input stay disabled. */
   busy: boolean;
-  /**
-   * The state of the verification says `selfHosted` (E71/F02/US01/T01): the photo is taken with the guided camera, and the file or the camera of the phone is the second way. False on the legacy path,
-   * where the page is the one it always was.
-   */
   selfHosted?: boolean;
   /**
    * The guest took or chose a photo. The guided camera also hands in the difference hash of the frame (a hint for the warning before a back that looks like the front). Resolves `true` when the API
    * answered and `false` when the call failed; the screen of the legacy path does not wait for it.
    */
   onPhoto: (file: File, fingerprint?: string | null) => Promise<boolean> | void;
-  /** The frame the guided camera took looks like the front taken before: a hint only. */
   looksLikeTheFront?: (fingerprint: string) => boolean;
   /** The guest asks for a person: the way out of a document that cannot be read (GDPR art. 22). */
   onRequestOperator: () => void;
@@ -70,7 +59,6 @@ export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided
       data-testid="checkin-identity-document-file"
       onChange={(event) => {
         const file = event.target.files?.[0];
-        // The file input is emptied at once: the page keeps nothing of the picture it was given.
         event.target.value = '';
         if (file) void onPhoto(file);
       }}

@@ -4,10 +4,6 @@ import type { SiteModel } from '@/lib/supplier-site/site-model';
 import { Reveal } from './reveal';
 import { SectionHead } from './section-head';
 
-/**
- * The guarantee and the certifications **the supplier wrote** (SP-13a): CasaZen precompiles none and adds none, so nothing here
- * says "insured", "certified" or "guaranteed" on its own account. "Verificato" is the platform's and lives in the trust bar.
- */
 export function GuaranteeSection({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
   const { guarantee, certs } = model;

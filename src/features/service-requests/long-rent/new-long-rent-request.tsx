@@ -13,25 +13,16 @@ import type { ServiceRequest } from '@/types/service-request';
 import { ServiceRequestForm } from '../components/service-request-form';
 
 interface NewLongRentRequestProps {
-  /** The window is closed: the request was made, or the landlord gave up. */
   onClose: () => void;
-  /** The request was made (the window is closed too). */
   onCreated?: (request: ServiceRequest) => void;
 }
 
-/**
- * «Richiedi intervento» from the list (LR-08b): the window that asks for a request to a supplier is the one every other page uses
- * (`ServiceRequestForm`, which asks for the property it is for), so what comes first is the choice of the property of Affitti
- * lunghi, and it comes only when there is more than one. With one property the window of the request opens at once; with none
- * the landlord is led to add one. It is mounted when the landlord asks, so it starts from nothing every time.
- */
 export function NewLongRentRequest({ onClose, onCreated }: NewLongRentRequestProps) {
   const { t } = useTranslation();
   const properties = useProperties({ mode: 'long' });
   const [selected, setSelected] = useState('');
   const [chosen, setChosen] = useState('');
 
-  // An answer that is not a list (the page of the app where an API answer should be) is a failed load, never an empty list.
   const list = Array.isArray(properties.data) ? properties.data : null;
   const propertyId = list && list.length === 1 ? list[0].id : list?.some((property) => property.id === chosen) ? chosen : '';
 

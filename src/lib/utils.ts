@@ -9,10 +9,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/**
- * Format currency values. Italian and euro by default. The booking site and the widgets do not rely on those defaults: they write the amounts of a
- * guest with `formatMoney` (`lib/money-format.ts`, through `useSiteMoney`, `formatPrice` and `cancellationMoney`), where the currency is only the one of the data.
- */
 export function formatCurrency(amount: number, currency: string = 'EUR', locale: string = 'it-IT'): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
@@ -20,32 +16,19 @@ export function formatCurrency(amount: number, currency: string = 'EUR', locale:
   }).format(amount);
 }
 
-/**
- * The sign a form label writes beside an amount it asks for: `€` for the euro, the code for any other currency (`CHF`). The prices of a
- * house in Switzerland are asked, and shown, in francs (CHF-MONEY).
- */
 export function currencyLabel(currency: string | null | undefined): string {
   return !currency || currency === 'EUR' ? '€' : currency;
 }
 
-/**
- * Format date to display format
- */
 export function formatDate(date: string | Date, formatStr: string = 'dd/MM/yyyy'): string {
   const dateObj = typeof date === 'string' ? parseISO(date) : date;
   return format(dateObj, formatStr);
 }
 
-/**
- * Format date and time
- */
 export function formatDateTime(date: string | Date): string {
   return formatDate(date, 'dd/MM/yyyy HH:mm');
 }
 
-/**
- * Get initials from a name
- */
 export function getInitials(name: string): string {
   return name
     .split(' ')
@@ -55,10 +38,6 @@ export function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-/**
- * Copies text to the clipboard. Uses execCommand fallback when the async Clipboard API
- * is unavailable or fails (common after awaiting a token fetch).
- */
 export async function copyTextToClipboard(text: string): Promise<void> {
   if (navigator.clipboard?.writeText && window.isSecureContext) {
     try {

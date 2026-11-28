@@ -15,12 +15,6 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { useStatements } from '@/queries/statements';
 import type { StatementStatus } from '@/types';
 
-/**
- * «Rendiconti» of the Amministrazione (E06/F05/US01/T02, NF-25): the monthly statements of the agency's owners with the step each one is at, and for each the
- * real PDF and CSV. Every amount is shown in the currency of its statement, exactly as the server wrote it. The backend gives the statements only to the owner
- * and the administrators of an org on the agency plan, so the role and the plan are checked before anything is read (`AgencyFinanceGate`): for anyone else the
- * page says why, and asks nothing.
- */
 export function StatementsPage() {
   const { t } = useTranslation();
   return (
@@ -34,8 +28,6 @@ function StatementsBody() {
   const { t } = useTranslation();
   const money = useExactMoney();
   const [statusFilter, setStatusFilter] = useState<StatementStatus | 'all'>('all');
-  // The statement on screen is looked up in the list every time it is drawn, never kept as a copy: after a step (or someone else's) the list is read again
-  // and the detail shows what the server has, not the state it had when the person opened it.
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data: statements, isPending, error, isError, refetch } = useStatements();
@@ -49,7 +41,6 @@ function StatementsBody() {
   }, [statements, statusFilter]);
 
   const header = <PageHeader title={t('statement.title')} description={t('statement.description')} crumbs="auto" />;
-  // A read that failed with the last answer still in memory (a 404 is told before): the old list is drawn, and says it may be out of date.
   const stale = isError && statements !== undefined && statements !== null;
 
   if (isPending) {

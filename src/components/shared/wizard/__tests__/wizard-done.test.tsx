@@ -59,10 +59,8 @@ describe("WizardDone", () => {
     const secondary = screen.getByRole("link", { name: "Aggiungi un altro immobile" });
     expect(primary).toHaveAttribute("href", "/app/short-rent/properties/p-1");
     expect(secondary).toHaveAttribute("href", "/app/short-rent/properties/new");
-    // No dead end, and nothing else to press: exactly these two ways on.
     expect(screen.getAllByRole("link")).toHaveLength(2);
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
-    // The main action is the filled one, the other is quieter.
     expect(primary.className).toContain("bg-primary");
     expect(secondary.className).not.toContain("bg-primary");
   });

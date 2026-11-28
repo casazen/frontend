@@ -26,7 +26,6 @@ interface Values {
   name: string;
 }
 
-// 09:30 UTC is 10:30 in Rome in November.
 const SAVED_AT = "2026-11-06T09:30:00Z";
 
 const serverDraft = (version: number, name: string): ServerWizardDraft => ({
@@ -134,7 +133,6 @@ describe("WizardShell with a draft on the server", () => {
 
     const dialog = await screen.findByRole("dialog", { name: "Conflitto di versione" });
     expect(within(dialog).getByTestId("wizard-conflict-saved-at")).toHaveTextContent("Versione salvata alle 10:30");
-    // Nothing is decided yet: what was typed here is still in the form.
     expect(screen.getByDisplayValue("Mio")).toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByTestId("wizard-conflict-take-theirs"));

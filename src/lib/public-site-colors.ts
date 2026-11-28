@@ -11,10 +11,8 @@ import {
  * meets AA instead of only the theme's own colors.
  */
 
-/** WCAG 2.1 AA, normal text (1.4.3). */
 export const AA_TEXT_CONTRAST = 4.5;
 
-/** Candidates for the text on a primary fill, in order of preference: white, near-black, pure black. */
 const ON_PRIMARY_CANDIDATES = ['#ffffff', '#111827', '#000000'] as const;
 
 type Rgb = readonly [number, number, number];
@@ -34,13 +32,11 @@ function linearize(channel: number): number {
   return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 }
 
-/** Relative luminance of a hex color (WCAG 2.1 definition), 0 (black) to 1 (white). */
 export function relativeLuminance(hex: string): number {
   const [r, g, b] = toRgb(hex);
   return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
 }
 
-/** Contrast ratio of two hex colors, from 1 to 21 (WCAG 2.1). */
 export function contrastRatio(a: string, b: string): number {
   const la = relativeLuminance(a);
   const lb = relativeLuminance(b);
@@ -60,25 +56,20 @@ export function readableTextOn(fillHex: string): { color: string; ratio: number 
   return { color, ratio: contrastRatio(color, fillHex) };
 }
 
-/** `aHex` mixed with `bHex`: `share` of `bHex` (0 = `aHex`, 1 = `bHex`), channel by channel, as `color-mix(in srgb, ...)` does. */
 export function mixHex(aHex: string, bHex: string, share: number): string {
   const [ar, ag, ab] = toRgb(aHex);
   const [br, bg, bb] = toRgb(bHex);
   return toHex([ar + (br - ar) * share, ag + (bg - ag) * share, ab + (bb - ab) * share]);
 }
 
-/** `colorHex` mixed with black by `amount` (0 = unchanged, 1 = black): the same hue, darker. */
 function darken(colorHex: string, amount: number): string {
   return mixHex(colorHex, '#000000', amount);
 }
 
-/** How much deeper than the primary the fill under the pointer is (the prototype's `color-mix(c 82%, #000)`). */
 const HOVER_DARKEN = 0.18;
 
-/** Where the search for the ink starts: 22% deeper than the primary (`color-mix(c 78%, #000)`); it goes on from there until AA. */
 const INK_DARKEN = 0.22;
 
-/** How much of the primary is in its faint tint, the rest being white (`color-mix(c 13%, #fff)`). */
 const SOFT_SHARE = 0.13;
 
 /**
@@ -96,21 +87,13 @@ export function readableOnSurfaces(colorHex: string, surfaces: readonly string[]
 }
 
 export interface PrimaryColorAnalysis {
-  /** The host's color, `#rrggbb`. */
   primary: string;
-  /** Text color on a primary fill (buttons, hero without photo). */
   onPrimary: string;
-  /** Contrast of `onPrimary` on `primary`: always at least 4.5. */
   onPrimaryRatio: number;
-  /** The primary as text/link hover/focus ring on the page: `primary` itself when it is readable there. */
   primaryText: string;
-  /** True when `primaryText` is not the host's color (it is too light to be read as text on the page). */
   primaryTextAdjusted: boolean;
-  /** The fill under the pointer: the primary 18% deeper, or the primary itself when the deeper one would not hold `onPrimary` at AA. */
   hover: string;
-  /** The faint tint of the primary (13% of it over white): pills, selected rows, icon discs. */
   soft: string;
-  /** The primary as text on its own `soft` tint, on the page and on the cards: the deepest of the texts, always AA on the three. */
   ink: string;
 }
 
@@ -128,7 +111,6 @@ export function analyzePrimaryColor(primaryHex: string, themeId: PublicSiteTheme
   return { primary, onPrimary, onPrimaryRatio, primaryText, primaryTextAdjusted: primaryText !== primary, hover, soft, ink };
 }
 
-/** CSS custom properties of a host primary color (set inline on the themed root): the color and the ones derived from it. */
 export function publicSiteColorVars(
   primaryHex: string | null | undefined,
   themeId: PublicSiteThemeId,
@@ -145,7 +127,6 @@ export function publicSiteColorVars(
   };
 }
 
-/** `publicSiteColorVars` as a `style` prop; undefined when the org uses the theme's own colors. */
 export function publicSiteColorStyle(
   primaryHex: string | null | undefined,
   themeId: PublicSiteThemeId,

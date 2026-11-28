@@ -4,20 +4,15 @@ import { cn } from '@/lib/utils';
 
 export interface MapPinProps {
   id: string;
-  /** What the pill says: a price, or the name of a zone. */
   label: string;
-  /** The whole sentence for a screen reader: name, price, and why the house is not free if it is not. */
   accessibleName: string;
-  /** Position in percent of the frame. */
   x: number;
   y: number;
-  /** Shift in px to keep pins from sitting on top of each other; never more than the approximation of the position allows. */
   dx?: number;
   dy?: number;
   selected: boolean;
   /** Lit because the same item of the list is hovered or focused. */
   active: boolean;
-  /** Emphasised by the page (for instance the house of the page). */
   highlighted: boolean;
   available: boolean;
   onSelect: (id: string) => void;

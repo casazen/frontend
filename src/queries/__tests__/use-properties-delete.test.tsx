@@ -18,7 +18,6 @@ vi.mock('@/api/properties.api', () => ({
 let queryClient: QueryClient;
 const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 
-/** A failed call as the API client rejects it: status and ProblemDetails body. */
 function problem(status: number, data: Record<string, unknown>) {
   return new AxiosError('failed', 'ERR_BAD_REQUEST', undefined, undefined, {
     status,

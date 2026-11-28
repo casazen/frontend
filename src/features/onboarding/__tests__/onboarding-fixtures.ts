@@ -11,7 +11,6 @@ import {
   type OnboardingPlan,
 } from '@/types/onboarding.types';
 
-/** A part of the plan with the values of one that has nothing special; a test changes what it is about. */
 export function part(code: OnboardingPartKey, overrides: Partial<OnboardingPart> = {}): OnboardingPart {
   return {
     code,
@@ -30,7 +29,6 @@ export function part(code: OnboardingPartKey, overrides: Partial<OnboardingPart>
   };
 }
 
-/** The parts each step of the path is made of, as the backend catalog maps them. */
 export const STEP_PARTS: Record<OnboardingPathStepCode, OnboardingPartKey[]> = {
   connectChannels: ['octorateConnection', 'properties', 'channels'],
   checkListings: ['listings'],
@@ -40,7 +38,6 @@ export const STEP_PARTS: Record<OnboardingPathStepCode, OnboardingPartKey[]> = {
   fiscalDocuments: ['fiscalDocuments'],
 };
 
-/** A step of the path: visible while it is neither done nor not available, as the server says it. */
 export function pathStep(code: OnboardingPathStepCode, state: OnboardingPartState = 'open', overrides: Partial<OnboardingPathStep> = {}): OnboardingPathStep {
   return {
     code,
@@ -52,7 +49,6 @@ export function pathStep(code: OnboardingPathStepCode, state: OnboardingPartStat
   };
 }
 
-/** The steps that hang from the connection and the properties (the first step): the parts they are made of require the properties. */
 const STEPS_THAT_WAIT_FOR_THE_CONNECTION: readonly OnboardingPathStepCode[] = ['checkListings', 'pricesCalendar', 'checkInCompliance'];
 
 /**
@@ -103,7 +99,6 @@ export function plan(overrides: Partial<Record<OnboardingPartKey, Partial<Onboar
     messagesAi: part('messagesAi', { state: 'notAvailable', reason: 'not_provided' }),
     fiscalDocuments: part('fiscalDocuments', { state: 'notAvailable', reason: 'not_provided' }),
     partners: part('partners', { state: 'notAvailable', reason: 'not_provided' }),
-    // The common host has no active property in Switzerland: the part does not apply (and the plan does not list it). A test of the Swiss host overrides it.
     guestRegistration: part('guestRegistration', { state: 'notAvailable', reason: 'no_swiss_property', launchTarget: 'guestRegistration' }),
     activation: part('activation', { state: 'blocked', reason: 'required_part_not_done', requires: ['octorateConnection', 'properties'] }),
   };
@@ -116,12 +111,10 @@ export function plan(overrides: Partial<Record<OnboardingPartKey, Partial<Onboar
   };
 }
 
-/** A failed call as the API client raises it: the status and a ProblemDetails body. */
 export function problemError(status: number, body: Record<string, unknown>): AxiosError {
   const config = { headers: new AxiosHeaders() };
   return new AxiosError('Request failed', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data: { status, ...body } });
 }
 
-/** The roles of the membership of the host in Affitti brevi: the owner is the organization administrator, a collaborator is not (`isOrgBillingAdmin`). */
 export const OWNER = [{ contextKey: 'short-rent', roleKey: 'property_owner' }];
 export const COLLABORATOR = [{ contextKey: 'short-rent', roleKey: 'collaborator' }];

@@ -2,7 +2,6 @@ import { BadgeCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 
-/** «Verificato»: the supplier is active and its profile is verified. It says nothing about the payments account. */
 export function VerifiedBadge() {
   const { t } = useTranslation();
   return (

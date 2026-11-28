@@ -2,12 +2,10 @@ import type { ReactNode, RefObject } from 'react';
 import { Clock, CreditCard, MailCheck, XCircle } from 'lucide-react';
 import './confirmation.css';
 
-/** The mark above the title: the drawn tick only for a booking the backend confirmed; every other state has its own icon (D24). */
 export type SealKind = 'tick' | 'mail' | 'clock' | 'card' | 'cross';
 
 function Seal({ kind }: { kind: SealKind }) {
   if (kind === 'tick') {
-    // The ring and the tick draw themselves once; with «reduce motion» they are simply there (`confirmation.css`).
     return (
       <span className="bc-seal" aria-hidden="true">
         <svg viewBox="0 0 64 64" fill="none">
@@ -29,17 +27,10 @@ interface ConfirmationHeroProps {
   title: string;
   titleRef: RefObject<HTMLHeadingElement | null>;
   lead?: ReactNode;
-  /** The one action of the case, and the quiet link beside it. */
   actions?: ReactNode;
-  /** The ticket. */
   aside?: ReactNode;
 }
 
-/**
- * The first screen of the confirmation (DB-06b), with one focal point: the state of the booking in a title, one action, and the
- * ticket beside it. The title is the only `h1` of the page and takes the focus when the page opens or its state changes. In reading
- * order: title, lead, action, ticket.
- */
 export function ConfirmationHero({ seal, title, titleRef, lead, actions, aside }: ConfirmationHeroProps) {
   return (
     <section className="bc-hero" aria-labelledby="bc-title">

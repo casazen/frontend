@@ -48,7 +48,6 @@ describe('the brief of the partner', () => {
 
     expect(rows.map((row) => row.field)).toEqual([...BRIEF_FIELDS]);
     expect(rows.find((row) => row.field === 'address')?.value).toBe('Via Roma 12');
-    // A studio flat has 0 bedrooms: it is a value to copy, not an empty one.
     expect(rows.find((row) => row.field === 'bedrooms')?.value).toBe('0');
     expect(rows.find((row) => row.field === 'cinCode')?.value).toBe('IT015146C2ABCDEFGH');
   });
@@ -60,7 +59,6 @@ describe('the brief of the partner', () => {
   it('briefRows_NoProperty_HasNoRowsAndNothingElseOfTheDataLeaks', () => {
     expect(briefRows(null)).toEqual([]);
     expect(briefRows(undefined)).toEqual([]);
-    // A field the brief does not list is never a row, whatever the data carries.
     const withGuest = { ...DATA, guestName: 'Mario Rossi', bookingId: 'b-1' } as MarketplacePartnerPropertyData;
     expect(JSON.stringify(briefRows(withGuest))).not.toContain('Mario');
     expect(JSON.stringify(briefRows(withGuest))).not.toContain('b-1');
@@ -75,7 +73,6 @@ describe('the step the person comes back to', () => {
     const params = new URLSearchParams(path.slice(path.indexOf('?') + 1));
     expect(params.get('step')).toBe(PARTNER_STEP.welcomeBack);
     expect(params.get('propertyId')).toBe('prop-1');
-    // The returnTo comes back unchanged from the address: the wizard reads it with the same helper as ever.
     expect(readMarketplaceReturnTo(path.slice(path.indexOf('?')))).toBe('/app/short-rent/properties/prop-1?tab=channels');
   });
 
@@ -128,7 +125,6 @@ describe('how the activation is labelled', () => {
   });
 
   it('declarationLabel_VerifiedAtOnAnActivationThatIsStillOnlyDeclared_IsNotVerified', () => {
-    // «Verified» is the backend's word, said by the pair «not declared + verified»: a half of it is not enough.
     expect(declarationLabel({ isDeclared: true, declaredAt: '2026-11-10T00:00:00Z', verifiedAt: '2026-11-11T08:00:00Z' }).kind).toBe('declared');
     expect(declarationLabel({ isDeclared: false, declaredAt: '2026-11-10T00:00:00Z', verifiedAt: null }).kind).toBe('declared');
   });

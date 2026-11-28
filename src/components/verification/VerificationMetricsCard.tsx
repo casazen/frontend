@@ -5,7 +5,6 @@ import { useVerificationMetrics } from '@/queries/verification';
 import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
 import { percentOf } from './verification-model';
 
-/** One figure of the card: its number big, its words under it. */
 function Figure({ label, value, hint, testId }: { label: string; value: string; hint?: string; testId: string }) {
   return (
     <div className="space-y-0.5">

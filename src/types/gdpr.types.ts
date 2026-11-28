@@ -1,31 +1,24 @@
-/** Categories of guest data with their own retention period (API enum `GuestDataCategory`, CO-15). */
 type GuestDataCategory = 'DocumentScans' | 'AlloggiatiData' | 'Marketing' | 'FiscalData';
 
-/** What a privacy event is about (API enum `GuestConsentPurpose`). */
 type GuestConsentPurpose = 'PrivacyNotice' | 'Marketing';
 
-/** What happened (API enum `GuestConsentAction`): a notice is only presented, never "accepted". */
 type GuestConsentAction = 'NoticePresented' | 'NoticeAcknowledged' | 'Granted' | 'Withdrawn' | 'Expired';
 
-/** Who recorded the event (API enum `GuestConsentSource`). */
 type GuestConsentSource = 'GuestPortal' | 'HostOnGuestRequest' | 'RetentionPolicy';
 
 /** Retention of one category for a guest, computed by the API from `Gdpr:Retention` (never a default in code). */
 export interface GuestRetentionScheduleItem {
   category: GuestDataCategory;
-  /** False when the period or its source is missing: nothing of this category is deleted automatically. */
   configured: boolean;
   years?: number | null;
   months?: number | null;
   days?: number | null;
   source?: string | null;
   referenceDate?: string | null;
-  /** Day from which the nightly job applies the period. */
   dueDate?: string | null;
   appliedAt?: string | null;
 }
 
-/** A privacy event as the host sees it (no IP address). */
 export interface GuestConsentHistoryItem {
   purpose: GuestConsentPurpose;
   action: GuestConsentAction;
@@ -35,7 +28,6 @@ export interface GuestConsentHistoryItem {
   note?: string | null;
 }
 
-/** `GET /api/gdpr/guests/{id}` (API `GuestPrivacySummary`). */
 export interface GuestPrivacySummary {
   guestId: string;
   marketing: { granted: boolean; since?: string | null; version: string };

@@ -66,7 +66,6 @@ const BACKEND_PART_REASONS = [
   'issuer_missing',
   'partner_integration_missing',
   'connector_off',
-  // The part «Guest registration» (E29/F02/US01/T02, `OnboardingPlanModels.cs`: `SwissMunicipalityMissing`, `TicinoStructureIdMissing`, `NoSwissProperty`).
   'swiss_municipality_missing',
   'ticino_structure_id_missing',
   'no_swiss_property',
@@ -77,7 +76,6 @@ const BACKEND_PART_REASONS = [
 
 const LANGUAGES = ['it', 'en'] as const;
 
-/** The text of a key in a language, and nothing else: a key with no text answers with the key, and a text that still holds `onboardingPlan.` is a bare key. */
 function textIn(language: (typeof LANGUAGES)[number], key: string): string {
   return i18n.getFixedT(language)(key);
 }
@@ -96,7 +94,6 @@ describe('the codes of the onboarding the backend sends (E10/F01/US04/T01) all h
         expect(textIn(language, flowReasonKey(code)), `${code} (${language})`).not.toContain('onboardingPlan.');
       }
     }
-    // The app knows no flow reason the backend does not send: a code is never kept after the backend drops it.
     expect([...ONBOARDING_FLOW_REASONS].sort()).toEqual([...BACKEND_FLOW_REASONS].sort());
   });
 
@@ -129,7 +126,6 @@ describe('the codes of the onboarding the backend sends (E10/F01/US04/T01) all h
     for (const action of BACKEND_FLOW_ACTIONS) {
       const launch = launchTargetForAction(action);
       expect(launch, action).not.toBeNull();
-      // Every action leads to a page of the manifest the person may open, never to a dead end (the page of the issuance is open only while its flag is on).
       expect(resolveLaunchTarget(launch!.target, launch!.focus ?? null, null, undefined, null, ISSUANCE_ON)?.to, action).toEqual(expect.any(String));
     }
     expect(launchTargetForAction('chooseIssuer')).toEqual({ target: 'fiscal' });

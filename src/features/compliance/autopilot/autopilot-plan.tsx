@@ -4,15 +4,11 @@ import { Clock, Hand, LogOut, Mail, type LucideIcon } from 'lucide-react';
 import type { AutopilotPlan } from '@/types/compliance-autopilot.types';
 import { askChannels, namesOf, type PlanGroups } from './autopilot-model';
 
-/** What the cockpit says only the host can do, besides the stays the assistant looked at: it has no item of the plan, only a number. */
 export interface AutopilotHostOnly {
-  /** Properties to activate (the CIN, the documents). */
   activation: number;
-  /** Stays checked out whose property was not declared ready. */
   turnovers: number;
 }
 
-/** A line of the layer: what, whom, and how, with the icon of who does it. */
 export function AutopilotLine({
   icon: Icon,
   title,
@@ -40,7 +36,6 @@ export function AutopilotLine({
   );
 }
 
-/** A part of the layer: its name and its lines. */
 export function AutopilotSection({ title, testId, children }: { title: string; testId?: string; children: ReactNode }) {
   return (
     <section className="space-y-1" data-testid={testId} aria-label={title}>
@@ -58,11 +53,6 @@ interface AutopilotPlanViewProps {
   hostOnly: AutopilotHostOnly;
 }
 
-/**
- * What the assistant would do, said in three parts: what it does now («Faccio io»), what it leaves for later («Aspetto») and what only
- * the host can do («Resta a te»), each with whom it is about and why. Nothing here is a button but the one that starts it, which the
- * layer holds: the host reads, then confirms.
- */
 export function AutopilotPlanView({ plan, groups, hostOnly }: AutopilotPlanViewProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;

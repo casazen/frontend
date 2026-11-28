@@ -16,7 +16,6 @@ import { ReviewReplySection } from './review-reply';
 
 const PUBLISHED_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
 
-/** What the guest wrote: the stars in words, the marks of the categories, the words and when they were published. */
 function GuestReview({ review }: { review: ReviewThreadData }) {
   const { t, i18n } = useTranslation();
   const titleId = useId();
@@ -68,15 +67,10 @@ function GuestReview({ review }: { review: ReviewThreadData }) {
 
 interface ReviewThreadProps {
   review: ReviewThreadData;
-  /** The heading of the page: the guest, or «Recensione». */
   title: string;
-  /** The host may write the bookings (`booking.write`): the reply, the draft and the host's own review need it. */
   canWrite: boolean;
-  /** Where «Torna ai messaggi» goes (the list as it was left). */
   listPath: string;
-  /** The booking on a screen too narrow to have it beside the review: a button that opens it. */
   bookingDetails?: ReactNode;
-  /** What the host has typed in the reply and in the host's own review: the page keeps it, so a failed reading cannot take the words away. */
   replyText: string;
   onReplyText: (text: string | null) => void;
   hostDraft: HostReviewDraft;
@@ -141,7 +135,6 @@ export function ReviewThread({ review, title, canWrite, listPath, bookingDetails
             <HostReviewSection review={review} canWrite={canWrite} draft={hostDraft} onDraft={onHostDraft} />
           </>
         ) : (
-          // The channel gives no reviews and takes no reply (Booking.com, Vrbo, Expedia), or the connection is off: the one sentence, and nothing in its place.
           <p className="rounded-lg border bg-muted/40 p-3 text-sm" role="status" data-testid="review-thread-limit">
             {reasonText(review.capabilities.reason, t, channelLabel(review.channel, t)) ?? t('reviews.thread.unavailable')}
           </p>

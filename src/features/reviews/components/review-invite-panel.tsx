@@ -9,24 +9,16 @@ import { useSendReviewInvite } from '@/queries/use-reviews';
 import type { ReviewInviteStatus } from '@/types';
 import type { ReviewInviteView } from '../lib/review-invite';
 
-/** Where the host reads and answers its reviews. */
 const REVIEWS_PATH = '/app/short-rent/reviews';
 
 interface ReviewInviteBlockProps {
   bookingId: string;
   status: ReviewInviteStatus;
-  /** What the state says (`reviewInviteViewOf`): never `null` here. */
   view: ReviewInviteView;
   canWrite: boolean;
-  /** The sentence «the guest reviewed» leads to the page of the reviews of the host; the section of the booking, which lists the review itself, leaves it out. */
   showReviewsLink?: boolean;
 }
 
-/**
- * "Chiedi una recensione" on the booking of a stay that is over (DB-12b): the host asks the guest for the review, and one email with the link leaves, once, when the host confirms. Nothing is
- * sent by itself. The block says what happened (asked, reviewed) and, when the host cannot ask, why. It is the part of the one section «Recensioni» of the booking that is about the guests of the
- * booking site (E05/F06/US02): the section decides when to draw it (`reviewInviteViewOf`) and reads the state.
- */
 export function ReviewInviteBlock({ bookingId, status, view, canWrite, showReviewsLink = true }: ReviewInviteBlockProps) {
   const { t, i18n } = useTranslation();
   const send = useSendReviewInvite(bookingId);

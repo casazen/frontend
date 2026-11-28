@@ -20,7 +20,6 @@ import type { AlloggiatiStatusDto } from '@/types/alloggiati.types';
 import type { CheckoutWizardState } from '@/types/compliance.types';
 import { CheckoutWizardPage } from '../checkout-wizard';
 
-/** What the check-out wizard mounts for the guests' data: the editor of the check-in wizard, replaced by a stub that is driven through its own props. */
 const guestsEditor = vi.hoisted(() => vi.fn());
 vi.mock('@/features/checkin/wizard/steps/guests-step', () => ({
   GuestsEditor: (props: { bookingId: string }) => {
@@ -60,7 +59,6 @@ const BOOKING_ID = 'c0c1d2e3-0000-4000-8000-000000000009';
 const PROPERTY_ID = 'c0c1d2e3-0000-4000-8000-0000000000ab';
 const CHECKOUT_PATH = `/app/short-rent/bookings/${BOOKING_ID}/checkout`;
 
-// Clock fixed at noon of 24/09/2026 in Rome: the stay 22/09 → 24/09 departs today.
 const booking = (overrides: Partial<Booking> = {}): Booking => ({
   id: BOOKING_ID,
   propertyId: PROPERTY_ID,
@@ -109,7 +107,6 @@ function wizardState(overrides: Partial<CheckoutWizardState> = {}): CheckoutWiza
   };
 }
 
-/** `GET /bookings/:id/alloggiati/status` as the API answers it. */
 function alloggiatiStatus(dataComplete: boolean): AlloggiatiStatusDto {
   return {
     bookingId: BOOKING_ID,
@@ -155,23 +152,16 @@ function renderPage(options: { connector?: boolean } = {}) {
 }
 
 const next = () => fireEvent.click(screen.getByTestId('checkout-step-next'));
-/** The props the panel gave the editor: the booking, and what the editor tells its owner (the stub has no form): something unsaved is typed, the guests were saved. */
 const editorProps = () => guestsEditor.mock.lastCall![0] as { bookingId: string; onDirtyChange: (dirty: boolean) => void; onSaved: (state: unknown) => void };
 
-/**
- * Lets React finish what it still has to do for the last render: the wizard learns which step's rules apply from an effect of the render, and a click made
- * before that effect has run is checked against the rules of the step before (the failure that `checkout-wizard.test.tsx` settles the same way).
- */
 const settle = () => act(async () => undefined);
 
-/** The wizard is on `step`, settled there, with its main button ready: only then does a click get the rules of that step. */
 async function onStep(step: string) {
   await waitFor(() => expect(screen.getByTestId('checkout-wizard-form')).toHaveAttribute('data-step', step), WAIT);
   await settle();
   await waitFor(() => expect(screen.getByTestId(/^checkout-(step-next|complete-button)$/)).toBeEnabled(), WAIT);
 }
 
-/** Walks to the Alloggiati step with the departure confirmed. */
 async function goToAlloggiati() {
   await onStep('stay-summary');
   fireEvent.click(screen.getByTestId('checkout-confirm-departure'));
@@ -239,9 +229,7 @@ describe('Checkout wizard without exits (E08/F04/US01)', { timeout: 30000 }, () 
 
     const panel = await screen.findByTestId('checkout-guest-data-subflow', undefined, WAIT);
     expect(within(panel).getByTestId('guests-editor-stub')).toBeInTheDocument();
-    // The guests editor of the check-in wizard, for this booking: one component, not a copy.
     expect(editorProps().bookingId).toBe(BOOKING_ID);
-    // The host is still in the wizard, on the same step.
     expect(screen.queryByTestId('booking-detail-stub')).not.toBeInTheDocument();
     expect(screen.getByTestId('checkout-wizard-form')).toHaveAttribute('data-step', 'alloggiati');
   });
@@ -280,13 +268,11 @@ describe('Checkout wizard without exits (E08/F04/US01)', { timeout: 30000 }, () 
   it('CheckoutWizardPage_DoneAfterSaving_ReadsTheAlloggiatiStatusAgainAndTheStepShowsTheNewState', async () => {
     renderPage();
     await goToAlloggiati();
-    // The data of the guests are incomplete as the wizard opened.
     expect(await screen.findByText(i18n.t('compliance.checkout.alloggiati.dataIncomplete'), undefined, WAIT)).toBeInTheDocument();
     const readsBefore = vi.mocked(alloggiatiApi.getStatus).mock.calls.length;
 
     fireEvent.click(screen.getByTestId('checkout-alloggiati-complete'));
     await screen.findByTestId('checkout-guest-data-subflow', undefined, WAIT);
-    // The guests are saved through the editor (its own "Save guests"), and the server now says the data are complete.
     vi.mocked(alloggiatiApi.getStatus).mockResolvedValue(alloggiatiStatus(true));
     act(() => editorProps().onSaved({}));
     expect(await screen.findByTestId('checkout-guest-data-saved', undefined, WAIT)).toBeInTheDocument();
@@ -307,7 +293,6 @@ describe('Checkout wizard without exits (E08/F04/US01)', { timeout: 30000 }, () 
 
     fireEvent.click(screen.getByTestId('checkout-save-exit'));
 
-    // The save is on its way: the host has not left, and the button does not take a second press.
     await waitFor(() => expect(saveCheckoutProgress).toHaveBeenCalledTimes(2));
     expect(saveCheckoutProgress).toHaveBeenLastCalledWith(
       BOOKING_ID,
@@ -315,7 +300,6 @@ describe('Checkout wizard without exits (E08/F04/US01)', { timeout: 30000 }, () 
     );
     expect(screen.queryByTestId('booking-detail-stub')).not.toBeInTheDocument();
     expect(screen.getByTestId('checkout-save-exit')).toBeDisabled();
-    // Nothing else of the wizard takes a press meanwhile.
     expect(screen.getByTestId('checkout-step-next')).toBeDisabled();
 
     await act(async () => finishSaving(wizardState({ currentStep: 'alloggiati' })));
@@ -366,7 +350,6 @@ describe('Checkout wizard without exits (E08/F04/US01)', { timeout: 30000 }, () 
     fireEvent.click(screen.getByTestId('checkout-save-exit'));
     await waitFor(() => expect(saveCheckoutProgress).toHaveBeenCalledTimes(1));
 
-    // A link of the summary changes the step all the same (it is a link of the page, and the address is the shell's): it saves nothing while the host is leaving.
     fireEvent.click(within(screen.getByTestId('checkout-summary')).getAllByRole('link', { name: /^Modifica / })[0]);
     await waitFor(() => expect(screen.getByTestId('checkout-wizard-form')).toHaveAttribute('data-step', 'stay-summary'));
     await settle();
@@ -419,7 +402,6 @@ describe('Checkout wizard without exits (E08/F04/US01)', { timeout: 30000 }, () 
 describe('The result of the check-out and the channel manager (E08/F04/US01)', { timeout: 30000 }, () => {
   const MIRROR: BookingOctorateSync = { state: 'Synced', lastOperation: 'Create', lastSyncedAt: '2026-09-20T08:00:00Z', errorCode: null, canRetry: false };
 
-  /** The wizard opens on its last step with every earlier answer given: only the readiness of the property and the closing are left. */
   async function closeTheStay() {
     vi.mocked(startCheckoutWizard).mockResolvedValue(
       wizardState({

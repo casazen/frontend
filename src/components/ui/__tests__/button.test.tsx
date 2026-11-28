@@ -59,8 +59,6 @@ describe('Button variants', () => {
   });
 
   it('Button_SoftAndDangerOutline_MeetAaWithTheFallbackColorsOfToday', () => {
-    // Until the semantic tokens exist the colors derive from the tokens of globals.css. Text must be readable on the
-    // normal and on the hover background.
     const primary = themeColor('primary');
     const destructive = themeColor('destructive');
 
@@ -81,7 +79,6 @@ describe('Button variants', () => {
     const danger = screen.getByRole('button', { name: 'Danger' }).className;
     const dangerText = /--color-danger-foreground,(#[0-9a-f]{6})/.exec(danger)?.[1] ?? '';
     expect(contrastRatio(dangerText, WHITE)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
-    // hover:bg-destructive/10 = 10% of the destructive over the surface
     expect(contrastRatio(dangerText, mixOklab(destructive, 10, WHITE))).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
   });
 });
@@ -96,7 +93,6 @@ describe('Button loading', () => {
     const spinner = button.querySelector('svg');
     expect(spinner).toHaveAttribute('aria-hidden', 'true');
     expect(spinner).toHaveClass('animate-spin', 'motion-reduce:animate-none');
-    // The spinner comes before the label.
     expect(button.firstElementChild).toBe(spinner);
   });
 
@@ -114,7 +110,6 @@ describe('Button loading', () => {
 
     expect(onClick).not.toHaveBeenCalled();
     expect(notCancelled).toBe(false);
-    // Not `disabled`: the person who pressed it keeps the focus.
     expect(button).not.toBeDisabled();
     expect(button).toHaveFocus();
   });
@@ -233,7 +228,6 @@ describe('Button iconRight, block and asChild', () => {
 
 describe('Button touch targets', () => {
   it('Button_Sizes_ReachFortyFourPixelsOnTouchScreens', () => {
-    // Mouse and keyboard keep the heights they had (40, 36, 44, 40); only a coarse pointer raises them to 44 px.
     const { rerender } = render(<Button>Predefinito</Button>);
     expect(screen.getByRole('button')).toHaveClass('h-10', 'pointer-coarse:min-h-11');
 

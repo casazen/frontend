@@ -28,7 +28,6 @@ describe('the words of a merge proposal (E07/F01/US04/T03)', () => {
     expect(new Set(words).size).toBe(3);
     for (const reason of ['same_email', 'same_name_birth', 'same_phone', 'same_name_same_property', 'something_new']) {
       const text = reasonLabel(t, reason);
-      // A sentence, never the code and never an unresolved key.
       expect(text).not.toContain('_');
       expect(text).not.toMatch(/^crm\./);
       expect(text.length).toBeGreaterThan(15);

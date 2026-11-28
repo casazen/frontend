@@ -5,17 +5,11 @@ import type { BulkActivateRequest, BulkChoice, BulkSelection } from '@/types/onb
 import { ONBOARDING_FLOWS_KEY } from './use-onboarding-flows';
 import { invalidateOnboarding } from './use-onboarding-plan';
 
-/** Everything the bulk configuration reads (E10/F02, NF-105): the progress and the pilot group. */
 const ONBOARDING_BULK_KEY = ['onboarding', 'bulk'] as const;
 const PILOT_KEY = [...ONBOARDING_BULK_KEY, 'pilot'] as const;
 
-/** How often the progress is read again while the page is open (UX: «142 di 250 pronte» follows what the agency does on other pages). */
 const BULK_PROGRESS_REFETCH_MS = 15_000;
 
-/**
- * What a change of the bulk configuration touches (E10/F03/US03/T02): the progress and the pilot group, the lists of the properties of every flow, the plan and
- * the path, the activation checklist and the «Da fare» list. Only the screens that show them (an active query) ask the server again.
- */
 function invalidateBulk(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: ONBOARDING_BULK_KEY });
   void queryClient.invalidateQueries({ queryKey: ONBOARDING_FLOWS_KEY });
@@ -39,10 +33,6 @@ export function useBulkProgress(options?: { enabled?: boolean }) {
   });
 }
 
-/**
- * How many properties a selection reaches, with a sample of 20 (`POST /onboarding/bulk/preview`). It reads and writes nothing, and the selection is ids and codes of
- * comuni: the mutation is dropped as soon as nothing observes it (`gcTime: 0`) and a failure is kept without the request that was sent (`withoutRequest`).
- */
 export function useBulkPreview() {
   return useMutation({
     mutationFn: async (selection: BulkSelection) => {
@@ -59,7 +49,6 @@ export function useBulkPreview() {
 interface BulkApplyVariables {
   selection: BulkSelection;
   choice: BulkChoice;
-  /** `false` is the check (a dry run: the server writes nothing and says what each property would do); `true` is the apply. Never both asked at once. */
   confirmed: boolean;
 }
 
@@ -87,7 +76,6 @@ export function useBulkApply() {
   });
 }
 
-/** The pilot group: its members, the recommended minimum and the maximum, and how each flow has got on it (`GET /onboarding/bulk/pilot`). Read again at every visit. */
 export function usePilotGroup(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: PILOT_KEY,
@@ -120,12 +108,6 @@ export function useSetPilotGroup() {
   });
 }
 
-/**
- * Activates flows on a cohort, the pilot group or the rest (`POST /onboarding/bulk/activate`): the server checks the prerequisites of each property again and
- * answers one outcome per property and flow. It touches many properties, so the answer is not kept (`gcTime: 0`) and a failure is kept without its request. The
- * others wait for the pilot group: 409 `pilot_group_not_active` while it is not set or not active in every flow asked. 422 `onboarding_flows_empty`,
- * `onboarding_pilot_group_empty`, `onboarding_cohort_invalid`. The other screens read again after it, also when it fails (it may have done a part).
- */
 export function useBulkActivate() {
   const queryClient = useQueryClient();
 
@@ -143,9 +125,7 @@ export function useBulkActivate() {
 }
 
 interface ImportVariables {
-  /** The file as the person chose it: the page never opens it, the server reads it. */
   file: File;
-  /** `true` checks every row and writes nothing; `false` imports only the valid rows. */
   dryRun: boolean;
 }
 

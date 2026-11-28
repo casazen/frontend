@@ -11,9 +11,7 @@ import { istatTakenCareOf } from './istat-coverage-model';
 export type IstatClaim = 'unchanged' | 'covered' | 'seeNotice';
 
 interface IstatClaimOptions {
-  /** The sentence is about the sender in force (the end of the wizard, the panel of the property): it may only be said when that sender is the channel manager. */
   channelManagerSends?: boolean;
-  /** Ask nothing (the person may not read the property). */
   enabled?: boolean;
 }
 
@@ -24,7 +22,6 @@ export function useIstatClaim(propertyId: string, { channelManagerSends = false,
 
   if (!on) return 'unchanged';
   if (coverage.isError) {
-    // What an error leaves in the cache is not an answer. A 404 or a 403 is a property or a flag the notice draws nothing for: the screen is what it was; any other failure is «da verificare».
     const status = getHttpStatus(coverage.error);
     return status === 404 || status === 403 ? 'unchanged' : 'seeNotice';
   }

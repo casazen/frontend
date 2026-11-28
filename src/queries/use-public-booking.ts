@@ -3,7 +3,6 @@ import { publicBookingApi } from '@/api/public-booking.api';
 import { isTransientRequestError } from '@/lib/api-errors';
 import type { CreateDirectBookingPayload, DirectBookingQuotePayload, GuestBookingEmailLookup } from '@/types';
 
-/** Confirms the email of a "pay at the property" request (BK-06); errors are shown by the page. */
 export function useConfirmOnSiteRequestEmail() {
   return useMutation({
     mutationFn: ({ bookingId, token }: { bookingId: string; token: string }) =>
@@ -18,10 +17,6 @@ export function useCreateDirectBooking() {
   });
 }
 
-/**
- * Checkout price from the backend (`POST /public/bookings/quote`). `null` while the stay is incomplete.
- * The previous quote stays visible while a new one loads.
- */
 export function useDirectBookingQuote(payload: DirectBookingQuotePayload | null) {
   return useQuery({
     queryKey: ['public-booking-quote', payload],
@@ -33,10 +28,6 @@ export function useDirectBookingQuote(payload: DirectBookingQuotePayload | null)
   });
 }
 
-/**
- * Real state of a checkout (BK-07), read with its checkout token. The outcome page drives the polling (backoff while the
- * state is intermediate). Network errors are retried a few times; a 4xx (wrong link) is not.
- */
 export function useCheckoutOutcome(bookingId: string, token: string) {
   return useQuery({
     queryKey: ['checkout-outcome', bookingId, token] as const,
@@ -47,7 +38,6 @@ export function useCheckoutOutcome(bookingId: string, token: string) {
   });
 }
 
-/** The client secret of the booking's own intent, to pay the same hold again (BK-07); errors are shown by the page. */
 export function useResumeCheckoutPayment() {
   return useMutation({
     mutationFn: ({ bookingId, token }: { bookingId: string; token: string }) =>
@@ -55,10 +45,6 @@ export function useResumeCheckoutPayment() {
   });
 }
 
-/**
- * Emails the online check-in link of a booking of "Le mie prenotazioni" again (code + email in the body; the booking itself is
- * read with the guest session, `useGuestBooking`).
- */
 export function useSendGuestCheckInLink() {
   return useMutation({
     mutationFn: (payload: GuestBookingEmailLookup) => publicBookingApi.sendGuestCheckInLink(payload),

@@ -12,12 +12,6 @@ import { useState, useMemo } from 'react';
 import { Select } from '@/components/ui/select';
 import { todayInRome } from '@/lib/stay-dates';
 
-/**
- * The console of the identity verifications (NF-50, NF-51, E03/F04/US03/T02): the guests who wait for a person, each with the property, the arrival,
- * why it is here and the checks that put it here, with a quiet summary of the figures above. While the identity verification is on, the operator proposes a video
- * call from the card of the guest («Videochiamata»: the address of the meeting goes to the guest by e-mail, E22/F02/US01/T02); with it off the operator contacts
- * the guest outside CasaZen as before. Either way the decision is recorded here.
- */
 export function VerificationQueuePage() {
   const { t } = useTranslation();
   const { data: verifications, isLoading, error, refetch, isFetching } = usePendingVerifications();
@@ -33,7 +27,6 @@ export function VerificationQueuePage() {
       if (reasonFilter !== 'all' && queueReasonOf(verification) !== reasonFilter) return false;
       if (deadlineFilter !== 'all') {
         const timing = arrivalTiming(verification.checkInDate, today);
-        // An arrival that cannot be read is never hidden: the operator would not see the guest at all.
         if (timing !== 'unknown' && timing !== deadlineFilter) return false;
       }
       return true;
@@ -44,7 +37,6 @@ export function VerificationQueuePage() {
     return <LoadingScreen message={t('verification.queue.loading')} />;
   }
 
-  // The list that could not be read is an error, even when an older one is still in memory: nothing here may look like an empty queue.
   if (error) {
     return (
       <div className="workspace-page">

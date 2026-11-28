@@ -22,22 +22,9 @@ export const scheduledMessagesApi = {
     return messages as ScheduledMessage[];
   },
 
-  /**
-   * `PUT /api/scheduled-messages/{id}`: the text of this message for this booking only, or an empty text to go back to the template of the routine. 404 for a message out of the reach;
-   * 409 `scheduled_message_not_editable` (it was sent, skipped, cancelled or expired), `scheduled_message_in_progress` (a send holds it) or `scheduled_message_changed` (somebody else
-   * changed it meanwhile); 422 `message_text_invalid` or `template_variable_unknown`.
-   */
   edit: (id: string, text: string | null) => ApiClient.put<ScheduledMessage>(`/scheduled-messages/${encodeURIComponent(id)}`, { text }),
 
-  /**
-   * `POST /api/scheduled-messages/{id}/skip`: the message will not be sent, and the other people who reach the property are told. 409 `scheduled_message_not_editable` for one that already ended,
-   * `scheduled_message_in_progress` for one a send holds.
-   */
   skip: (id: string) => ApiClient.post<ScheduledMessage>(`/scheduled-messages/${encodeURIComponent(id)}/skip`),
 
-  /**
-   * `POST /api/scheduled-messages/{id}/send-now`: sends it at once, whatever its planned time. 409 `scheduled_message_not_sendable` for one that ended, `scheduled_message_in_progress` while
-   * another actor sends it; 422 `scheduled_message_blocked` with `missing` (the codes of what it still waits for) for one that is still blocked; 429 when the host sends too many.
-   */
   sendNow: (id: string) => ApiClient.post<ScheduledMessage>(`/scheduled-messages/${encodeURIComponent(id)}/send-now`),
 };

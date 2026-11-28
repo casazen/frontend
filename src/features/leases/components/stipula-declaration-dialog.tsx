@@ -23,10 +23,6 @@ interface StipulaDeclarationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * Stipula date of a lease already signed whose signing day CasaZen never recorded (older leases, LT-02): once declared
- * the RLI deadline is fixed (LT-04). The date can be declared only once.
- */
 export function StipulaDeclarationDialog({ leaseId, open, onOpenChange }: StipulaDeclarationDialogProps) {
   const { t } = useTranslation();
   const declare = useDeclareStipula();

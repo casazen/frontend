@@ -70,7 +70,6 @@ describe('the model of the reviews (E05/F06/US02, NF-69)', () => {
     it('isReviewThreadKey_ConversationKeys_AreNotReviews', () => {
       expect(isReviewThreadKey('otareview:6f1c9a52-1111-4222-8333-944455556666')).toBe(true);
       expect(isReviewThreadKey('review:6f1c9a52-1111-4222-8333-944455556666')).toBe(true);
-      // The key of a conversation is never read as the one of a review: its endpoints answer 404 to the key of a review, and the other way round.
       for (const key of ['ota:6f1c9a52-1111-4222-8333-944455556666', 'direct:6f1c9a52-1111-4222-8333-944455556666', 'site:6f1c9a52-1111-4222-8333-944455556666', '', 'preview:1']) {
         expect(isReviewThreadKey(key), key).toBe(false);
       }
@@ -126,8 +125,6 @@ describe('the model of the reviews (E05/F06/US02, NF-69)', () => {
       'review_not_available',
       'reply_not_delivered',
       'review_not_delivered',
-      // The code the server SAVES on the review when the channel manager answers 409 to a reply or to the host's review (the one of the HTTP answer is `ota_review_action_not_allowed`):
-      // the page reads it back from the review, so it needs its words too.
       'review_action_not_allowed',
     ])('reasonText_%s_HasWordsInItalianAndEnglish', (code) => {
       expect(reasonText(code, i18n.getFixedT('it'))).toBeTruthy();
@@ -153,7 +150,6 @@ describe('the model of the reviews (E05/F06/US02, NF-69)', () => {
         headers: {},
         config: {} as never,
       });
-      // The general text of this code talks about a message to a guest: a review has its own words.
       expect(reviewProblemMessage(error, t())).toMatch(/non risponde alle recensioni/);
       expect(reviewProblemMessage(new Error('boom'), t())).toBeUndefined();
     });

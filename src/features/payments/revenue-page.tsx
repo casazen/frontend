@@ -14,12 +14,10 @@ import { useProperties } from '@/queries/use-properties';
 import { ArrowLeft } from 'lucide-react';
 import { startOfMonth, todayInRome } from '@/lib/stay-dates';
 
-/** First day of the current month in Europe/Rome. */
 function defaultStartDate(): string {
   return startOfMonth(todayInRome());
 }
 
-/** Today in Europe/Rome. */
 function defaultEndDate(): string {
   return todayInRome();
 }

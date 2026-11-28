@@ -12,7 +12,6 @@ import { OWNER_PORTAL_KEY } from '@/queries/ownerPortal';
 
 const client = vi.hoisted(() => ({ get: vi.fn() }));
 
-// The call is the real one (`ownerPortalApi.getWithholding`, with the parser that keeps only the members of the page): only the transport is replaced.
 vi.mock('@/api/client', () => ({ ApiClient: client }));
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
@@ -24,7 +23,6 @@ vi.setConfig({ testTimeout: 30_000 });
  * members it draws, so that they never reach the screen, the cache of the queries or a log, whatever an answer carries.
  */
 
-// What the server must never send and a faulty or newer one might: a recipient with its fiscal code and address, the stays of the record and the co-owners with their shares.
 const FISCAL_CODE = 'BNCLCU80A01H501Z';
 const ADDRESS = 'Via dei Platani 12, 22100 Como';
 const COOWNER = 'Giulia Verdi';
@@ -95,13 +93,10 @@ describe('the withholding of the owner in the portal never shows what belongs to
     expect(within(cu).getByTestId('owner-cu-base')).toHaveTextContent('1000,00');
     expect(within(cu).getByTestId('owner-cu-withheld')).toHaveTextContent('210,00');
     expect(cu).toHaveTextContent('1919');
-    // The record of a signatory says that it holds the part of other owners, never whose.
     expect(cu).toHaveTextContent(i18n.t('ownerPortal.withholding.cu.attribution.signatory'));
 
-    // Nothing of the recipient, the stays, the co-owners or a guest is on the screen...
     const text = container.textContent ?? '';
     for (const secret of [FISCAL_CODE, ADDRESS, COOWNER, GUEST, 'Luca Bianchi', 'BK-1', '2026-10-10']) expect(text).not.toContain(secret);
-    // ...and none of it reached the cache of the queries either: the page keeps only the members it draws.
     const cached = JSON.stringify(queries.getQueryCache().getAll().map((query) => query.state.data));
     for (const secret of [FISCAL_CODE, ADDRESS, COOWNER, GUEST, 'recipient', 'shares', 'stays']) expect(cached).not.toContain(secret);
   });
@@ -126,7 +121,6 @@ describe('the withholding of the owner in the portal never shows what belongs to
 
     const cards = await screen.findAllByTestId('owner-cu');
     expect(cards.map((card) => card.getAttribute('data-state'))).toEqual(['Reviewed', 'Submitted', 'Accepted', 'Rejected']);
-    // The portal has no proof of a filing: it tells what the agency recorded, and never that something reached the Revenue Agency or was accepted by it.
     const words = cards.map((card) => card.textContent ?? '').join(' ');
     expect(words).toContain(i18n.t('ownerPortal.withholding.cu.state.submitted'));
     expect(words).toContain(i18n.t('ownerPortal.withholding.cu.state.accepted'));
@@ -141,7 +135,6 @@ describe('the withholding of the owner in the portal never shows what belongs to
     expect(notice).toHaveAttribute('data-state', 'permission');
     expect(screen.queryByTestId('owner-withholding-total')).toBeNull();
     expect(screen.queryByTestId('owner-cu')).toBeNull();
-    // A refusal is not «no withholding»: the page does not say the year is empty.
     expect(screen.queryByTestId('owner-withholding-empty')).toBeNull();
   });
 
@@ -150,7 +143,6 @@ describe('the withholding of the owner in the portal never shows what belongs to
 
     expect(container.textContent).toBe('');
     expect(client.get).not.toHaveBeenCalled();
-    // The query exists, disabled, and has never run: nothing of it is held.
     for (const query of queries.getQueryCache().findAll({ queryKey: [OWNER_PORTAL_KEY, 'withholding'] })) {
       expect(query.state.fetchStatus).toBe('idle');
       expect(query.state.data).toBeUndefined();
@@ -183,7 +175,6 @@ describe('the withholding of the owner in the portal is written in the currency 
     client.get.mockResolvedValue(answer(2026, { currency: '' }));
     renderSection(true);
 
-    // The plain figure, never a euro or a franc the code made up, and a sentence that says why there is no symbol.
     const total = await screen.findByTestId('owner-withholding-total');
     expect(total.textContent?.trim()).toBe('210,00');
     const cu = screen.getByTestId('owner-cu');

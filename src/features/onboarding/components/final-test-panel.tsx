@@ -13,17 +13,14 @@ import type { FlowCheck, TestRunOutcome } from '@/types/onboarding.types';
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** The 404 that says the property has no booking imported from the channel manager to run the test on. */
 const TEST_BOOKING_NOT_FOUND = 'test_booking_not_found';
 
-/** How each outcome looks: an icon and a word, never a color alone (UX-09). */
 const OUTCOME_VIEW: Record<TestRunOutcome, { Icon: LucideIcon; tone: string }> = {
   pass: { Icon: CheckCircle2, tone: 'text-success-foreground' },
   fail: { Icon: XCircle, tone: 'text-danger-foreground' },
   skipped: { Icon: MinusCircle, tone: 'text-foreground/70' },
 };
 
-/** The result of the test on one flow: one line, what it found and, for a fail or a skip, the reasons in plain words. */
 function CheckLine({ check }: { check: FlowCheck }) {
   const { t, i18n } = useTranslation();
   const outcome: TestRunOutcome = check.outcome === 'pass' || check.outcome === 'fail' || check.outcome === 'skipped' ? check.outcome : 'skipped';
@@ -63,7 +60,6 @@ export function FinalTestPanel() {
   const { t } = useTranslation();
   const selectId = useId();
   const [chosen, setChosen] = useState<string | null>(null);
-  // The properties to choose from: the ones with bookings come from the channel manager, so the first page of the bookings flow, the connected ones first.
   const properties = useFlowProperties('Bookings', { page: 1, pageSize: 100 });
   const run = useRunTest();
 
@@ -103,7 +99,6 @@ export function FinalTestPanel() {
         </Button>
       </div>
 
-      {/* Always on screen: it is what makes pressing the button safe. */}
       <p className="text-sm font-medium" data-testid="test-no-effect">
         {t('onboardingPlan.test.noEffect')}
       </p>

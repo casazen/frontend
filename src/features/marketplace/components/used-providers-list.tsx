@@ -11,10 +11,6 @@ interface UsedProvidersListProps {
   providers: readonly MarketplaceActiveProvider[];
 }
 
-/**
- * The CasaZen suppliers the host already asked for a job (the Active tab, AC-NF54-3): the name, how many requests are open, the last kind of work asked, and the way to the
- * page of the supplier. They are the ones the server lists, in its order; nothing is added to them.
- */
 export function UsedProvidersList({ providers }: UsedProvidersListProps) {
   const { t } = useTranslation();
 

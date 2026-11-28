@@ -53,13 +53,10 @@ function WithholdingBody() {
 
   const summaryQuery = useWithholdingSummary(selectedMonth, selectedYear);
   const summary = summaryQuery.data;
-  // The rest is read once the summary came back: a server that refuses the summary (a 403 the read accepts) refuses the rest the same way, and a second refused
-  // read would take the whole app to the page of no access.
   const reconciliation = useTaxReconciliation(selectedYear, summary !== undefined && summary !== null);
   const row = reconciliation.data?.months.find((candidate) => candidate.month === selectedMonth);
   const hasF24 = row?.f24 !== null && row?.f24 !== undefined;
   const f24Query = useF24Record(selectedMonth, selectedYear, hasF24);
-  // The annual data are read only for the CU export, which exists behind the flag of the tax exports (and, like the rest, once the summary came back).
   const { flags } = useFeatureFlags();
   const annual = useAnnualDataset(selectedYear, isFeatureEnabled(flags, 'taxReportingExports') && summary !== undefined && summary !== null);
 
@@ -126,7 +123,6 @@ function WithholdingBody() {
     );
   }
 
-  // The server refuses the summary: the access is not there, and nothing of the page is offered.
   if (summary === null) {
     return (
       <div className="space-y-6" data-testid="withholding-page">
@@ -142,7 +138,6 @@ function WithholdingBody() {
   return (
     <div className="space-y-6" data-testid="withholding-page">
       {header}
-      {/* A failed read with the last answer in memory (a 404 or nothing to show is told before): the figures may be out of date. */}
       {summaryQuery.isError && <StaleReadNotice onRetry={() => void summaryQuery.refetch()} />}
 
       <PlainSection title={t('withholding.summary.title')} data-testid="withholding-summary">

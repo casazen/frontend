@@ -14,13 +14,9 @@ import { CommissionPercents } from './commission-percents';
 type Read<T> = Pick<UseQueryResult<T>, 'data' | 'isPending' | 'isError' | 'error' | 'refetch'>;
 
 interface ChannelsStepProps {
-  /** The flag `ownerInvoicing`: who holds the accounts of the portals is behind it, on the server too (404 while it is off). */
   ownerInvoicing: boolean;
-  /** The listings of the organization, for the table of the exceptions. */
   properties: Read<Property[]>;
-  /** The listings whose holder differs from the default. Not asked while the flag is off. */
   holders: Read<ChannelAccountHolder[]>;
-  /** The commission rules of the portals. */
   rules: Read<ChannelCommissionRuleSet>;
 }
 
@@ -29,12 +25,6 @@ const HOLDERS: ReadonlyArray<{ value: PortalAccountHolder; icon: typeof Building
   { value: 'Agency', icon: Building2 },
 ];
 
-/**
- * Step 5, «Commissioni dei canali» (agencies only; E14/F01/US01/T01, E13/F01/US01/T01, ⚖ I10, I11, R2). First «Di chi è l'account del portale?»: by default the owner's (V1, the
- * suggested one, the one that goes with a mandate with representation) or the agency's (V2), with one line each on what follows (who receives the invoice of the portal, TD17,
- * the recharge to the owner), and the table of the listings where it is the other way round, with a bulk action. Then, for each portal, the percent it keeps when it does not
- * send its commission. Nothing is saved before «Continua».
- */
 export function ChannelsStep({ ownerInvoicing, properties, holders, rules }: ChannelsStepProps) {
   const { t } = useTranslation();
   const { control, setValue } = useFormContext<BillingWizardValues>();
@@ -74,7 +64,6 @@ export function ChannelsStep({ ownerInvoicing, properties, holders, rules }: Cha
                 />
               ))}
             </ChoiceGroup>
-            {/* ⚖ I10: the owner is the default, and it is chosen by the organization here, never fixed in the code. */}
             <p className="text-sm text-foreground/70">{t('billingWizard.channels.holder.hint')}</p>
           </div>
 

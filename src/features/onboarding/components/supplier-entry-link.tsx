@@ -2,9 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 
 interface SupplierEntryLinkProps {
-  /** Supplier registration page (self-serve in any comune of the official list). */
   onRegister: () => void;
-  /** Claim of a supplier profile registered before the account was created. */
   onClaim: () => void;
 }
 

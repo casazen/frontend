@@ -4,13 +4,10 @@ import type { AccessCodeStatusItem } from '@/types';
 
 const ACCESS_CODES_KEY = ['access-codes'] as const;
 
-/** The server answers at most this many properties per page (`GET api/properties/access-codes`). */
 const STATUS_PAGE_SIZE = 100;
 
-/** A stop against a server that never ends its pages; no host has five thousand properties. */
 const MAX_STATUS_PAGES = 50;
 
-/** Every property the caller reaches, page after page: a host with more than one page of properties does not lose the rest. */
 async function fetchAllStatus(): Promise<AccessCodeStatusItem[]> {
   const items: AccessCodeStatusItem[] = [];
   for (let page = 1; page <= MAX_STATUS_PAGES; page += 1) {
@@ -34,10 +31,6 @@ export function useAccessCodeStatus() {
   });
 }
 
-/**
- * Sets or changes the lock code of a property. The code is among the variables of the mutation, so it is not kept: the mutation goes
- * away with the window that sent it (`gcTime: 0`). Saving it reloads the list of states, which is all that comes back.
- */
 export function useSetAccessCode() {
   const queryClient = useQueryClient();
 

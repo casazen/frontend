@@ -1,24 +1,17 @@
 import type { OrgCapabilityLevel, OrgRoleInfo } from '@/types/org-team.types';
 import { buildAccessPreview } from './access-preview-model';
 
-/**
- * The roles the caller may give to a person: the matrix says which (`assignable`, about the caller: the owner gives every role but
- * its own, an administrator everything but the administrator), and the owner role is given to nobody. Nothing while the matrix is
- * still being read.
- */
 export function assignableRoles(roles: readonly OrgRoleInfo[] | undefined): OrgRoleInfo[] {
   return (roles ?? []).filter((role) => role.assignable && role.role !== 'Owner');
 }
 
 const RANK: Record<OrgCapabilityLevel, number> = { No: 0, Read: 1, Yes: 2 };
 
-/** What one capability becomes with the new role: the capability and the level it ends at. */
 export interface RoleChange {
   id: string;
   level: OrgCapabilityLevel;
 }
 
-/** What a capability is for a role and the areas of a person: the level it has there, `No` for what is not even in the areas it enters. */
 function levelsOf(role: OrgRoleInfo, areas: readonly string[]): Map<string, OrgCapabilityLevel> {
   const model = buildAccessPreview(role, areas);
   const levels = new Map<string, OrgCapabilityLevel>();
@@ -28,11 +21,6 @@ function levelsOf(role: OrgRoleInfo, areas: readonly string[]): Map<string, OrgC
   return levels;
 }
 
-/**
- * What changes for a person who goes from the role `from` to `to`, working in `areas`: the capabilities that get better (more) and
- * the ones that get worse (less), each with the level it ends at, in the order of the matrix. A capability of an area the person
- * does not enter does not count, and one of the Amministrazione counts only for a role that has it (the matrix `permissionsByContext`).
- */
 export function roleChanges(from: OrgRoleInfo, to: OrgRoleInfo, areas: readonly string[]): { more: RoleChange[]; less: RoleChange[] } {
   const before = levelsOf(from, areas);
   const after = levelsOf(to, areas);

@@ -1,8 +1,3 @@
-/**
- * ISO 3166-1 alpha-2 country codes (the 249 officially assigned codes, as listed in the public
- * domain tz database file `iso3166.tab`, current as of ISO/TC 46 N1108, 2023-04-05).
- * Display names come from the browser's CLDR data through `Intl.DisplayNames`.
- */
 export const ISO_COUNTRY_CODES = [
   'AD', 'AE', 'AF', 'AG', 'AI', 'AL', 'AM', 'AO', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AW', 'AX', 'AZ',
   'BA', 'BB', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BL', 'BM', 'BN', 'BO', 'BQ', 'BR', 'BS',
@@ -43,7 +38,6 @@ function regionNames(locale: string): Intl.DisplayNames | null {
   }
 }
 
-/** Countries with their name in `locale`, sorted by name (the code stands in for a missing name). */
 export function getCountryOptions(locale: string): CountryOption[] {
   const names = regionNames(locale);
   const collator = new Intl.Collator(locale);

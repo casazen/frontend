@@ -4,43 +4,28 @@ import type { MemberStatus } from '@/lib/status-dictionary';
 import { useOrgInvitations, useOrgMembers } from '@/queries/use-org-team';
 import type { OrgInvitation, OrgMember, OrgPropertyScope, OrgRole } from '@/types/org-team.types';
 
-/** A person of the page: a member of the team, or somebody who was invited and has not answered yet. */
 export interface PersonRow {
-  /** `m-<id>` for a member, `i-<id>` for an invitation: a member and an invitation never share a key. It is what the address calls the row. */
   key: string;
   kind: 'member' | 'invitation';
-  /** The member row or the invitation: what the endpoints that read or change it address. */
   id: string;
   name: string;
   email: string;
   role: OrgRole;
-  /** `short-rent`, `long-rent`. */
   areas: string[];
   propertyScope: OrgPropertyScope;
   status: MemberStatus;
-  /** The person who is looking. */
   isMe: boolean;
-  /** UTC: when the person joined the team, or when the invitation was made. */
   since: string;
-  /** Members: when the access was switched off (UTC). */
   deactivatedAt: string | null;
-  /** Invitations: when the link stops working (UTC). */
   expiresAt: string | null;
-  /** Invitations: the name of the member who invited, when that person is still in the team. */
   invitedByName: string | null;
-  /** Invitations: how many properties a `Selected` collaborator will be given. */
   propertyCount: number;
 }
 
-/** How the team names a member: first and last name, or the e-mail of one who has given none. */
 export function memberName(member: Pick<OrgMember, 'firstName' | 'lastName' | 'email'>): string {
   return [member.firstName, member.lastName].filter(Boolean).join(' ') || member.email;
 }
 
-/**
- * The people of the org in one list: the members as the team has them (owner first), then the invitations that wait for an answer
- * or ran out. An accepted or withdrawn invitation is not a person to show: the member is in the first part, or nobody is.
- */
 export function personRows(members: readonly OrgMember[], invitations: readonly OrgInvitation[], myEmail: string | undefined): PersonRow[] {
   const me = myEmail?.trim().toLowerCase();
   const nameOf = new Map(members.map((member) => [member.userId, memberName(member)]));
@@ -98,7 +83,6 @@ export function usePeopleRows({ fresh = false }: { fresh?: boolean } = {}) {
   const invitations = useOrgInvitations({ fresh });
   const myEmail = user?.email;
 
-  // An answer that is not a list (the page of the app where an API answer should be) is a failed load, never an empty list.
   const memberItems = members.data?.items;
   const loadedMembers = Array.isArray(memberItems) ? memberItems : undefined;
   const loadedInvitations = Array.isArray(invitations.data) ? invitations.data : undefined;

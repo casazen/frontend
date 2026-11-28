@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 
-/** The frame of every state of a guest page of the check-in (the page of the link and the page of the door): the language switcher is always at the top, whatever the page shows below it. */
 export function GuestPageFrame({ switcher, children, testId, embedded = false }: { switcher: ReactNode; children: ReactNode; testId?: string; embedded?: boolean }) {
   if (embedded) return <section className="min-w-0 space-y-5" data-testid={testId}>{children}</section>;
   return (

@@ -6,7 +6,6 @@ const NONE: readonly string[] = [];
 
 function subscribe(onChange: () => void): () => void {
   window.addEventListener(FAVORITES_CHANGED_EVENT, onChange);
-  // Another tab of the same browser saved or forgot a home.
   window.addEventListener('storage', onChange);
   return () => {
     window.removeEventListener(FAVORITES_CHANGED_EVENT, onChange);
@@ -31,7 +30,6 @@ export function useFavorites(site: string | undefined) {
     () => NONE,
   );
 
-  /** Saves or forgets a home; returns true when it is saved now. */
   const toggle = useCallback((propertyId: string) => (saved ? toggleFavorite(saved, propertyId) : false), [saved]);
   const remove = useCallback(
     (propertyId: string) => {

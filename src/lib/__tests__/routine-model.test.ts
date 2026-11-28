@@ -65,7 +65,6 @@ describe('the condition of a routine: the five fields it reads', () => {
     expect(ruleToCondition(rule({ fieldId: 'propertyId', operator: 'in', list: ['p1', 'p2'] }))).toEqual({ fieldId: 'propertyId', operator: 'in', value: ['p1', 'p2'] });
     expect(ruleToCondition(rule({ fieldId: 'channel', operator: 'notIn', list: ['Airbnb', 'BookingCom'] }))).toEqual({ fieldId: 'channel', operator: 'notIn', value: ['Airbnb', 'BookingCom'] });
     expect(ruleToCondition(rule({ fieldId: 'channel', operator: 'equals', single: 'Direct' }))).toEqual({ fieldId: 'channel', operator: 'equals', value: 'Direct' });
-    // A count is a number, never the text that was typed.
     expect(ruleToCondition(rule({ fieldId: 'guestCount', operator: 'greaterThan', single: '4' }))).toEqual({ fieldId: 'guestCount', operator: 'greaterThan', value: 4 });
     expect(ruleToCondition(rule({ fieldId: 'stayDuration', operator: 'between', low: '2', high: '7' }))).toEqual({ fieldId: 'stayDuration', operator: 'between', value: [2, 7] });
   });
@@ -96,7 +95,6 @@ describe('the condition of a routine: the five fields it reads', () => {
 
   it('conditionFromRules_CompleteRules_AreOneGroupOfTheShapeTheApiReads', () => {
     expect(conditionFromRules('OR', [rule({ fieldId: 'guestCount', operator: 'equals', single: '2' }), rule({ key: 2, fieldId: 'channel', operator: 'in', list: ['Airbnb'] })])).toEqual({
-      // `version` is a text and the rules are `rules` with a `fieldId`: the shape the first version of the page wrote (`field`, `conditions`) is refused.
       version: '1.0',
       groups: [
         {
@@ -147,7 +145,6 @@ describe('the condition of a routine: the five fields it reads', () => {
       ['propertyId', 'in', ['p1'], '', '', ''],
       ['bookingLeadTime', 'lessThan', [], '3', '', ''],
     ]);
-    // And it is written back as it was.
     expect(conditionFromRules(read.operator, read.rules)).toEqual({
       version: '1.0',
       groups: [
@@ -207,7 +204,6 @@ describe('the actions of a routine', () => {
   it('draftToAction_NumbersTyped_AreNumbersInTheConfiguration', () => {
     expect(draftToAction({ ...newActionDraft(1, 'Wait'), days: '2', hours: '3' })).toEqual({ type: 'Wait', config: { days: 2, hours: 3 } });
     expect(draftToAction({ ...newActionDraft(1, 'CreateActivity'), text: ' Prepara ', dueInDays: '4' })).toEqual({ type: 'CreateActivity', config: { text: 'Prepara', dueInDays: 4 } });
-    // No deadline is no `dueInDays`, not a zero.
     expect(draftToAction({ ...newActionDraft(1, 'CreateActivity'), text: 'Prepara' })).toEqual({ type: 'CreateActivity', config: { text: 'Prepara' } });
   });
 
@@ -249,7 +245,6 @@ describe('what the catalog says of the actions', () => {
   it('isActionUnavailable_OnlyWhatTheCatalogSays', () => {
     expect(isActionUnavailable(catalog, 'MessageToGuest')).toBe(true);
     expect(isActionUnavailable(catalog, 'Wait')).toBe(false);
-    // Not in the catalog, or no catalog (not read yet, or it failed): nothing is marked, the server decides when the routine is switched on.
     expect(isActionUnavailable(catalog, 'AddTag')).toBe(false);
     expect(isActionUnavailable(undefined, 'MessageToGuest')).toBe(false);
   });
@@ -306,7 +301,6 @@ describe('the log of an execution', () => {
 
     it('executionHeadline_SuccessWhoseActionsWereOnlySimulated_IsASimulationInNeutral', () => {
       expect(executionHeadline('Success', actionsOf('simulated', 'simulated'))).toEqual({ labelKey: 'routines.log.outcome.simulated', tone: 'neutral' });
-      // A simulation with an action that a guardrail would have stopped is still a simulation.
       expect(executionHeadline('Success', actionsOf('blocked', 'simulated'))).toEqual({ labelKey: 'routines.log.outcome.simulated', tone: 'neutral' });
     });
 
@@ -315,10 +309,8 @@ describe('the log of an execution', () => {
     });
 
     it('executionHeadline_SuccessWhoseActionsWereOnlySkipped_IsNothingToDoInNeutral_NeverAGreenCompleted', () => {
-      // An action that had nothing to do for the stay (a booking of a portal, a guest with no address) did nothing for real: not a success shown as one.
       expect(executionHeadline('Success', actionsOf('skipped'))).toEqual({ labelKey: 'routines.log.outcome.skipped', tone: 'neutral' });
       expect(executionHeadline('Success', actionsOf('skipped', 'skipped'))).toEqual({ labelKey: 'routines.log.outcome.skipped', tone: 'neutral' });
-      // Blocked and simulated come first; an action really done makes it a completed run.
       expect(executionHeadline('Success', actionsOf('skipped', 'blocked'))).toEqual({ labelKey: 'routines.log.outcome.blocked', tone: 'neutral' });
       expect(executionHeadline('Success', actionsOf('skipped', 'done'))).toEqual({ labelKey: 'routines.log.outcome.success', tone: 'success' });
     });
@@ -329,7 +321,6 @@ describe('the log of an execution', () => {
 
     it('executionHeadline_OtherOutcomes_KeepTheirOwnWordsAndTone', () => {
       expect(executionHeadline('Failed', actionsOf('failed'))).toEqual({ labelKey: 'routines.log.outcome.failed', tone: 'danger' });
-      // Actions that were only simulated or blocked do not soften a run that failed.
       expect(executionHeadline('Failed', actionsOf('simulated'))).toEqual({ labelKey: 'routines.log.outcome.failed', tone: 'danger' });
       expect(executionHeadline('Waiting', actionsOf('waiting'))).toEqual({ labelKey: 'routines.log.outcome.waiting', tone: 'neutral' });
       expect(executionHeadline('Running', [])).toEqual({ labelKey: 'routines.log.outcome.running', tone: 'neutral' });
@@ -353,7 +344,6 @@ describe('the log of an execution', () => {
   });
 
   describe('the reasons the log tells (E24/F01/US02/T01)', () => {
-    // The codes of the backend (`ReviewInviteSkipReasons`, `RoutineCodes`, `CleaningAutomationCodes`): each has its sentence, in both languages, and none is shown raw.
     const CODES = [
       'not_direct',
       'not_confirmed',
@@ -383,10 +373,8 @@ describe('the log of an execution', () => {
     });
 
     it('actionReasonKey_ACleaningThatFailedForARuleOfTheRequestToASupplier_SaysWhatHappensThen', () => {
-      // A code this version does not list (`service_request_supplier_inactive`…) is not shown raw: the cleaning says what always follows, the item «Pulizia da richiedere».
       expect(actionReasonKey({ type: 'CreateCleaningRequest', outcome: 'failed', code: 'service_request_supplier_inactive' })).toBe('routines.log.code.cleaningFailed');
       expect(actionReasonKey({ type: 'CreateCleaningRequest', outcome: 'failed', code: 'cleaning_staff_unavailable' })).toBe('routines.log.code.cleaningStaffUnavailable');
-      // Only a cleaning that failed: another action with a code nobody knows says nothing.
       expect(actionReasonKey({ type: 'RequestReview', outcome: 'failed', code: 'something_new' })).toBeUndefined();
       expect(actionReasonKey({ type: 'CreateCleaningRequest', outcome: 'done' })).toBeUndefined();
     });

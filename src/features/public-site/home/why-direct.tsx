@@ -15,13 +15,6 @@ const REASONS: { id: 'transparent' | 'noFees' | 'direct'; icon: LucideIcon }[] =
   { id: 'direct', icon: MessageCircle },
 ];
 
-/**
- * «Perché prenotare direttamente» (DB-07b): three reasons that are true of every site (the total shows what is in it, nothing is
- * added for the portal, the person to talk to is the host) and, beside them, a receipt that is a real example: the cheapest home
- * on its first free nights, with the lines of the quote of the server and «Commissioni di servizio: 0 €». The «best price
- * guaranteed» of the prototype is a promise only a host can make and there is no field for it, so it is not here (DB-D9). Without
- * an example (nothing free, the quote is refused) the reasons stand alone.
- */
 export function WhyDirect({ org, slug, cards, searchPath }: { org: PublicOrgDto; slug: string; cards: readonly PublicStayCard[]; searchPath: string }) {
   const { t, i18n } = useTranslation();
   const money = useSiteMoney();

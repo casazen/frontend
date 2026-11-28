@@ -8,10 +8,6 @@ import { Fact } from '@/features/bookings/components/booking-facts';
 import { guestsApi } from '@/api/guests.api';
 import { getProblemMessage } from '@/lib/api-errors';
 
-/**
- * Document number of the guest: masked by the API (CO-14); "Show" asks the full number to the audited endpoint and
- * keeps it only in this component's state. It is one fact of the document list (put it inside a `Facts`).
- */
 export function GuestDocumentNumberRow({ guestId, masked }: { guestId: string; masked: string }) {
   const { t } = useTranslation();
   const [revealed, setRevealed] = useState<string | null>(null);

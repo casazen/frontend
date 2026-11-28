@@ -40,7 +40,6 @@ const workspace = vi.hoisted(() => ({
 }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => workspace }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
@@ -67,13 +66,11 @@ async function onStep(step: string) {
   await waitFor(() => expect(wizard()).toHaveAttribute('data-step', step), WAIT);
 }
 
-/** «Continua», once the button is enabled: a click on a button that is still switched off does nothing, and the test would then wait for a step that never comes. */
 async function next() {
   await waitFor(() => expect(screen.getByTestId('fiscal-billing-next')).toBeEnabled(), WAIT);
   fireEvent.click(screen.getByTestId('fiscal-billing-next'));
 }
 
-/** Every field of the step on screen: the text boxes, the choices, the lists and the buttons drawn inside it. */
 function fieldsOfTheStep(step: string): HTMLElement[] {
   return Array.from(screen.getByTestId(`billing-step-${step}`).querySelectorAll<HTMLElement>('input, select, textarea, button'));
 }
@@ -94,20 +91,16 @@ afterEach(() => {
 });
 
 describe('the wizard «Fatturazione» is read-only for who may not change the setup (E11/F02/US01/T01)', () => {
-  // Permission rule: the setup is the organization's. A caller who reaches only some of the properties (a collaborator «Solo alcuni») may read it and may not change it
-  // (the server answers 403 `fiscal_settings_need_whole_org`): the wizard shows the same steps with every field switched off, and the reason.
   it('BillingWizard_PartialScopeUser_HasNoEditableFieldInAnyStepAndSendsNothing', async () => {
     vi.mocked(api.canChangeBillingSetup).mockResolvedValue(false);
     renderWizard();
     await onStep('issuer');
 
     expect(screen.getByTestId('billing-read-only')).toHaveTextContent(text('billingWizard.readOnly.partialScope'));
-    // The text boxes and the choices of the step are there, and none of them can be changed.
     const fields = fieldsOfTheStep('issuer');
     expect(fields.filter((field) => field.tagName === 'INPUT').length).toBeGreaterThan(5);
     for (const field of fields) expect(field, field.getAttribute('data-testid') ?? field.tagName).toBeDisabled();
 
-    // «Continua» only moves on: nothing is saved for a person who may not save, and the next step is read-only too.
     await next();
     await onStep('vat');
     expect(fieldsOfTheStep('vat').length).toBeGreaterThan(0);
@@ -129,7 +122,6 @@ describe('the wizard «Fatturazione» is read-only for who may not change the se
     expect(api.saveBillingSetupSection).not.toHaveBeenCalled();
   });
 
-  // The control of the test above: the same wizard for a whole-organization writer has fields to fill, and «Continua» saves the step on the server.
   it('BillingWizard_WholeOrganizationWriter_HasEditableFieldsAndSavesTheStepOnContinue', async () => {
     renderWizard();
     await onStep('issuer');
@@ -146,7 +138,6 @@ describe('the wizard «Fatturazione» is read-only for who may not change the se
   });
 
   it('BillingWizard_ASaveRefusedForTheReachOfThePerson_TurnsTheWizardReadOnlyWithoutLosingWhatWasTyped', async () => {
-    // The reach of the person changed after the question was asked: the first save is refused (403 `fiscal_settings_need_whole_org`).
     const refusal = Object.assign(new Error('Forbidden'), {
       isAxiosError: true,
       response: { status: 403, data: { code: 'fiscal_settings_need_whole_org' } },
@@ -186,7 +177,6 @@ describe('the wizard «Fatturazione» is read-only for who may not change the se
     );
     await onStep('issuer');
 
-    // The flag turned off while the page was open: the next read is a 404, and a 404 is «not found» even though the old answer is still in the query.
     await client.refetchQueries({ queryKey: ['billing-setup'] });
     await waitFor(() => expect(screen.getByTestId('home')).toBeInTheDocument(), WAIT);
   });

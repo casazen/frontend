@@ -18,10 +18,8 @@ import type { CrmProfileListItem } from '@/types/crm.types';
 
 const profilePath = (id: string) => `/app/short-rent/crm/guests/${id}`;
 
-/** Tags a row shows before "+3": the rest are in the profile. */
 const TAGS_SHOWN = 3;
 
-/** The e-mail state of a profile, from what the list knows of its best address. */
 function emailStateOfProfile(profile: CrmProfileListItem) {
   return contactStateOf({
     hasAddress: profile.emailMasked !== '',
@@ -30,7 +28,6 @@ function emailStateOfProfile(profile: CrmProfileListItem) {
   });
 }
 
-/** The name of a profile: the guest's; a lead without a name is known by its masked address. */
 function ProfileName({ profile }: { profile: CrmProfileListItem }) {
   const { t } = useTranslation();
   const name = profile.displayName || profile.emailMasked || t('crm.list.noName');
@@ -44,10 +41,6 @@ function ProfileName({ profile }: { profile: CrmProfileListItem }) {
   );
 }
 
-/**
- * A mark on a profile that a person has to look at: a merge proposal waits for a decision. The page of the duplicates is for who may
- * write the guests (`guest.write`): to who may only read them the mark says the same without sending them to a page they cannot open.
- */
 function MergeMark() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
@@ -64,7 +57,6 @@ function MergeMark() {
   );
 }
 
-/** Words in small rounded boxes: the channels a guest booked on, the tags of a profile. */
 function Chips({ items, label, testId }: { items: string[]; label: string; testId: string }) {
   if (items.length === 0) return null;
   return (
@@ -78,7 +70,6 @@ function Chips({ items, label, testId }: { items: string[]; label: string; testI
   );
 }
 
-/** The tags of a profile, the first ones, and how many more there are (the rest are in the profile). */
 function TagChips({ tags }: { tags: string[] }) {
   const { t } = useTranslation();
   const shown = tags.slice(0, TAGS_SHOWN);
@@ -86,13 +77,11 @@ function TagChips({ tags }: { tags: string[] }) {
   return <Chips items={more > 0 ? [...shown, t('crm.list.moreTags', { count: more })] : shown} label={t('crm.list.tags')} testId="crm-tags" />;
 }
 
-/** Country and language of a profile on one line, as the guest has them. */
 function useCountryAndLanguage(profile: CrmProfileListItem): string {
   const { t } = useTranslation();
   return [profile.country, profile.language ? languageLabel(t, profile.language) : ''].filter(Boolean).join(' · ');
 }
 
-/** The first cell of a row and the head of a card: the name, where the guest comes from, the tags and the mark of a proposal. */
 function GuestCell({ profile, asCard = false }: { profile: CrmProfileListItem; asCard?: boolean }) {
   const origin = useCountryAndLanguage(profile);
   return (
@@ -107,7 +96,6 @@ function GuestCell({ profile, asCard = false }: { profile: CrmProfileListItem; a
   );
 }
 
-/** The e-mail of a profile: its state and, under it, the address masked. */
 function EmailCell({ profile }: { profile: CrmProfileListItem }) {
   return (
     <div className="min-w-0 space-y-1">

@@ -32,21 +32,14 @@ import { RequestedStep } from './steps/requested-step';
 
 type StepSchema = ZodType<unknown, FieldValues>;
 
-/** One property: the request names exactly one. The message is an i18n key, as in every form. */
 const PROPERTY_STEP_SCHEMA: StepSchema = z.object({
   propertyId: z.string().min(1, 'marketplace.licensed.errors.noProperty'),
 });
 
-/** The short-rent properties of the host, in the order the app lists them: a function is licensed for one of them. */
 const SHORT_RENT = { mode: 'short' } as const;
 
-/** What stops the last button on a condition that is not met: the host is told which, by the words of the step. */
 class StepBlockedError extends Error {}
 
-/**
- * The guided request of a function of the channel manager's license (E09/F02/US04/T03): a `WizardShell` of three steps and the result. The detail card of the function
- * and the properties are read here and handed to the steps; the license of the chosen property is read by the steps that show it.
- */
 function LicensedRequestWizard({ moduleCode }: { moduleCode: string }) {
   const { t, i18n } = useTranslation();
   const language = marketplaceLanguage(i18n.resolvedLanguage ?? i18n.language);
@@ -89,7 +82,6 @@ function LicensedRequestWizard({ moduleCode }: { moduleCode: string }) {
       title: t('marketplace.licensed.steps.property.title'),
       purpose: t('marketplace.licensed.steps.property.purpose'),
       schema: PROPERTY_STEP_SCHEMA,
-      // The license of the property is read before the request goes on: a property with no confirmed listing on the channel manager is told in simple words here.
       beforeNext: async (answers) => {
         await fetchLicensedFunctions(queryClient, answers.propertyId, language);
       },
@@ -100,7 +92,6 @@ function LicensedRequestWizard({ moduleCode }: { moduleCode: string }) {
       label: t('marketplace.licensed.steps.ask.label'),
       title: t('marketplace.licensed.steps.ask.title', { name }),
       purpose: t('marketplace.licensed.steps.ask.purpose'),
-      // A function the license shows on already is never recorded as asked: the step tells it, with the way back to the Marketplace.
       beforeNext: async (answers) => {
         const list = await fetchLicensedFunctions(queryClient, answers.propertyId, language);
         if (requestPhase(functionOf(list, moduleCode)) === 'active') {
@@ -159,16 +150,9 @@ function LicensedRequestWizard({ moduleCode }: { moduleCode: string }) {
   );
 }
 
-/**
- * `/app/short-rent/marketplace/request/:moduleCode` (E09/F02/US04/T03, MKT-03, PO-12, D21): the guided request of a function of the channel manager's license. CasaZen
- * cannot switch a module of the license on: the wizard explains the function, prepares the text the person takes to their channel manager and records the request as
- * Requested until the license shows the module. `?propertyId=` is the property the marketplace was about; `?returnTo=` is the page the person came from, where «Salva ed
- * esci» and the closing buttons lead (the Marketplace page when there is none, or it is not a page of the app).
- */
 export function LicensedRequestWizardPage() {
   const { t } = useTranslation();
   const { moduleCode } = useParams();
-  // The code ends up in the path of requests: nothing that could carry a path or a query goes through.
   const valid = moduleCode !== undefined && parseMarketplaceEntry(`LicensedFunction:${moduleCode}`) !== null;
 
   if (!valid) {

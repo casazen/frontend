@@ -18,7 +18,6 @@ vi.mock('@/services/supplier-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/supplier-api')>()),
   ...api,
 }));
-// The list also reads the catalog of the supplier, for the choices of its filter by service.
 vi.mock('@/api/supplier-services.api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/supplier-services.api')>()),
   ...servicesApi,
@@ -96,11 +95,9 @@ describe('a request the supplier has as a backup (SP-BKP): the model', () => {
     expect(phaseOf({ ...base, backup: backup('waiting') })).toBe('backupWaiting');
     expect(phaseOf({ ...base, backup: backup('accepted') })).toBe('backupAccepted');
     expect(phaseOf({ ...base, backup: backup('active') })).toBe('backupActive');
-    // A state this version does not know is read as waiting; the chosen supplier and a request in no group are the usual «da rispondere».
     expect(phaseOf({ ...base, backup: backup('somethingNew') })).toBe('backupWaiting');
     expect(phaseOf({ ...base, backup: { role: 'primary', state: 'priority', primaryDueAt: SOON } })).toBe('toAnswer');
     expect(phaseOf(base)).toBe('toAnswer');
-    // Once the job is the backup's it is a request like any other.
     expect(phaseOf({ status: 'PresoInCarico', phase: 'scheduled', backup: backup('won') })).toBe('scheduled');
     expect(isBackup({ ...base, backup: backup('accepted') })).toBe(true);
     expect(isBackup({ status: 'PresoInCarico', phase: 'scheduled', backup: backup('won') })).toBe(false);
@@ -110,13 +107,9 @@ describe('a request the supplier has as a backup (SP-BKP): the model', () => {
     const priced = { ...base, price: { amountCents: 5000 } };
 
     expect(actionsOf({ ...priced, backup: backup('waiting') })).toEqual({ primary: 'acceptBackup', secondary: 'reject', more: [] });
-    // It said yes: nothing more to do, but it may change its mind.
     expect(actionsOf({ ...priced, backup: backup('accepted') })).toEqual({ more: ['reject'] });
-    // The job is free: the usual «Accetta», the first to accept has it.
     expect(actionsOf({ ...priced, backup: backup('active') })).toEqual({ primary: 'take', secondary: 'reject', more: [] });
-    // A request with no price puts the quote first for a supplier that was chosen, never for a backup.
     expect(actionsOf({ ...base, backup: backup('active') })).toEqual({ primary: 'take', secondary: 'reject', more: [] });
-    // ...and «Rifiuta» is the second action there too, as for a backup and a priced request: always in the same place.
     expect(actionsOf({ ...base })).toEqual({ primary: 'quote', secondary: 'reject', more: ['take'] });
   });
 
@@ -124,7 +117,6 @@ describe('a request the supplier has as a backup (SP-BKP): the model', () => {
     expect(respondByText({ ...base, respondBy: SOON, backup: backup('waiting') }, 'it', t)).toContain('supplier.requests.backup.primaryUntil');
     expect(respondByText({ ...base, respondBy: SOON, backup: backup('accepted') }, 'it', t)).toContain('supplier.requests.backup.primaryUntil');
     expect(respondByText({ ...base, respondBy: SOON, backup: backup('active', { backupDueAt: SOON }) }, 'it', t)).toContain('supplier.requests.respondBy');
-    // A window that has passed says nothing.
     expect(respondByText({ ...base, respondBy: PAST, backup: backup('waiting', { primaryDueAt: PAST }) }, 'it', t)).toBeNull();
   });
 
@@ -165,14 +157,11 @@ describe('a request the supplier has as a backup (SP-BKP): the list', () => {
     const table = within(await screen.findByRole('table', { name: 'Richieste' }));
     const accept = await table.findByTestId('accept-backup-r-waiting');
     expect(accept).toHaveTextContent('Accetta come riserva');
-    // It is a backup: no «Accetta» that would take the job from the supplier the host chose.
     expect(table.queryByTestId('take-r-waiting')).not.toBeInTheDocument();
-    // It said yes already: nothing to press. The job is free: the usual button. The chosen supplier: the usual button.
     expect(table.queryByTestId('accept-backup-r-accepted')).not.toBeInTheDocument();
     expect(table.queryByTestId('take-r-accepted')).not.toBeInTheDocument();
     expect(table.getByTestId('take-r-active')).toBeEnabled();
     expect(table.getByTestId('take-r-primary')).toBeEnabled();
-    // The state says «Riserva» until the job is the supplier's.
     expect(table.getByText('Riserva')).toBeInTheDocument();
     expect(table.getByText('Riserva accettata')).toBeInTheDocument();
     expect(table.getByText('Riserva: da accettare')).toBeInTheDocument();

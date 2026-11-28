@@ -13,9 +13,7 @@ import { RENTAL_AREAS, type PickerProperty, type RentalArea } from './team-prope
 const AREA_ICONS: Record<RentalArea, LucideIcon> = { 'short-rent': Sun, 'long-rent': Home };
 
 export interface AreaPropertyPickerProps {
-  /** The role sees every area and every property (the owner and the administrators): there is nothing to choose, and it is said. */
   fullAccess: boolean;
-  /** The role can be limited to some properties («Solo alcuni»): the collaborator only (AM-D16). */
   scopeSupported: boolean;
   availableAreas?: readonly RentalArea[];
   areas: readonly string[];
@@ -24,15 +22,12 @@ export interface AreaPropertyPickerProps {
   onScopeChange: (scope: OrgPropertyScope) => void;
   propertyIds: readonly string[];
   onPropertyIdsChange: (ids: string[]) => void;
-  /** `undefined` while they are read. */
   properties: readonly PickerProperty[] | undefined;
   propertiesFailed: boolean;
   onRetryProperties: () => void;
-  /** Nothing can be changed while the choice is being saved. */
   disabled?: boolean;
 }
 
-/** The property lines of one area: a box and the name with its city, 44 px high for a finger. */
 function PropertyChecks({
   area,
   properties,
@@ -78,13 +73,6 @@ function PropertyChecks({
   );
 }
 
-/**
- * «Dove potrà lavorare»: the areas of a person (Affitti brevi, Affitti lunghi: at least one) and, for the collaborator alone, all the
- * properties of those areas or only some of them. The role decides what is offered: an administrator sees everything, so it only
- * says so; a role that cannot be limited has no «Solo alcuni». The area Amministrazione is not chosen here: the role gives it.
- *
- * It holds nothing of its own: the wizard of the invitation feeds it from its form, the dialog of a member from its state.
- */
 export function AreaPropertyPicker({
   fullAccess,
   availableAreas = RENTAL_AREAS,
@@ -109,7 +97,6 @@ export function AreaPropertyPicker({
 
   const toggleArea = (area: RentalArea, checked: boolean) => {
     const next = checked ? [...new Set([...areas, area])] : areas.filter((candidate) => candidate !== area);
-    // Keep the areas in the order of the area switcher, whatever the order they were ticked in.
     onAreasChange(availableAreas.filter((candidate) => next.includes(candidate)));
   };
   const toggleProperty = (id: string, checked: boolean) =>

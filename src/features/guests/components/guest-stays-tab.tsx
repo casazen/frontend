@@ -22,10 +22,6 @@ interface GuestStaysTabProps {
   onRetry: () => void;
 }
 
-/**
- * The tab Soggiorni: every booking of the guest, the latest first, each a link to its booking with where, when, how much and
- * how it stands. A list with lines between the rows, no table and no box.
- */
 export function GuestStaysTab({ stays, isLoading, isError, error, onRetry }: GuestStaysTabProps) {
   const { t, i18n } = useTranslation();
   const today = todayInRome();

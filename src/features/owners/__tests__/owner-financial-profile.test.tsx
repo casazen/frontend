@@ -49,7 +49,6 @@ vi.setConfig({ testTimeout: 30_000 });
 
 const text = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
 
-/** `search` is the query of the address (`?period=2025-01&tab=rule`): the month that sent the person here and the section of the page. */
 function renderPage(search = '', client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } })) {
   const view = render(
     createElement(

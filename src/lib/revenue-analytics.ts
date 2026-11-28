@@ -21,7 +21,6 @@ function formatPeriod(date: Date, groupBy: NonNullable<RevenueParams['groupBy']>
   }
 }
 
-/** Build dashboard analytics from completed payments (matches RevenueDashboard contract). */
 export function buildRevenueAnalytics(
   payments: Payment[],
   params?: RevenueParams,

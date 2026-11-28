@@ -6,13 +6,6 @@ import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
 import { drawing, mockService, mockSupplierServicesApi, type MockService, type SupplierServicesMock } from './helpers/supplier-services-mock';
 import { WIDER_LETTERS, expectNoAxeViolations, expectNothingSticksOut } from './helpers/ui-checks';
 
-/**
- * SP-06: Servizi e prezzi of the supplier portal (the list, the guided creation in four steps, the page of a service with the
- * preview that follows what is typed). L2 (demo mode, mocked API): the catalog is a stateful mock that answers like the API of
- * SP-02 (versions and 409, `fields` of a 422, photos, publish, pause), so the specs follow a supplier from nothing to a published
- * service and back to a paused one.
- */
-
 const PHONES = [360, 390];
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 
@@ -24,19 +17,10 @@ async function openServices(page: Page, path: string, options: { services?: Mock
   return catalog;
 }
 
-/** What the screen sent to change the catalog, in order (the reads are not interesting). */
 const writes = (catalog: SupplierServicesMock) => catalog.calls.filter((call) => call.method !== 'GET').map((call) => `${call.method} ${call.path}`);
 
-/** A service in the list: its row in the table on a computer, its card on a phone (the list has both and a media query shows one). */
 const rowOf = (page: Page, id: string) => page.locator(`[data-testid="list-row-${id}"]:visible`);
 
-/**
- * The buttons, links and summaries a finger has to hit have 44 px of target in every direction. It is measured as a finger meets
- * it: at 21 px from the center of the control, up, down, left and right, the page answers with the control itself (a button
- * that is drawn small may have a larger area around it, which counts; a line of text that is a link does not). The fields have a
- * rule of their own for touch screens (a minimum height under the redesign), and a switch has the whole row of its label. A
- * disabled button does not answer a touch (the page sees what is under it), so its own size is what is measured.
- */
 async function expectFingerTargets(page: Page, scope: string, where: string) {
   const small = await page.evaluate((selector) => {
     const root = document.querySelector(selector);
@@ -82,7 +66,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       const catalog = await openServices(page, '/app/supplier/services');
       await expect(page.getByRole('heading', { name: 'Crea il tuo primo servizio' })).toBeVisible();
 
-      // The catalog is empty: the way in is the button of the empty state (the header has none until there is a service).
       await expect(page.getByTestId('supplier-service-add')).toHaveCount(0);
       await page.getByTestId('supplier-services-empty').getByRole('link', { name: 'Aggiungi un servizio' }).click();
       await expect(page.getByRole('heading', { level: 2, name: 'Cosa offri?' })).toBeVisible();
@@ -91,7 +74,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       await page.getByTestId('service-category').selectOption('cleaning');
       await page.getByTestId('service-wizard-next').click();
 
-      // The draft exists from the first step on, and its address is in the page: a reload would give it back.
       await expect(page.getByRole('heading', { level: 2, name: 'Quanto costa?' })).toBeVisible();
       await expect(page).toHaveURL(/bozza=e2e-1/);
       await expect(page.getByTestId('service-wizard-saved')).toContainText('Bozza salvata alle');
@@ -114,7 +96,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
         { name: 'sbagliata.png', mimeType: 'image/png', buffer: PNG },
       ]);
       await expect(page.getByTestId('photo-list-item')).toHaveCount(2);
-      // A photo that was a mistake is taken away after asking; confirming is not the last button of the creation (it does not publish).
       await page.getByRole('button', { name: 'Togli la foto 2' }).click();
       await page.getByRole('dialog', { name: 'Togliere questa foto?' }).getByRole('button', { name: 'Togli la foto' }).click();
       await expect(page.getByTestId('photo-list-item')).toHaveCount(1);
@@ -133,7 +114,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
         'PUT /api/supplier/services/e2e-1',
         'PUT /api/supplier/services/e2e-1',
         'POST /api/supplier/services/e2e-1/photos',
-        // The removal of the photo that was a mistake, and then the last button, which saves the form before it publishes.
         'PUT /api/supplier/services/e2e-1',
         'PUT /api/supplier/services/e2e-1',
         'POST /api/supplier/services/e2e-1/publish',
@@ -149,7 +129,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       });
       expect(catalog.services()[0]?.photoUrls).toHaveLength(1);
 
-      // From the confirmation to the page of the service, and pause it with the switch.
       await page.getByTestId('wizard-done-primary').click();
       await expect(page).toHaveURL(/\/app\/supplier\/services\/e2e-1/);
       await expect(page.getByRole('heading', { level: 1, name: 'Pulizia cambio ospiti' })).toBeVisible();
@@ -159,7 +138,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       await expect(page.getByTestId('service-visibility')).toContainText('In pausa');
       expect(catalog.services()[0]?.status).toBe('Paused');
 
-      // The list says the same.
       await page.locator('a[href="/app/supplier/services"]').first().click();
       await expect(rowOf(page, 'e2e-1')).toContainText('In pausa');
     });
@@ -180,7 +158,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       await page.getByTestId('service-wizard-next').click();
       await expect(page.getByRole('heading', { level: 2, name: 'Quanto dura e quando lo offri?' })).toBeVisible();
 
-      // It was saved with PUT on the same service, never created again.
       expect(writes(catalog)).toEqual(['PUT /api/supplier/services/draft-1', 'PUT /api/supplier/services/draft-1']);
       expect(catalog.services()).toHaveLength(1);
     });
@@ -236,12 +213,10 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       await page.getByRole('button', { name: 'Annulla' }).click();
       await expect(row).toContainText('Pubblicato');
       expect(catalog.services()[0]?.status).toBe('Active');
-      // The paused one has its own way back on offer.
       await expect(rowOf(page, 'svc-2').getByRole('button', { name: 'Riattiva' })).toBeVisible();
     });
 
     test('duplicates a service from its menu: the copy is made once, its draft opens, and the list has it when the person leaves', async ({ page }) => {
-      // The app runs under React StrictMode here, as in development: its effects run twice, and the copy must still be made once.
       const catalog = await openServices(page, '/app/supplier/services', { services: [mockService()] });
       await rowOf(page, 'svc-1').getByRole('button', { name: 'Altre azioni: Pulizia cambio ospiti' }).click();
       await page.getByRole('menuitem', { name: 'Duplica' }).click();
@@ -263,7 +238,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       const later = page.getByRole('button', { name: 'Sposta la foto 1 dopo' });
       await later.focus();
       await page.keyboard.press('Enter');
-      // The photo is second now, and the focus is still on its button: the keyboard can go on.
       await expect(page.getByRole('button', { name: 'Sposta la foto 2 dopo' })).toBeFocused();
       expect(catalog.services()[0]?.photoUrls[1]).toBe(drawing('uno'));
 
@@ -272,9 +246,7 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       await dialog.getByRole('button', { name: 'Togli la foto' }).click();
       await expect(page.getByTestId('photo-list-item')).toHaveCount(2);
       expect(catalog.services()[0]?.photoUrls).toEqual([drawing('due'), drawing('uno')]);
-      // One save for the move and one for the removal: confirming the dialog did not also submit the form around it.
       expect(writes(catalog)).toEqual(['PUT /api/supplier/services/svc-1', 'PUT /api/supplier/services/svc-1']);
-      // The focus is on a photo that is still there, not on the page: the keyboard goes on from the neighbor of the removed one.
       await expect(page.getByRole('button', { name: 'Togli la foto 2' })).toBeFocused();
     });
 
@@ -349,7 +321,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
         await expect(page.getByTestId('photo-list-item')).toHaveCount(2);
         await expectNothingSticksOut(page, `${width} px, photos and preview`, 'main');
         await expectFingerTargets(page, '[data-testid="supplier-service-wizard-page"]', `${width} px, photos and preview`);
-        // The main button is a bar above the bottom one: it is on the screen without scrolling.
         const finish = page.getByTestId('service-wizard-finish');
         await expect(finish).toBeInViewport();
         const box = (await finish.boundingBox())!;
@@ -379,7 +350,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
         expect(preview.y, 'the preview comes after the fields on a phone').toBeGreaterThan(fields.y + fields.height - 1);
         await expectNothingSticksOut(page, `${width} px, the page of a service with every part open`, 'main');
         await expectFingerTargets(page, '[data-testid="supplier-service-page"]', `${width} px, the page of a service`);
-        // The row of the switch is the target, not the 24 px of the switch itself.
         const row = (await page.getByTestId('service-visible').boundingBox())!;
         expect(row.height).toBeGreaterThanOrEqual(43.5);
       });

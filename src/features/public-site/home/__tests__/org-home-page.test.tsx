@@ -77,7 +77,6 @@ function mockStays(state: Partial<StaysResult>) {
     ...state,
   } as unknown as StaysResult);
   vi.mocked(useOrgDestinations).mockReturnValue({ data: [] } as unknown as ReturnType<typeof useOrgDestinations>);
-  // The example of «Perché prenotare» and the reviews are other calls: nothing from them in these tests.
   vi.mocked(usePublicStayQuote).mockReturnValue({ data: undefined } as unknown as ReturnType<typeof usePublicStayQuote>);
   vi.mocked(usePublicReviewsPreview).mockReturnValue({ data: undefined } as unknown as ReturnType<typeof usePublicReviewsPreview>);
 }
@@ -118,7 +117,6 @@ describe('OrgHomePage states (DB-07b)', () => {
     mockStays({ isPending: true });
     renderHome({ heroImageUrl: 'https://cdn.test/hero.jpg' });
 
-    // The cover and the name are the first paint: the org is known before the homes are.
     expect(screen.getByTestId('home-hero')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Case vacanza sul mare');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Villa Mare');
@@ -154,7 +152,6 @@ describe('OrgHomePage states (DB-07b)', () => {
 
     expect(screen.getByTestId('home-empty')).toHaveTextContent(i18n.t('siteHome.empty.title'));
     expect(screen.getByTestId('home-empty-write')).toBeInTheDocument();
-    // The phone is the host's choice to publish: without it there is no call.
     expect(screen.queryByTestId('home-empty-call')).not.toBeInTheDocument();
     expect(screen.queryByTestId('home-error')).not.toBeInTheDocument();
     expect(screen.queryByTestId('home-search')).not.toBeInTheDocument();
@@ -177,7 +174,6 @@ describe('OrgHomePage states (DB-07b)', () => {
       'href',
       '/book/villa-mare/property/casa-del-faro?checkin=2027-07-01&checkout=2027-07-05&guests=2',
     );
-    // A home without a slug is reachable by its id.
     expect(within(cards[1]).getByRole('link', { name: 'Villetta Verde' })).toHaveAttribute('href', expect.stringContaining('/book/villa-mare/property/p-2'));
     expect(screen.getByTestId('home-search')).toBeInTheDocument();
   });

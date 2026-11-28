@@ -153,7 +153,6 @@ describe('the status of the channels (E02/F03/US01/T04)', () => {
       taken = await result.current.mutateAsync({ channelCode: 'booking_xml', choice: 'take' });
     });
 
-    // The choice went through (it is not asked again); the caller is told the texts are not the ones on the server.
     expect(taken).toEqual({ adopted: null, rereadFailed: true });
   });
 });

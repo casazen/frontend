@@ -3,16 +3,12 @@ import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { SITE_STYLE_IDS, SITE_STYLES, type SiteStyleId } from '@/lib/supplier-site/style-config';
 
 interface StyleCardsProps {
-  /** The style on screen (the one chosen, or the one recommended for the trade). */
   value: SiteStyleId;
   onChange: (style: SiteStyleId) => void;
-  /** The style that fits the trade of the profile: marked "Consigliato per il tuo mestiere". */
   recommended: SiteStyleId | null;
-  /** The name of the group of radios. */
   name: string;
 }
 
-/** The four styles of the showcase as cards with a sample drawn in CSS (the page color and the button color of the style). */
 export function StyleCards({ value, onChange, recommended, name }: StyleCardsProps) {
   const { t } = useTranslation();
   return (

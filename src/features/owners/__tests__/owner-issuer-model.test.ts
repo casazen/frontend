@@ -72,7 +72,6 @@ describe('the issuer profile of an owner as the form holds it (E17/F03/US01/T01)
 
     expect(requestOf(form)).toMatchObject({ regime: 'VatOrdinary', legalName: 'Casa Mia Srl', vatNumber: '01234567890', province: 'CO', fiscalCode: 'ABC', countryCode: 'IT', stayVatTreatment: 'Standard', stampDutyReference: 'AUT-77' });
     expect(requestOf(form).issuerSdiRecipientCode).toBeUndefined();
-    // No regime chosen is no regime sent (the server says what is missing), never a guess.
     expect(requestOf({ ...form, regime: '' }).regime).toBeUndefined();
   });
 
@@ -86,15 +85,12 @@ describe('the issuer profile of an owner as the form holds it (E17/F03/US01/T01)
 
   it('followedForm_KeepsWhatWasTypedAndLetsEveryOtherFieldFollowTheServer', () => {
     const base = formOf(profile());
-    // The person typed the name; meanwhile another person wrote the city and the province on the server.
     const typed = { ...base, legalName: 'Marta Bianchi' };
     const stored = { ...base, city: 'Lecco', province: 'LC' };
 
     expect(followedForm(typed, base, stored)).toEqual({ ...base, legalName: 'Marta Bianchi', city: 'Lecco', province: 'LC' });
-    // Nothing typed: the form is what the server holds. The same data: the form is what it was.
     expect(followedForm(base, base, stored)).toEqual(stored);
     expect(followedForm(typed, base, base)).toEqual(typed);
-    // A text cut at its ends is not a change of the person, so the server's value is followed.
     expect(followedForm({ ...base, city: ` ${base.city} ` }, base, stored).city).toBe('Lecco');
   });
 
@@ -112,7 +108,6 @@ describe('the issuer profile of an owner as the form holds it (E17/F03/US01/T01)
   });
 });
 
-/** Every text of a branch of a locale file. */
 function textsOf(node: unknown): string[] {
   if (typeof node === 'string') return [node];
   if (node !== null && typeof node === 'object') return Object.values(node).flatMap(textsOf);
@@ -124,7 +119,6 @@ describe('the texts of the issuer profile of an owner (E17/F03/US01/T01)', () =>
     ['it', it_],
     ['en', en],
   ] as const)('%s.json: no text of the profile writes an amount or a currency: the stamp duty is the rule in force, shown from the data', (_language, locale) => {
-    // The threshold and the amount of the stamp duty are a rule set by CasaZen (⚖ I4): a figure or a symbol written in a text would go on saying it after the rule changed.
     const texts = textsOf(locale.ownerIssuer);
     expect(texts.length).toBeGreaterThan(40);
 

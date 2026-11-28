@@ -30,7 +30,6 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-/** What the CSV saved says: the bytes start with the mark of UTF-8, and the rest is the text. */
 async function savedCsv(call = 0) {
   const [blob, fileName] = vi.mocked(saveBlobAs).mock.calls[call];
   const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -89,10 +88,8 @@ describe('ListView, selecting rows', () => {
 
     expect(onAction).toHaveBeenCalledWith('send-link:s2,s1', expect.anything());
     expect(toast.success).toHaveBeenCalledWith('Link sent to 2', expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) }));
-    // The rows were dealt with: nothing is selected any more.
     expect(screen.queryByRole('region', { name: 'Actions on the selected rows' })).not.toBeInTheDocument();
 
-    // "Undo" does the opposite, to the same rows.
     const { action } = vi.mocked(toast.success).mock.calls[0][1] as { action: { onClick: () => void } };
     action.onClick();
     await settle();
@@ -176,7 +173,6 @@ describe('ListView, the CSV', () => {
     const lines = csv.text.split('\r\n');
     expect(lines[0]).toBe('"Guest","Dates","Channel","Status","Total"');
     expect(lines).toHaveLength(7);
-    // In the order of the list, as the person sees it.
     expect(lines[1]).toBe('"Luigi Verdi","2026-09-20 → 2026-09-24","direct","Done","610"');
     expect(lines[3]).toBe('"Anna Bianchi","2026-10-10 → 2026-10-13","airbnb","Confirmed","380.5"');
     expect(toast.success).toHaveBeenCalledWith('Export ready: 6 rows in the CSV file (it opens in Excel).');
@@ -263,7 +259,6 @@ describe('ListView, the actions of a row', () => {
     renderList({ list: stayList({ onAction }) });
     const table = within(stayTable());
 
-    // Only Mario's request waits for an answer.
     expect(table.getAllByRole('button', { name: 'Accept' })).toHaveLength(1);
     fireEvent.click(table.getByRole('button', { name: 'Accept' }));
 
@@ -294,7 +289,6 @@ describe('ListView, the actions of a row', () => {
     const onAction = vi.fn();
     renderList({ list: stayList({ onAction }) });
 
-    // Anna's stay is confirmed: a swipe to the left registers the arrival, one to the right writes to her.
     const menu = within(await openMenu(within(stayTable()).getByRole('button', { name: 'More actions: Anna Bianchi' })));
 
     expect(menu.getByRole('menuitem', { name: 'Arrival' })).toBeInTheDocument();
@@ -313,7 +307,6 @@ describe('ListView, the actions of a row', () => {
 
     const menu = within(await openMenu(within(stayTable()).getByRole('button', { name: 'More actions: Anna Bianchi' })));
 
-    // "write" is the same action under the swipe: it is in the menu once, with the name the menu gives it.
     expect(menu.getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Write to the guest', 'Arrival']);
   });
 
@@ -329,7 +322,6 @@ describe('ListView, opening a row', () => {
   it('goes to the page of the row when its name or the row is pressed', () => {
     renderList();
 
-    // Pressing the row (the cell of the channel), not the link: the person has a mouse and no wish to aim.
     fireEvent.click(within(screen.getAllByTestId('list-row-s2')[0]).getByText('airbnb'));
 
     expect(screen.getByTestId('pathname')).toHaveTextContent('/app/short-rent/bookings/s2');
@@ -344,7 +336,6 @@ describe('ListView, opening a row', () => {
     expect(drawer.getByTestId('detail-body')).toHaveTextContent('Detail of s2');
     expect(drawer.getByText('2026-10-10 → 2026-10-13')).toBeInTheDocument();
     expect(drawer.getByRole('link', { name: 'Open the full page' })).toHaveAttribute('href', '/app/short-rent/bookings/s2');
-    // The address does not change: the drawer is not a page.
     expect(addressNow()).toBe('');
   });
 
@@ -397,7 +388,6 @@ describe('ListView, opening a row', () => {
     fireEvent.click(within(stayTable()).getByRole('button', { name: 'Anna Bianchi' }));
     await screen.findByRole('dialog', { name: 'Anna Bianchi' });
 
-    // The page behind a dialog is hidden from the accessibility tree: the button is found by its words.
     fireEvent.click(screen.getByText('drop the row'));
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -431,7 +421,6 @@ describe('ListView, the views', () => {
     const stored = JSON.parse(window.localStorage.getItem(savedViewsKey('stays', SCOPE)) ?? '{}');
     expect(stored).toMatchObject({ version: 1, views: [{ name: 'My requests', query: 'chip=pending&f_property=casa-bianca' }] });
 
-    // It is in the menu under "My views", and applying it brings the list back to what it was.
     fireEvent.click(screen.getByRole('button', { name: 'All' }));
     expect(addressNow()).toBe('?chip=all&f_property=casa-bianca');
     fireEvent.click(within(await openViews()).getByRole('menuitemradio', { name: 'My requests' }));
@@ -521,7 +510,6 @@ describe('ListView, the layout', () => {
     expect(addressNow()).toBe('?view=board');
     expect(screen.getByTestId('list-board')).toBeInTheDocument();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
-    // The columns start from the quick filter for everything: with "Upcoming" most of them would be empty.
     expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
 
     fireEvent.click(screen.getByRole('button', { name: 'List' }));

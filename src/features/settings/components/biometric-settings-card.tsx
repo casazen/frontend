@@ -36,19 +36,16 @@ import {
 import { useBiometricCardBusy, useBiometricModelsStatus, useBiometricSettings, useUpdateBiometricSettings } from '../use-biometric-settings';
 import { IdentitySegmentsSection } from './identity-segments-section';
 
-/** The bounds written the way the page is read (`0,50`), in the language of the page. */
 function boundText(value: number, language: string): string {
   return new Intl.NumberFormat(language, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 }
 
-/** When the thresholds were calibrated, in the words of the language of the page; nothing for a date that cannot be read. */
 function calibratedOn(value: string | null, language: string): string | undefined {
   if (!value) return undefined;
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? undefined : new Intl.DateTimeFormat(language, { dateStyle: 'long' }).format(date);
 }
 
-/** One model of the set: its name, how it is, and why it cannot be used when it cannot. No path, no hash: the API does not send them. */
 function ModelRow({ model }: { model: BiometricModelStatus }) {
   const { t } = useTranslation();
   const failed = model.state === 'failed';
@@ -67,7 +64,6 @@ function ModelRow({ model }: { model: BiometricModelStatus }) {
   );
 }
 
-/** The models of the set for the platform administrators: name, state and reason, so a verification that always goes to a person has a visible cause. */
 function ModelsStatus() {
   const { t } = useTranslation();
   const status = useBiometricModelsStatus(true);
@@ -102,11 +98,9 @@ function ModelsStatus() {
   );
 }
 
-/** The form of the settings, started from what the server holds and set again only when that changes: what is typed is never wiped by a refetch of the same data. */
 function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
   const { t, i18n } = useTranslation();
   const update = useUpdateBiometricSettings();
-  // Any write of the card in flight (the settings, or a segment) keeps every control of the form off until it ends.
   const busy = useBiometricCardBusy() || update.isPending;
   const [form, setForm] = useState<BiometricForm>(() => formOf(settings));
   const [synced, setSynced] = useState<BiometricSettings>(settings);
@@ -273,7 +267,6 @@ export function BiometricSettingsCard({ compact = false }: { compact?: boolean }
         <BiometricSettingsForm settings={settings.data} />
       )}
 
-      {/* The segments of the self-hosted verification: it draws nothing (and asks nothing) while `checkInIdentitySelfHosted` is off. */}
       <IdentitySegmentsSection />
 
       {isPlatformAdmin(contexts) && <ModelsStatus />}
@@ -285,7 +278,6 @@ export function BiometricSettingsCard({ compact = false }: { compact?: boolean }
       <div className="flex flex-wrap items-center gap-2">
         <ScanFace aria-hidden="true" className="size-5 text-primary-text" />
         <h2 id="biometric-settings-title" className="font-semibold">{t('biometricSettings.title')}</h2>
-        {/* A read that failed leaves the older answer in memory: the badge is part of what is not known then. */}
         {!settings.isError && settings.data?.provisional ? (
           <Badge variant="warning" data-testid="biometric-provisional">{t('biometricSettings.provisional.badge')}</Badge>
         ) : null}

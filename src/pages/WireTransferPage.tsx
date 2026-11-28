@@ -38,18 +38,14 @@ import type { CreateBatchResponse, WireBatch, WireCurrency } from '@/types';
 
 const NO_BATCHES: readonly WireBatch[] = [];
 
-/** What one request of the last attempt came to: the file the server made for a currency, or its refusal in words (and the owners it lists, by id and name). */
 interface Attempt {
   currency: WireCurrency;
-  /** The batch as the server answered it; `null` when the server refused. */
   batch: CreateBatchResponse | null;
   message: string;
   code: string | undefined;
-  /** The owners the refusal lists: the server sends their ids, the names are the ones the page had for them when the request was made. */
   owners: ReadonlyArray<{ id: string; name: string }>;
 }
 
-/** Where the list of the payable payouts of one currency stands: the states of a read, and the refusal of the server (403) as a state of its own. */
 type PayableState = 'loading' | 'notFound' | 'error' | 'refused' | 'ready';
 
 /**
@@ -78,20 +74,15 @@ function WireTransferBody() {
   const { t } = useTranslation();
   const format = useOwnerFormat();
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
-  // The payouts that went into a file in this visit: the page keeps them off the choice even when the list it read again has not come back yet (the server leaves them out
-  // of its list as soon as the file exists, and refuses them anyway, `payouts_already_in_batch`, also for the ones another visit or person put in a file).
   const [batchedIds, setBatchedIds] = useState<ReadonlySet<string>>(new Set());
   const [executionDate, setExecutionDate] = useState(() => todayInRome());
   const [confirming, setConfirming] = useState(false);
-  // What the person is asked to confirm, as it was when the confirmation opened: the files (one for each currency) and the payouts of each. What they confirm is what is sent,
-  // whatever the list does meanwhile, and the dialog does not change under them while the files are made.
   const [planned, setPlanned] = useState<ReadonlyArray<readonly [WireCurrency, readonly string[]]>>([]);
   const [running, setRunning] = useState(false);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   // A request is on its way: the state of the mutation says it a moment later than the click, so a second one in between is stopped here.
   const sending = useRef(false);
 
-  // One read for each currency: the franc page of the list never holds a euro payout, and the other way round.
   const chfQuery = usePayablePayouts('CHF');
   const eurQuery = usePayablePayouts('EUR');
   const batchesQuery = useWireBatches();
@@ -107,7 +98,6 @@ function WireTransferBody() {
   }, [chfRows, eurRows]);
   const ownerName = (ownerId: string, name: string) => name || t('ownerAccounting.owner.unnamed', { id: shortId(ownerId) });
 
-  // What is chosen, by currency: only what a file can pay, and only what is still on the list (a read that took a payout away drops it from the choice).
   const chosenByCurrency = useMemo(() => {
     const byCurrency = new Map<WireCurrency, string[]>();
     for (const [currency, items] of groups) {
@@ -133,7 +123,6 @@ function WireTransferBody() {
     });
   };
 
-  /** Chooses every payout of a currency that a file can pay, or clears the choice when they are all chosen. */
   const toggleGroup = (items: readonly PayableRow[]) => {
     if (busy) return;
     const payable = items.filter(isPayable);
@@ -160,7 +149,6 @@ function WireTransferBody() {
     setRunning(true);
     setAttempts([]);
     const results: Attempt[] = [];
-    // The names of the owners as the page has them now: a refusal lists only their ids.
     const namesById = new Map(groups.flatMap(([, items]) => items.map((row) => [row.ownerId, ownerName(row.ownerId, row.ownerName)] as const)));
     try {
       for (const [currency, ids] of planned) {
@@ -198,7 +186,6 @@ function WireTransferBody() {
   };
 
   const dismissConfirmation = (open: boolean) => {
-    // The requests are on their way: the dialog stays until the server has answered them all.
     if (!open && !busy && !sending.current) setConfirming(false);
   };
 
@@ -214,10 +201,6 @@ function WireTransferBody() {
     );
   }
 
-  /**
-   * Where the list of one currency stands. A refusal (403) is a state of its own and is never an empty list; a 404 is «not found» whatever the cache holds (a failed read keeps
-   * the last answer); and a list that failed to refresh and has nothing to show is a failure, never «no payments to make».
-   */
   const payableStateOf = (currency: WireCurrency, rows: readonly PayableRow[]): PayableState => {
     const read = payableReads[currency];
     const state = readStateOf(read);
@@ -233,7 +216,6 @@ function WireTransferBody() {
   const retryFailed = () => {
     for (const read of [chfQuery, eurQuery, batchesQuery]) if (read.isError) void read.refetch();
   };
-  // A failed read with the last answer in memory (a 404 or nothing to show is told in its part): the figures may be out of date.
   const stale =
     WIRE_CURRENCIES.some((currency) => payableStates[currency] === 'ready' && payableReads[currency].isError) ||
     (batchesQuery.isError && Boolean(batchesQuery.data) && getHttpStatus(batchesQuery.error) !== 404);
@@ -242,13 +224,10 @@ function WireTransferBody() {
 
   const composeBody = () => {
     const states = WIRE_CURRENCIES.map((currency) => payableStates[currency]);
-    // The server refuses the payouts (403: the caller reaches only some properties): told where the payouts would be, not an empty list and not the page of no access.
     if (states.includes('refused')) return <WireAccessLimited testId="wire-payouts-refused" />;
     if (states.includes('notFound')) return <ErrorState title={t('wire.notFound')} onRetry={retryFailed} />;
     if (states.includes('loading')) return <SkeletonCard lines={4} label={t('wire.loading')} />;
 
-    // A list that could not be read is told, with a way to read it again, never as «no payments to make»: for its own currency when only one failed (the other is still
-    // offered), and once for the page when both did.
     const failed = WIRE_CURRENCIES.filter((currency) => payableStates[currency] === 'error');
     const failures =
       failed.length === WIRE_CURRENCIES.length ? (

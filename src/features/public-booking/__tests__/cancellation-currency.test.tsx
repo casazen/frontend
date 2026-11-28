@@ -16,7 +16,6 @@ function preview(currency: string | undefined): GuestCancellationPreview {
     cancellable: true,
     reason: null,
     kind: 'cancel',
-    // `currency` is a required text in the answer of the server: what these tests give it is what a malformed answer would carry.
     currency: currency as string,
     paidAmount: 362,
     alreadyRefundedAmount: 0,
@@ -82,7 +81,6 @@ describe('the refund of the cancellation with no currency in the data', () => {
     expect(screen.getByTestId('guest-cancellation-summary')).not.toHaveTextContent('valuta non disponibile');
     unmount();
 
-    // And a euro of the data is still written exactly as it was.
     render(<RefundSummary preview={preview('EUR')} />);
     expect(screen.getByTestId('guest-cancellation-headline').textContent).toBe(`Ti rimborsiamo ${new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(190.5)}`);
   });

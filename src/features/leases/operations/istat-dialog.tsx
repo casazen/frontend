@@ -18,7 +18,6 @@ import { LetterSentForm } from './letter-sent-form';
 import { formatPercent, letterState, parsePercent } from './operations-model';
 import { useLetterDownload } from './use-letter-download';
 
-/** How long the percentages stand still before the server is asked to work them out. */
 const CALCULATION_DELAY_MS = 400;
 
 interface IstatDialogProps {
@@ -28,7 +27,6 @@ interface IstatDialogProps {
   onClose: () => void;
 }
 
-/** The first of the next month when it is inside the days the update can start from (the first installment after the request), else the first day it can. */
 function defaultEffectiveDay(min: string, max: string): string {
   const nextMonth = addMonths(startOfMonth(min), 1);
   return nextMonth !== '' && (max === '' || nextMonth <= max) ? nextMonth : min;
@@ -53,7 +51,6 @@ function IstatBody({ lease, operations, onClose }: Omit<IstatDialogProps, 'open'
   const settled = useDebouncedValue(input, CALCULATION_DELAY_MS);
   const calculation = useIstatCalculation(lease.id, settled);
 
-  // The figure on screen is the one of the percentages on screen: while the next answer arrives nothing stale is shown.
   const result =
     calculation.data && foi !== null && share !== null && calculation.data.foiPercent === foi && calculation.data.sharePercent === share
       ? calculation.data

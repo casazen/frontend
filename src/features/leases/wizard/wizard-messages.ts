@@ -16,7 +16,6 @@ function dayOf(value: unknown, language: string, options?: Intl.DateTimeFormatOp
   return typeof value === 'string' ? formatStayDate(parseStayDate(value), language, options) : undefined;
 }
 
-/** «1 nov 2026»: the short month, for the days of another lease in a sentence of its own. */
 const SHORT_DAY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
 /**
@@ -31,11 +30,6 @@ export function needMessage(t: Translate, i18n: Exists, need: Pick<LeaseNeed, 'c
   return t(key, messageOptions(t, i18n, need));
 }
 
-/**
- * What the wizard says under its buttons about a thing that is not done (LR-WIZ-1): «Manca: il canone mensile» for a thing that is
- * missing, «Da sistemare: …» for a thing that is there and wrong (a deposit over the limit, a fiscal code twice). The same codes of the
- * server, the same parameters; the thing that is missing is a noun («la casa del contratto»), the other keeps its full sentence.
- */
 export interface GuideLine {
   lead: 'missing' | 'fix';
   text: string;
@@ -47,7 +41,6 @@ export function guideNeed(t: Translate, i18n: Exists, need: Pick<LeaseNeed, 'cod
   return { lead: 'fix', text: needMessage(t, i18n, need) };
 }
 
-/** The values a sentence of a need can use: the figures the server sends, written as people read them. */
 function messageOptions(t: Translate, i18n: Exists, need: Pick<LeaseNeed, 'code' | 'params'>) {
   const params = need.params ?? {};
   const count = typeof params.count === 'number' ? params.count : undefined;
@@ -70,15 +63,12 @@ function messageOptions(t: Translate, i18n: Exists, need: Pick<LeaseNeed, 'code'
     minMonthly: amountOf(params.minMonthly),
     maxMonthly: amountOf(params.maxMonthly),
     months: params.months,
-    // The limit of a text (the documentation of a transitory contract) and the inhabitants above which its rent has a band to respect.
     characters: params.maxLength,
     inhabitants: typeof params.inhabitants === 'number' ? new Intl.NumberFormat(i18n.language).format(params.inhabitants) : undefined,
     start: dayOf(params.start, i18n.language),
     end: dayOf(params.end, i18n.language),
-    // The days of the other lease of the property that is in the way of this one (`lease_overlap`, LR-OVERLAP).
     from: dayOf(params.conflictingFrom, i18n.language, SHORT_DAY),
     to: dayOf(params.conflictingTo, i18n.language, SHORT_DAY),
-    // A review check that names the whole term (start and end) is told in full; the one with the start alone, briefly.
     context: need.code === 'start_ok' && params.end ? 'term' : undefined,
     reason: typeof params.reason === 'string' && i18n.exists(reasonKey) ? t(reasonKey, limits) : '',
   };

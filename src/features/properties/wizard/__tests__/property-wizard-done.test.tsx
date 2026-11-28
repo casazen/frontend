@@ -4,10 +4,6 @@ import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { PropertyWizardDone } from '../property-wizard-done';
 
-/**
- * The first wizard of the path «Inizia con CasaZen» to end with its next step (UX-10, E10/F03/US01/T03): the done screen of the property
- * wizard shows `WizardNextStep` for the part `listings`, under «Cosa succede ora». The suggestion itself has its own test.
- */
 const useProperty = vi.hoisted(() => vi.fn());
 const useComplianceActivation = vi.hoisted(() => vi.fn());
 vi.mock('@/queries/use-properties', () => ({ useProperty }));
@@ -51,7 +47,6 @@ describe('PropertyWizardDone: the next step of the path at the end of the wizard
     const whatNext = screen.getByRole('heading', { name: i18n.t('wizard.done.whatNext') });
 
     expect(suggestion).toHaveAttribute('data-current-part', 'listings');
-    // After «Cosa succede ora» and before the two actions of the screen.
     expect(whatNext.compareDocumentPosition(suggestion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(suggestion.compareDocumentPosition(screen.getByTestId('wizard-done-primary')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
@@ -72,7 +67,6 @@ describe('PropertyWizardDone: the next step of the path at the end of the wizard
     expect(screen.getByTestId('wizard-next-step-stub')).toHaveAttribute('data-current-part', 'listings');
   });
 
-  // E29/F02/US02/T01: a property in Switzerland is not ready to activate while its municipality (in Ticino its structure number) is missing, and this screen must never say it is.
   describe('a property in Switzerland that still lacks what it needs to be notified', () => {
     const swissStep = (code: string) => ({
       id: 'guest-registration',
@@ -90,7 +84,6 @@ describe('PropertyWizardDone: the next step of the path at the end of the wizard
       });
       renderDone();
 
-      // Not «ready»: the screen lists the point that is open, in plain words, and leads to where it is fixed (the last step, where the card of the notification is).
       expect(screen.queryByText(i18n.t('propertyWizard.done.leadReady'))).not.toBeInTheDocument();
       expect(screen.queryByText(i18n.t('propertyWizard.done.readyToActivate'))).not.toBeInTheDocument();
       expect(screen.getByText(i18n.t('propertyWizard.done.leadOpen'))).toBeInTheDocument();

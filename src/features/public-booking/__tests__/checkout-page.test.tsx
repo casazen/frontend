@@ -13,7 +13,6 @@ import type { CreateDirectBookingPayload, DirectBookingQuote, DirectBookingRespo
 
 vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getOrgProperty: vi.fn(), getOrgPropertyCalendar: vi.fn() } }));
 vi.mock('@/api/public-booking.api', () => ({ publicBookingApi: { quoteDirectBooking: vi.fn(), createDirectBooking: vi.fn() } }));
-// The Payment Element is Stripe's: the page only has to show it once the booking exists.
 vi.mock('@/features/public-booking/components/stripe-intent-payment', () => ({
   StripeIntentPayment: () => <div data-testid="stripe-element" />,
 }));
@@ -97,7 +96,6 @@ const created: DirectBookingResponse = {
   checkoutToken: 'tok_secret_checkout',
 };
 
-/** Writes the query of the address into the page, so a test can read what the checkout leaves in it. */
 function LocationProbe() {
   return <output data-testid="location-search">{useLocation().search}</output>;
 }
@@ -164,7 +162,6 @@ describe('CheckoutPage', () => {
     renderCheckout();
 
     await screen.findByTestId('checkout-step-stay');
-    // The button waits for the quote of this very stay; the summary then shows the server's total, not 3 x 150 + 40.
     await waitFor(() => expect(screen.getByTestId('price-breakdown-total')).toHaveTextContent('502,50'));
     expect(screen.getByTestId('checkout-stay-summary')).toHaveTextContent('3 notti');
     expect(screen.getByTestId('checkout-next')).not.toHaveAttribute('aria-disabled');
@@ -218,7 +215,6 @@ describe('CheckoutPage', () => {
     await goToDetails();
     await fillDetailsAndGoToPayment();
 
-    // The step and the stay are in the address, the guest is not.
     const search = screen.getByTestId('location-search').textContent ?? '';
     expect(search).toContain('step=3');
     expect(search).toContain('checkin=2026-10-16');
@@ -231,7 +227,6 @@ describe('CheckoutPage', () => {
     await goToDetails();
     await fillDetailsAndGoToPayment();
 
-    // The hold of the dates is not promised before the booking exists.
     expect(screen.queryByText(/30 minuti/)).not.toBeInTheDocument();
     fireEvent.click(document.getElementById('data-consent') as HTMLElement);
     await waitFor(() => expect(screen.getByTestId('checkout-submit')).not.toHaveAttribute('aria-disabled'));
@@ -245,13 +240,11 @@ describe('CheckoutPage', () => {
     const payload = vi.mocked(publicBookingApi.createDirectBooking).mock.calls[0][0] as CreateDirectBookingPayload;
     expect(payload).toMatchObject({ propertyId: PROPERTY_ID, checkInDate: '2026-10-16', checkOutDate: '2026-10-19', numberOfAdults: 2, paymentOption: 'Immediate' });
     expect(payload.consent.dataProcessing).toBe(true);
-    // Now the booking exists: the hold is real, the Payment Element is there, and the guest is not asked for the card twice.
     expect(screen.getByText(/30 minuti/)).toBeInTheDocument();
     expect(screen.getByTestId('stripe-element')).toBeInTheDocument();
   });
 
   it('CheckoutPage_LinkOfTheAgency_SendsWhereTheGuestCameFromWithTheBookingAndKeepsItOffTheDevice', async () => {
-    // The agency copied the link from CasaZen (NF-123): its `utm_*` are in the address, and the guest came from a page of the agency's own site.
     Object.defineProperty(document, 'referrer', { value: 'https://www.agenzia.it/case/villa-mare?token=abc', configurable: true });
     try {
       window.localStorage.clear();
@@ -266,10 +259,8 @@ describe('CheckoutPage', () => {
 
       await screen.findByTestId('checkout-payment');
       const payload = vi.mocked(publicBookingApi.createDirectBooking).mock.calls[0][0] as CreateDirectBookingPayload;
-      // The source of the link and the host of the page, not the page: no path, no query, nothing of the guest.
       expect(payload.attribution).toEqual({ source: 'agency-site', medium: 'link', campaign: 'estate-2026', referrer: 'www.agenzia.it' });
       expect(JSON.stringify(payload.attribution).toLowerCase()).not.toMatch(/mario|rossi|example|token|abc/);
-      // It was read from the address and sent: nothing of it is kept on the device.
       expect(JSON.stringify({ ...window.localStorage, ...window.sessionStorage })).not.toMatch(/agency-site|estate-2026|agenzia/);
     } finally {
       delete (document as { referrer?: string }).referrer;
@@ -286,7 +277,6 @@ describe('CheckoutPage', () => {
     fireEvent.click(screen.getByTestId('checkout-submit'));
 
     await screen.findByTestId('checkout-payment');
-    // A booking of the site of CasaZen itself: the API reads no attribution as «Sito CasaZen».
     expect(vi.mocked(publicBookingApi.createDirectBooking).mock.calls[0][0]).not.toHaveProperty('attribution');
   });
 
@@ -294,7 +284,6 @@ describe('CheckoutPage', () => {
     [false, undefined],
     [true, { referrer: 'www.google.com' }],
   ] as const)('CheckoutPage_VisitFromASearchEngineWithNoLink_SendsTheHostOnlyWithTheConsentToStatistics (consent: %s)', async (consent, attribution) => {
-    // No `utm_*` in the address: the site the guest came from is a fact about the visitor, which the site keeps only with the consent to statistics (DB-02b).
     Object.defineProperty(document, 'referrer', { value: 'https://www.google.com/search?q=villa+mare', configurable: true });
     try {
       window.localStorage.clear();

@@ -8,19 +8,12 @@ import { knownWarningCodesOf, minorsCountedOf, missingKeysOf } from './ticino-da
 
 interface TicinoGuestsStepProps {
   day: TicinoNotificationDay;
-  /** The person may correct the guests of a stay (`booking.write`, what the host form of the guests asks): «Completa i dati» opens it. */
   canEditGuests: boolean;
-  /** Any request of the layer is on its way: the buttons wait for it. */
   busy: boolean;
-  /** Opens the editor of the guests of a stay, inside the layer. */
   onComplete: (bookingId: string) => void;
   onNext: () => void;
 }
 
-/**
- * Step 1 «Ospiti da notificare»: who is in the file of the day, who is left out and what each of them misses, with «Completa i dati» to put it right without
- * leaving the layer; what the file alone does not settle (the authorization of the parents, the sheet of a group) and the letters the file writes without their accent.
- */
 export function TicinoGuestsStep({ day, canEditGuests, busy, onComplete, onNext }: TicinoGuestsStepProps) {
   const { t } = useTranslation();
   const minors = minorsCountedOf(day);

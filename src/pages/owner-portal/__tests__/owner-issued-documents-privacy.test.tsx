@@ -31,7 +31,6 @@ vi.setConfig({ testTimeout: 30_000 });
 const list = vi.mocked(ApiClient.get);
 const getFile = vi.mocked(axios.get);
 
-/** What the server sends for a document issued in the name of the owner: and, in these tests, MORE than it should (the data of a guest), to prove that none of it is ever shown or kept. */
 const ROW = {
   documentId: 'f0000000-0000-4000-8000-000000000001',
   agencyId: 'a0000000-0000-4000-8000-000000000009',
@@ -43,7 +42,6 @@ const ROW = {
   currency: 'EUR',
   sdiStatus: 'not_applicable',
   hasXml: false,
-  // Not part of the contract: a server that sent them by mistake must not make them appear.
   guestName: 'Giulia Verdi',
   guestEmail: 'giulia.verdi@example.com',
   guestPhone: '+39 333 000 1122',
@@ -58,7 +56,6 @@ function refusal(status: number, code: string): AxiosError {
   return new AxiosError('refused', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data: { status, code } });
 }
 
-/** What the call hands over for a 403 of a file once it takes the refusal as an answer (`acceptsRefusal`): the response of the server, whose body is a Blob that holds the problem. */
 const refusedFile = (code: string) => ({
   status: 403,
   data: new Blob([JSON.stringify({ status: 403, code })], { type: 'application/problem+json' }),
@@ -90,9 +87,7 @@ describe('the documents issued in the name of the owner show nothing of a guest 
     expect(cards).toHaveLength(2);
     const text = container.textContent ?? '';
     for (const secret of ['Giulia', 'Verdi', 'giulia.verdi@example.com', '333 000 1122']) expect(text).not.toContain(secret);
-    // The number, the kind, the total and the state are what the page shows.
     expect(within(cards[0]).getByRole('heading')).toHaveTextContent('RIC-2026/14');
-    // Nothing of the guest reached the cache of the queries either: only the members of the contract are kept.
     const kept = client.getQueryData<Record<string, unknown>[]>([OWNER_PORTAL_KEY, 'issued-documents', null]);
     expect(kept).toBeDefined();
     for (const row of kept ?? []) {
@@ -111,7 +106,6 @@ describe('the documents issued in the name of the owner show nothing of a guest 
     const name = vi.mocked(saveBlobAs).mock.calls[0][1];
     expect(name).toBe('documento-RIC-2026-14.pdf');
     for (const secret of ['Giulia', 'Verdi', 'Lago', 'example.com']) expect(name).not.toContain(secret);
-    // The file is asked of the owner's own endpoint: the document id and the language, never the id of an owner (the server takes it from the claim) or a name.
     expect(getFile.mock.calls[0][0]).toBe('/owner-portal/issued-documents/f0000000-0000-4000-8000-000000000001/pdf?lang=it');
   });
 
@@ -124,7 +118,6 @@ describe('the documents issued in the name of the owner show nothing of a guest 
     await waitFor(() => expect(saveBlobAs).toHaveBeenCalledTimes(1));
     const [url, config] = getFile.mock.calls[0] as [string, { params: Record<string, string> }];
     expect(url).toBe('/owner-portal/issued-documents/export');
-    // A month or a year and nothing else: no owner, no name and no email in the request.
     expect(Object.keys(config.params)).toEqual(['period']);
     expect(config.params.period).toMatch(/^\d{4}(-\d{2})?$/);
     expect(vi.mocked(saveBlobAs).mock.calls[0][1]).toBe('casazen-documenti-emessi-2026-10.zip');
@@ -137,12 +130,10 @@ describe('the documents issued in the name of the owner show nothing of a guest 
     expect(await screen.findByTestId('owner-issued-error')).toHaveAttribute('data-state', 'permission');
     expect(screen.queryByTestId('owner-issued-list')).toBeNull();
     expect(screen.queryByTestId('owner-issued-empty')).toBeNull();
-    // A button that can only be refused is not drawn.
     expect(screen.queryByTestId('owner-issued-export-download')).toBeNull();
   });
 
   it('OwnerIssuedDocuments_WhenTheExportIsRefusedForThePermission_SaysSoInWordsAndTheCallTakesTheRefusalAsAnAnswer', async () => {
-    // The shared client sends the whole app to the page of no access on a 403 for a read whose body has no code, and the body of a file is a Blob: the call has to take the refusal as an answer.
     getFile.mockResolvedValue(refusedFile('owner_portal_permission_missing'));
     renderPage();
 
@@ -162,7 +153,6 @@ describe('the documents issued in the name of the owner show nothing of a guest 
     const [receipt] = await screen.findAllByTestId('owner-issued-document');
     fireEvent.click(within(receipt).getByTestId('owner-issued-pdf'));
 
-    // Said in a toast, as every download of the app (UX round 2026-11).
     await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
     const [, config] = getFile.mock.calls[0] as [string, { validateStatus: (status: number) => boolean }];
     expect(config.validateStatus(403)).toBe(true);

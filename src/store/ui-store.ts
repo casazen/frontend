@@ -2,10 +2,8 @@ import { create } from 'zustand';
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 import { isEmbedPath } from '@/lib/embed-path';
 
-/** Where the interface preferences of the user are kept between visits (only `sidebarCollapsed` today). */
 export const UI_STORE_STORAGE_KEY = 'casazen:sidebar';
 
-/** What the store keeps on a page of the embeddable widgets (NF-144): the value lives and dies with the page, in this object. */
 const inMemory = new Map<string, string>();
 const IN_MEMORY_STORAGE: StateStorage = {
   getItem: (name) => inMemory.get(name) ?? null,
@@ -40,27 +38,13 @@ export const DEFAULT_WORKSPACE_VIEW: WorkspaceView = { compact: false, secondary
 interface UiState {
   workspaceViews: Record<string, WorkspaceView>;
   updateWorkspaceView: (key: string, change: (view: WorkspaceView) => WorkspaceView) => void;
-  /**
-   * On a phone (< md): the sheet "Altro" of the bottom bar is open (`MoreSheet`, UI-04b). The bar and the menu button of the
-   * header opened it too until UI-05, which took the menu button out. The name is the one the drawer that slid in from the
-   * left had.
-   */
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
-  /** The sidebar of the desktop shows only the icons (UI-04a). Kept between visits. */
   sidebarCollapsed: boolean;
   toggleSidebarCollapsed: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
-  /**
-   * The bottom bar of the phone is on the page (`BottomNav`, UI-04b). The toasts read it (`AppToaster`): with a bar they come
-   * up above it; on a page without one (the public pages, the login) they stay where they were, at the top.
-   */
   bottomBarVisible: boolean;
   setBottomBarVisible: (visible: boolean) => void;
-  /**
-   * The page has its primary action fixed at the bottom of the phone (`PageHeader` with `mobilePrimary`, UI-05). The
-   * content makes room for it (`AppShellLayout`) and the toasts come up above it (`AppToaster`). Not persisted.
-   */
   mobilePrimaryVisible: boolean;
   setMobilePrimaryVisible: (visible: boolean) => void;
   /**
@@ -72,7 +56,6 @@ interface UiState {
   openWizards: number;
   wizardOpened: () => void;
   wizardClosed: () => void;
-  /** The «Guida» panel of the header is open (`GuidePanel`, opened by the button of the header). Not persisted. */
   guideOpen: boolean;
   setGuideOpen: (open: boolean) => void;
 }
@@ -105,11 +88,8 @@ export const useUiStore = create<UiState>()(
     }),
     {
       name: UI_STORE_STORAGE_KEY,
-      // `localStorage` as zustand has it by default (a storage that cannot be reached is no storage: the store lives in memory), except on a page of the widgets.
       storage: createJSONStorage(uiStorage),
       version: 1,
-      // The sheet of the phone starts closed on every visit and the bar says by itself that it is there: only the
-      // preference is kept.
       partialize: (state) => ({ sidebarCollapsed: state.sidebarCollapsed, ...(Object.keys(state.workspaceViews).length ? { workspaceViews: state.workspaceViews } : {}) }),
     },
   ),

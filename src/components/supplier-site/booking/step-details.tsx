@@ -11,14 +11,11 @@ interface StepDetailsProps {
   onChange: (patch: Partial<BookingDraft>) => void;
   consent: boolean;
   onConsent: (value: boolean) => void;
-  /** The trap for robots: a field the page never shows to a person. */
   trap: string;
   onTrap: (value: string) => void;
-  /** What is wrong, once the person tried to go on. */
   problems: DetailsProblems;
 }
 
-/** Step 4, "I tuoi dati": where the work is, who the customer is, the consent. */
 export function StepDetails({ draft, onChange, consent, onConsent, trap, onTrap, problems }: StepDetailsProps) {
   const { t } = useTranslation();
   const consentId = useId();
@@ -105,7 +102,6 @@ export function StepDetails({ draft, onChange, consent, onConsent, trap, onTrap,
         ) : null}
       </div>
 
-      {/* The trap for robots: hidden by the stylesheet, not by `type="hidden"`, out of the tab order and out of the reading order. */}
       <div className="vb-trap" aria-hidden="true">
         <label htmlFor={trapId}>{t('supplierSite.booking.details.trap')}</label>
         <input
@@ -114,7 +110,6 @@ export function StepDetails({ draft, onChange, consent, onConsent, trap, onTrap,
           name="website"
           tabIndex={-1}
           autoComplete="off"
-          // A password manager or an autofill must not fill the trap for a person: the booking would be answered and dropped.
           data-lpignore="true"
           data-1p-ignore=""
           data-form-type="other"

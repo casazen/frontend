@@ -81,11 +81,9 @@ describe('PropertyDocumentsTab, the credentials of the portals under the documen
     const { container } = renderTab();
 
     await screen.findByTestId('istat-credentials-card');
-    // Under the police credentials, not before them.
     const cards = Array.from(container.querySelectorAll('[data-testid$="-credentials-card"]')).map((card) => card.getAttribute('data-testid'));
     expect(cards).toEqual(['questura-credentials-card', 'istat-credentials-card']);
     await waitFor(() => expect(onboardingAssistApi.getIstatCredentialsStatus).toHaveBeenCalledWith(PROPERTY_ID));
-    // The caller may write the property: the form is there, empty.
     expect(await screen.findByTestId('istat-credentials-form')).toBeInTheDocument();
   });
 
@@ -130,14 +128,12 @@ describe('PropertyDocumentsTab, the credentials of the portals under the documen
     session.flags = { octorateOnboarding: true };
     renderTab('IT', false);
 
-    // `canWrite` is what the card gets as `canEdit`: the status is read, the credentials cannot be set, replaced or removed.
     expect(await screen.findByTestId('istat-credentials-status')).toBeInTheDocument();
     expect(screen.queryByTestId('istat-credentials-form')).not.toBeInTheDocument();
     expect(screen.queryByTestId('questura-credentials-form')).not.toBeInTheDocument();
   });
 });
 
-// E29/F02/US02/T01: a property in Switzerland shows the card of the regime of its canton in the place of the general guidance, behind the flag `guestRegistrationRegimes`.
 describe('PropertyDocumentsTab, the notification of the guests of a property in Switzerland', () => {
   const TICINO = { isInTicino: true, ticinoStructureId: null } as Partial<PropertyDetailDto>;
 
@@ -148,12 +144,10 @@ describe('PropertyDocumentsTab, the notification of the guests of a property in 
     expect(await screen.findByTestId('guest-registration-facts')).toBeInTheDocument();
     expect(screen.getByTestId('guest-registration-card')).toHaveAttribute('data-variant', 'page');
     expect(guestRegistrationApi.get).toHaveBeenCalledWith(PROPERTY_ID);
-    // The old guidance is gone, the portal opens from the card (the page of the property is not a wizard), and the number is asked once: in the card.
     expect(screen.queryByText(i18n.t('property.swissRegistration.title'))).not.toBeInTheDocument();
     expect(screen.getByTestId('guest-registration-portal-link')).toHaveAttribute('target', '_blank');
     expect(await screen.findAllByTestId('ticino-structure-id-form')).toHaveLength(1);
     expect(screen.getByTestId('guest-registration-missing')).toHaveTextContent(i18n.t('guestRegistration.missing.ticino_structure_id_missing'));
-    // The page of the notification of the police is still one click away.
     expect(screen.getByTestId('ticino-police-link')).toBeInTheDocument();
   });
 
@@ -187,8 +181,6 @@ describe('PropertyDocumentsTab, the notification of the guests of a property in 
   });
 });
 
-// E30/F02/US03/T02: the guided notification to the Ticino police is a layer, not a page: the link of the property opens it where the person is (a drawer of the shell), and where there is none the
-// link is the address of the cockpit with the layer open, so it never leads to a page that is not there.
 describe('PropertyDocumentsTab, the guided notification of a property in Ticino', () => {
   const ticino = { isInTicino: true, ticinoStructureId: 'NL-12345678' } as Partial<PropertyDetailDto>;
 
@@ -205,13 +197,11 @@ describe('PropertyDocumentsTab, the guided notification of a property in Ticino'
   });
 
   it('PropertyDocumentsTab_PageWithTheDrawer_TheLinkOpensTheLayerInPlaceAndTheAddressKeepsTheOtherParameters', async () => {
-    // The shell mounts the drawer once: here a host and the kind stand for it.
     const unregister = registerDetail(TICINO_LAYER_KIND, { title: 'swiss.layer.title', Content: () => <p>layer</p> });
     renderTab('CH', false, ticino, true);
 
     fireEvent.click(screen.getByTestId('ticino-police-link'));
 
-    // The page is the one the person was on: only the layer was added to its address.
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(`/app/short-rent/properties/p1?section=documents&detail=ticino:${PROPERTY_ID}`));
     expect(await screen.findByRole('dialog', { name: 'Notifica alla polizia (Ticino)' })).toBeInTheDocument();
     unregister();

@@ -3,8 +3,6 @@ import type { ContextBootstrapDto } from '@/api/contexts';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { MEMBER_ROLE_KEYS, contextOf } from '@/test/org-contexts';
 
-// AM-00 (S1): the backend policy OrgBillingAdmin looks at the role key of the membership, not at the context alone, so a
-// collaborator of the org (who has the rental context too) is not a billing administrator.
 describe('isOrgBillingAdmin', () => {
   it.each([
     ['short-rent', 'property_owner'],
@@ -40,7 +38,6 @@ describe('isOrgBillingAdmin', () => {
   });
 
   it('isOrgBillingAdmin_ContextWithoutRoleKey_IsNotBillingAdmin', () => {
-    // A response of an older API, or a hand-made context: no role key means no proof of being the owner.
     const withoutRoleKey = { contextKey: 'short-rent' } as unknown as Pick<ContextBootstrapDto, 'contextKey' | 'roleKey'>;
 
     expect(isOrgBillingAdmin([{ contextKey: 'short-rent', roleKey: '' }])).toBe(false);

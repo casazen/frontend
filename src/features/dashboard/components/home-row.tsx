@@ -14,11 +14,9 @@ import { NoteLine } from './note-line';
 
 // At least 44 px high on every device, and a long label wraps instead of pushing the page sideways (the calm blocks' rule).
 const TOUCH = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
-// The title and the line under it are one control, as wide as the column and at least 44 px high.
 const OPEN =
   'group/open flex min-h-11 min-w-0 flex-col justify-center rounded-md text-left outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
-/** Accept a "pay at the property" request, or decline it after a confirmation (the guest is emailed and the dates are released). */
 function RespondButtons({ action, name }: { action: Extract<RowAction, { kind: 'respond' }>; name: string }) {
   const { t } = useTranslation();
   const approve = useApproveBookingRequest();
@@ -62,7 +60,6 @@ function RespondButtons({ action, name }: { action: Extract<RowAction, { kind: '
 
 function RowActionControl({ action, name }: { action: RowAction; name: string }) {
   const { t } = useTranslation();
-  // Several rows say the same ("Registra arrivo"): the name of the guest tells them apart, after the label.
   const ariaLabel = t('dashboard.row.actionFor', { action: action.label, name });
   switch (action.kind) {
     case 'link':
@@ -80,17 +77,12 @@ function RowActionControl({ action, name }: { action: RowAction; name: string })
 
 interface HomeRowItemProps {
   row: HomeRow;
-  /** The icon of the kind of row ("Oggi"); a row without one has no column for it ("Da fare"). */
   icon?: LucideIcon;
   /** The deadline above the title ("Da fare"), instead of under it. */
   noteFirst?: boolean;
   className?: string;
 }
 
-/**
- * A row of "Oggi" or "Da fare": what it is about (a link to its page, or to its drawer when the booking has one), a line
- * with a tone and, on the right, the one button that does what it asks.
- */
 export function HomeRowItem({ row, icon: Icon, noteFirst = false, className }: HomeRowItemProps) {
   const { t } = useTranslation();
   const drawer = useDetailDrawer();

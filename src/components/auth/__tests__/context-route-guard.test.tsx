@@ -36,7 +36,6 @@ function renderOtaRoute(flags: { otaPartnerApi: boolean; isLoading?: boolean }) 
   );
 }
 
-// FD-20 / D10: /app/short-rent/ota* is not reachable while the otaPartnerApi flag is off.
 describe('ContextRouteGuard feature flag', () => {
   beforeEach(() => {
     vi.mocked(useWorkspace).mockReturnValue({
@@ -103,8 +102,6 @@ function renderBillingRoute(entry: string, alternatePaths?: Partial<Record<AppCo
   );
 }
 
-// PL-16 (A1-36): an old link or Stripe return page of the short-rent plan page, opened by a landlord with only the
-// long-rent context, lands on the same page of the long-rent shell with its query string.
 describe('ContextRouteGuard plan and billing pages of another context', () => {
   beforeEach(() => {
     vi.mocked(useWorkspace).mockReturnValue({
@@ -180,7 +177,6 @@ function renderReservedRoute(options: { permissions: string[]; flagOn?: boolean;
   );
 }
 
-// UI-03: a page the role has no permission for was a silent redirect to the home; now the page says it is reserved.
 describe('ContextRouteGuard reserved page', () => {
   it('ContextRouteGuard_UserInTheAreaWithoutThePermission_ShowsTheReservedPageNotARedirect', () => {
     renderReservedRoute({ permissions: ['booking.read'] });
@@ -254,14 +250,12 @@ function renderConnectRoute(entry: string, permissions: string[]) {
   );
 }
 
-// E02/F01/US01/T04: the page the channel manager sends the host back to comes with a single-use code and state in its address.
 describe('ContextRouteGuard callback page of the channel manager', () => {
   it('ContextRouteGuard_CallbackPageWithoutThePermission_ShowsTheReservedPageWithoutTheCodeAndTheStateInTheAddress', () => {
     renderConnectRoute(`${OCTORATE_CONNECT_PATH}?code=the-code&state=the-state&step=consent`, ['booking.read']);
 
     expect(screen.getByRole('heading', { level: 1, name: i18n.t('appShell.reserved.title') })).toBeInTheDocument();
     expect(screen.queryByText('connect wizard')).not.toBeInTheDocument();
-    // The reserved page stays on screen and in the history: the single-use secrets do not stay in the address with it.
     expect(screen.getByTestId('location').textContent).toBe(`${OCTORATE_CONNECT_PATH}?step=consent`);
   });
 

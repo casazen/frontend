@@ -19,53 +19,40 @@ import { ServiceRequestForm } from './service-request-form';
 
 const STEP_DAY_TIME: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
 
-// The same control as a row of a `DayList`: at least 44 px high, the name and the line under it in one link.
 const OPEN =
   'group/open flex min-h-11 min-w-0 flex-col justify-center rounded-md text-left outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 export interface ServiceRequestRowProps {
   request: ServiceRequest;
-  /** Every request of the list: «Richiedi ad altro fornitore» needs the ones already made for the same job. */
   requests: readonly ServiceRequest[];
   context: ServiceRequestContextKey;
   showStay: boolean;
   showProperty: boolean;
   canManage: boolean;
   compact?: boolean;
-  /** Opens the request in the drawer of the app; false when it cannot (no drawer on the page), and the link goes to its page. */
   onOpenDetail: (request: ServiceRequest, event: MouseEvent<HTMLAnchorElement>) => void;
 }
 
-/** «2 nov, 19:21», with the year when it is not this one. Europe/Rome, whatever the time zone of the browser. */
 function stepMoment(instant: string | null, language: string): string {
   if (!instant) return '';
   const sameYear = romeDateOf(instant).slice(0, 4) === todayInRome().slice(0, 4);
   return formatRomeDateTime(instant, language, sameYear ? STEP_DAY_TIME : { ...STEP_DAY_TIME, year: 'numeric' });
 }
 
-/** The reason a supplier gave for refusing: what its history says, else what the request keeps. `null` when it gave none. */
 function rejectionReasonOf(request: ServiceRequest): string | null {
   const entry = request.history?.find((step) => step.status === 'Rifiutato');
   return (entry?.reason ?? request.rejectionReason)?.trim() || null;
 }
 
-/** The reason of a cancellation, as a sentence: what a person wrote as it is, the code of the automatic one in words. */
 function cancellationReasonOf(request: ServiceRequest, t: TFunction): string | null {
   const entry = request.history?.find((step) => step.status === 'Annullato');
   return cancellationReasonText(entry?.reason ?? request.cancellationReason, t);
 }
 
-/** Who made the last step, in a few words: only the three parties a host's request has. */
 function byText(actor: string | null, t: TFunction): string | null {
   return actor === 'Host' || actor === 'Supplier' || actor === 'System' ? t(`serviceRequest.list.by.${actor}`) : null;
 }
 
-/**
- * One supplier request of a stay or a property, on one line of the list: what it is and who it was asked of, then what matters now. A request
- * that is still to follow says when the job is and what it waits for (the sentence the golden journey reads); one that is over says who closed it
- * and when. The one thing the host can do is a button of the row («Segna pagato», «Richiedi ad altro fornitore»); the story of the request, with
- * every step, is in the drawer that its name opens.
- */
 export function ServiceRequestRow({ request, requests, context, showStay, showProperty, canManage, compact = false, onOpenDetail }: ServiceRequestRowProps) {
   const { t, i18n } = useTranslation();
   const markStayPaid = useMarkServiceRequestPaid();
@@ -84,7 +71,6 @@ export function ServiceRequestRow({ request, requests, context, showStay, showPr
   const whenLine = [when.day, when.time].filter(Boolean).join(' · ');
   const step = lastStep(request);
   const closing = [byText(step.actor, t), stepMoment(step.at, i18n.language)].filter(Boolean).join(' · ');
-  // What the line under the name says: the job to come, or who closed the request.
   const detail = closed
     ? closing
     : [showProperty ? request.propertyName?.trim() : null, whenLine || t('serviceRequest.list.noTime')].filter(Boolean).join(' · ');

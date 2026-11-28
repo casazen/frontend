@@ -46,10 +46,8 @@ function ResumeOnboardingLink({ userId, orgId }: { userId?: string; orgId?: stri
   ) : null;
 }
 
-/** Two columns from a wide screen: the thing that matters on the left (60 %), the one beside it on the right. */
 const TWO_COLUMNS = 'grid gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start';
 
-/** The daily workspace shows today's stays and pending operations. Analytics open separately from the page menu. */
 export function DashboardPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -59,7 +57,6 @@ export function DashboardPage() {
   const { user } = useCurrentUser();
   const viewKey = useAppShell()?.viewKey;
   const tasksFirst = useUiStore(state => Boolean(viewKey && state.workspaceViews[viewKey]?.tasksFirst));
-  // OTA partner API in freeze (D10): no widget and no request while the flag is off.
   const { flags } = useFeatureFlags();
   const otaEnabled = flags.otaPartnerApi;
   const canWrite = hasPermission('short-rent', 'booking.write');
@@ -86,8 +83,6 @@ export function DashboardPage() {
   const overview = useDashboardOverview(overviewQueryFor(period, propertyId), canReadBookings);
   const feeds = useDashboardIcalFeeds(canReadProperties && canReadBookings);
   const feedList = useMemo(() => (Array.isArray(feeds.data) ? feeds.data : []), [feeds.data]);
-  // The guests who wrote and wait for an answer (SR-12): a row of "Da fare" each, the ones of the channels included (NF-61). Without the
-  // permission to read bookings, no request.
   const threads = useMessageHubThreads({ needsReply: true, pageSize: 20 }, hasPermission('short-rent', 'booking.read'));
   const threadList = useMemo(() => threads.data?.items ?? [], [threads.data]);
 
@@ -139,11 +134,9 @@ export function DashboardPage() {
               ...(canReadBookings ? [{ label: t(analytics ? 'nav.dashboard' : 'dashboard.numbers.label'), icon: ChartNoAxesColumn, onClick: () => setQuery({ view: analytics ? null : 'analytics', period: null }) }] : []),
               ...(phone && createBooking ? [createBooking] : []),
               ...(canWriteProperty ? [{ label: t('dashboard.actions.addProperty'), icon: Building2, to: '/app/short-rent/properties/create' }] : []),
-              // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.
               ...(canRequestService
                 ? [{ label: t('dashboard.actions.requestService'), icon: Wrench, to: requestInterventionPath(propertyId || undefined), testId: 'home-request-service' }]
                 : []),
-              // The routines (how many run, or how to start the first one) are a way to a page, not the action of the Home: the last row of the menu.
               ...(showRoutineStatus && routines.isSuccess
                 ? [{
                     label: activeRoutineCount > 0 ? t('routines.dashboardActive', { count: activeRoutineCount }) : t(routines.data.length ? 'nav.routines' : 'aiSettings.firstRoutine'),
@@ -261,7 +254,6 @@ export function DashboardPage() {
   );
 }
 
-/** "mercoledì 7 ottobre · 2 arrivi, 1 partenza, 1 richiesta da approvare": only what the filter lets the host see. */
 function purposeOf(today: DashboardToday, propertyId: string, t: ReturnType<typeof useTranslation>['t'], locale: string): string {
   const total = (list: DashboardList<{ propertyId: string }>) => (propertyId ? list.items.filter((item) => item.propertyId === propertyId).length : list.count);
   const arrivals = total(today.arrivals);

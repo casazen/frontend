@@ -64,7 +64,6 @@ interface Scenario {
   flags: FeatureFlags;
 }
 
-/** Everything a role can look like: all the permissions, none, each one taken away, each one alone; with the flags off and on. */
 function scenariosFor(context: AppContextKey): Scenario[] {
   const permissions = permissionsOf(context);
   const scenarios: Scenario[] = [];

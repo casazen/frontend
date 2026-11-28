@@ -1,10 +1,7 @@
-/** Seasonal price suggestions ("Suggerimenti stagionali", D4): rules applied to the property's real nightly rate. */
 export type AdaptationFrequency = 'daily' | 'weekly';
 
-/** Rule that produced a suggestion (backend `SeasonalPriceRule`). */
 type SeasonalPriceRule = 'None' | 'HighSeason' | 'LowSeason' | 'Holiday';
 
-/** Italian national public holiday (backend `ItalianHoliday`). */
 type ItalianHoliday =
   | 'NewYear'
   | 'Epiphany'
@@ -20,7 +17,6 @@ type ItalianHoliday =
   | 'Christmas'
   | 'SaintStephen';
 
-/** The host's explicit rules: months or national holidays with a multiplier of the nightly rate. */
 export interface SeasonalPricingRules {
   includeSeasonality: boolean;
   highSeasonMonths: number[];
@@ -35,9 +31,7 @@ export interface PricingAdapterConfig extends SeasonalPricingRules {
   propertyId: string;
   isEnabled: boolean;
   adaptationFrequency: AdaptationFrequency;
-  /** Last computation of the suggestions (UTC instant), null if never computed. */
   lastAdaptedAt: string | null;
-  /** Europe/Rome date (yyyy-MM-dd) of the next automatic computation, null when disabled or never computed. */
   nextRunOn: string | null;
   createdAt: string | null;
   updatedAt: string | null;
@@ -49,9 +43,7 @@ export interface SavePricingAdapterConfigRequest extends SeasonalPricingRules {
 }
 
 export interface SeasonalSuggestion {
-  /** Stay date, yyyy-MM-dd. */
   date: string;
-  /** The property's nightly rate used as base. */
   basePrice: number;
   suggestedPrice: number;
   multiplier: number;
@@ -63,7 +55,6 @@ export interface SeasonalSuggestion {
 
 export interface SeasonalSuggestionsResponse {
   isEnabled: boolean;
-  /** The property's nightly rate now: the price quotes and bookings use. */
   currentBasePrice: number;
   computedAt: string | null;
   nextRunOn: string | null;

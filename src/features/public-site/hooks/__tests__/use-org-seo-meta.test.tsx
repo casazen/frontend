@@ -6,7 +6,6 @@ import i18n from '@/i18n/config';
 import type { PublicOrgDto, PublicPropertyDetailDto } from '@/types';
 import { classifyOrgSitePage, useOrgSeoMeta, usePropertySeoMeta } from '../use-org-seo-meta';
 
-/** BK-15 (A3-20): title, description, canonical and noindex of the booking-site pages, for tabs and shared links. */
 const ORG: PublicOrgDto = {
   slug: 'villa-rossi',
   displayName: 'Villa Rossi',
@@ -123,7 +122,6 @@ describe('usePropertySeoMeta', () => {
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
       'https://public.example.test/book/villa-rossi/property/casa-mare',
     );
-    // The first photo that is a usable https URL; the legacy relative path is skipped.
     expect(meta('meta[property="og:image"]')).toBe('https://cdn.example.test/casa-1.jpg');
   });
 

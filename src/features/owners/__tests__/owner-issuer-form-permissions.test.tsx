@@ -31,7 +31,6 @@ vi.setConfig({ testTimeout: 30_000 });
 const OWNER_ID = 'a0000000-0000-4000-8000-000000000001';
 const OTHER_ID = 'a0000000-0000-4000-8000-000000000002';
 
-/** The profile of an owner as the server answers it: complete and in clear for a caller who may change it, masked for any other. */
 const profile = (overrides: Partial<OwnerIssuerProfile> = {}): OwnerIssuerProfile => ({
   ownerId: OWNER_ID,
   exists: true,
@@ -71,17 +70,14 @@ function renderInto(element: ReturnType<typeof createElement>) {
   return { ...render(createElement(QueryClientProvider, { client }, element)), client };
 }
 
-/** A call the server answers with `status`. */
 function httpFailure(status: number): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE, config, {}, { status, data: { status }, statusText: '', headers: {}, config });
 }
 
-/** What the server answers for an owner that has no profile yet (an empty one, in clear for a caller who may change it). */
 const NO_PROFILE = (): OwnerIssuerProfile =>
   profile({ exists: false, canIssue: false, regime: null, legalName: null, fiscalCode: null, addressStreet: null, addressCivic: null, postalCode: null, city: null, province: null });
 
-/** The window comes back: the profile of the owner is read again, and the page waits for the answer. */
 async function readAgain(client: ReturnType<typeof renderInto>['client']) {
   await act(async () => {
     await client.invalidateQueries({ queryKey: [OWNER_ISSUER_KEY, OWNER_ID] });
@@ -107,7 +103,6 @@ describe('the issuer profile of an owner follows the permissions of the server (
 
     const section = await screen.findByTestId('owner-issuer-section');
     expect(await within(section).findByTestId('owner-issuer-masked-notice')).toBeInTheDocument();
-    // The values are the masked ones the server sent: the page never asks for the real ones, and it has no way to change them.
     expect(within(section).getByTestId('owner-issuer-fact-legalName')).toHaveTextContent('••••ssi');
     expect(within(section).queryByTestId('owner-issuer-form')).toBeNull();
     expect(within(section).queryByTestId('owner-issuer-save')).toBeNull();
@@ -150,7 +145,6 @@ describe('the issuer profile of an owner follows the permissions of the server (
     await waitFor(() => expect(write).toHaveBeenCalledTimes(1));
     const [ownerId, request] = write.mock.calls[0];
     expect(ownerId).toBe(OWNER_ID);
-    // The whole profile, in Italy, with the texts cut and what is blank left out (the server clears it): the choices marked «to confirm» keep their prudent default.
     expect(request).toMatchObject({ regime: 'VatOrdinary', legalName: 'Casa Mia Srl', vatNumber: '01234567890', countryCode: 'IT', stayVatTreatment: 'Standard' });
     expect(request.fiscalCode).toBeUndefined();
   });
@@ -163,11 +157,9 @@ describe('the issuer profile of an owner follows the permissions of the server (
     const form = await screen.findByTestId('owner-issuer-form');
     fireEvent.change(within(form).getByTestId('owner-issuer-legal-name'), { target: { value: 'Casa Mia Srl' } });
     fireEvent.change(within(form).getByTestId('owner-issuer-city'), { target: { value: 'Como' } });
-    // The window comes back after more than half a minute: the profile is read again. The fields are the same; the answer says the profile exists now and what it misses.
     read.mockResolvedValue({ ...NO_PROFILE(), exists: true, missingFields: ['regime'] });
     await readAgain(client);
 
-    // The answer is on the page (the state of the profile changed) and what was typed is still there: a read never starts the form again.
     await waitFor(() => expect(screen.getByTestId('owner-issuer-state')).toHaveAttribute('data-state', 'incomplete'));
     expect(read).toHaveBeenCalledTimes(2);
     expect(screen.getByTestId('owner-issuer-legal-name')).toHaveValue('Casa Mia Srl');
@@ -181,12 +173,10 @@ describe('the issuer profile of an owner follows the permissions of the server (
     fireEvent.click(await screen.findByTestId('owner-issuer-edit'));
     const form = await screen.findByTestId('owner-issuer-form');
 
-    // Nothing typed yet: the form is what the server holds.
     read.mockResolvedValue({ ...NO_PROFILE(), city: 'Como' });
     await readAgain(client);
     await waitFor(() => expect(screen.getByTestId('owner-issuer-city')).toHaveValue('Como'));
 
-    // The name is typed; another person writes the street and changes the city: the name stays, the field nobody touched follows the server.
     fireEvent.change(within(form).getByTestId('owner-issuer-legal-name'), { target: { value: 'Casa Mia Srl' } });
     read.mockResolvedValue({ ...NO_PROFILE(), city: 'Lecco', addressStreet: 'Via Roma' });
     await readAgain(client);
@@ -198,7 +188,6 @@ describe('the issuer profile of an owner follows the permissions of the server (
 
   it('OwnerIssuerProfile_AfterASave_ShowsWhatTheServerHoldsNow', async () => {
     read.mockResolvedValue(NO_PROFILE());
-    // The server cuts the spaces and answers the name as it keeps it.
     write.mockResolvedValue(profile({ canIssue: false, regime: 'VatOrdinary', legalName: 'Casa Mia Srl', vatNumber: '01234567890', city: null, missingFields: ['fiscalCode'] }));
     renderInto(createElement(OwnerIssuerProfileSection, { ownerId: OWNER_ID }));
 
@@ -216,7 +205,6 @@ describe('the issuer profile of an owner follows the permissions of the server (
     expect(screen.getByTestId('owner-issuer-fact-legalName')).toHaveTextContent('Casa Mia Srl');
     fireEvent.click(screen.getByTestId('owner-issuer-edit'));
     await screen.findByTestId('owner-issuer-form');
-    // What was saved is what the form holds now: nothing left to save.
     await waitFor(() => expect(screen.getByTestId('owner-issuer-save')).toBeDisabled());
   });
 
@@ -229,10 +217,8 @@ describe('the issuer profile of an owner follows the permissions of the server (
     const masked = rows.find((row) => row.getAttribute('data-owner') === OWNER_ID)!;
     const open = rows.find((row) => row.getAttribute('data-owner') === OTHER_ID)!;
     await waitFor(() => expect(within(masked).getByTestId('billing-owner-issuer-state')).toBeInTheDocument());
-    // The masked profile is told, and nothing can be created or opened for it.
     expect(within(masked).queryByTestId('billing-owner-issuer-create')).toBeNull();
     expect(within(masked).queryByTestId('billing-owner-issuer-open')).toBeNull();
-    // The one that has none, for a caller who may change it, offers the quick creation and the form.
     expect(await within(open).findByTestId('billing-owner-issuer-create')).toBeInTheDocument();
     expect(within(open).getByTestId('billing-owner-issuer-open')).toBeInTheDocument();
     expect(write).not.toHaveBeenCalled();
@@ -240,7 +226,6 @@ describe('the issuer profile of an owner follows the permissions of the server (
 
   it('OwnerIssuersStep_TheQuickCreation_NeverSavesAProfileMadeOfMaskedData', async () => {
     read.mockResolvedValue(profile({ ownerId: OWNER_ID, exists: false, canIssue: false, regime: null, legalName: null, fiscalCode: null, missingFields: ['regime'] }));
-    // The owner accounting gives its profile masked to this caller: there is nothing to start from, and the creation stops without writing.
     vi.mocked(ownerAccountingApi.listFiscalProfiles).mockResolvedValue([
       { id: 'p1', propertyOwnerId: OWNER_ID, validFrom: '2020-01-01', validTo: null, entityKind: 'NaturalPerson', legalName: '••••ssi', taxResidenceCountry: 'IT', legalAddress: null, fiscalCode: '••••205X', vatNumber: null, foreignTaxId: null, settlementCurrency: 'EUR', bankAccountReference: null, mandateRole: null, mandateFrom: null, mandateTo: null, revenueRecognitionRule: null, expenseCommissionModel: null, workingCapitalRule: null, taxJurisdiction: null, accountingPolicyId: null, masked: true },
     ]);
@@ -263,12 +248,10 @@ describe('the issuer profile of an owner follows the permissions of the server (
     expect(await within(row).findByTestId('billing-owner-issuer-open')).toBeInTheDocument();
     expect(within(row).getByTestId('billing-owner-issuer-missing-fields')).toBeInTheDocument();
 
-    // The next read finds the profile gone (404: the owner is not among the owners any more).
     read.mockRejectedValue(httpFailure(404));
     await readAgain(client);
 
     expect(await within(row).findByTestId('billing-owner-issuer-gone')).toBeInTheDocument();
-    // A 404 is «not found» whatever the query still holds: the old answer is neither drawn nor offered to be changed.
     expect(within(row).queryByTestId('billing-owner-issuer-open')).toBeNull();
     expect(within(row).queryByTestId('billing-owner-issuer-create')).toBeNull();
     expect(within(row).queryByTestId('billing-owner-issuer-missing-fields')).toBeNull();
@@ -284,7 +267,6 @@ describe('the issuer profile of an owner follows the permissions of the server (
     const dialog = await screen.findByTestId('billing-owner-issuer-dialog');
     fireEvent.change(within(dialog).getByTestId('owner-issuer-legal-name'), { target: { value: 'Casa Mia Srl' } });
 
-    // A later read fails (no answer, a server error): what is typed is not taken away, and the row behind says it could not be read.
     read.mockRejectedValue(httpFailure(500));
     await readAgain(client);
 

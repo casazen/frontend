@@ -16,7 +16,6 @@ import { StatusPill, type PillTone, TOUCH } from './portal-parts';
 
 const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/** An owner stay is told in the words of where it really stands: a request blocks nothing, an approved stay is not confirmed until its block exists. */
 const STATE_TONE: Record<OwnerStayState, PillTone> = {
   requested: 'info',
   approved_syncing: 'warning',
@@ -30,7 +29,6 @@ interface RulePanelProps {
   summary: OwnerStayRuleSummary;
 }
 
-/** The rule an owner stay follows, in plain words and before the form: the person knows what will be refused and why, and sees what the allowance leaves this year. */
 export function StayRulePanel({ summary }: RulePanelProps) {
   const { t, i18n } = useTranslation();
   const { rule } = summary;
@@ -87,11 +85,6 @@ interface StayRequestFormProps {
   request: ReturnType<typeof useRequestOwnerStay>;
 }
 
-/**
- * Asks for an owner stay (NF-111): the arrival and the departure. It checks only what costs nothing (both days, the departure after the arrival, not in the past);
- * the rules of the agency are the server's, which answers with the code of the one that is broken and the text says it with the numbers of the rule shown above.
- * What comes back is a request: the page says that it blocks nothing yet, and never calls it a stay until the server says it is confirmed.
- */
 export function StayRequestForm({ propertyId, summary, busy, request }: StayRequestFormProps) {
   const { t } = useTranslation();
   const today = todayInRome();
@@ -191,11 +184,6 @@ interface StayListProps {
   cancel: ReturnType<typeof useCancelOwnerStay>;
 }
 
-/**
- * The stays of the owner with where each one stands, and the way to withdraw the ones that have not ended. A stay is a request, then approved while its block waits
- * for the channels, then confirmed - or its block failed, or it was refused or withdrawn: the words are the ones of its real state. Every button of the list is off while
- * one of them is working, so two withdrawals never run together.
- */
 export function StayList({ stays, busy, cancel }: StayListProps) {
   const { t, i18n } = useTranslation();
   const today = todayInRome();

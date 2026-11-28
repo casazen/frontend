@@ -84,8 +84,6 @@ describe('BookingMessagesSection: marking the thread as read (SR-12)', () => {
   });
 });
 
-// NF-61, NF-63: how a booking leads to the page of the messages, where its conversations are and where the host is told how a guest with
-// no conversation can be written to (the contact options). Without this link the panel of the contact options had no way in.
 describe('BookingMessagesSection: the way to the page of the messages', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -106,7 +104,6 @@ describe('BookingMessagesSection: the way to the page of the messages', () => {
 
     const link = await screen.findByTestId('booking-messages-hub-link');
     expect(link).toHaveTextContent("Scrivi all'ospite");
-    // The same address the inbox reads back as «all the conversations of this booking».
     expect(link).toHaveAttribute('href', '/app/short-rent/messages?view=all&booking=b-1');
   });
 

@@ -140,7 +140,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     grants.permissions = new Set(['booking.read', 'booking.write', 'approval.decide']);
-    // On a wide desktop the list and the booking are both beside the review.
     window.matchMedia = ((query: string) => ({
       matches: query === '(width >= 64rem)' || query === '(width >= 96rem)',
       media: query,
@@ -168,7 +167,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       renderReview();
 
       expect(await screen.findByTestId('review-guest-text')).toHaveTextContent('Casa pulita e host gentilissimo.');
-      // The key is the one of the address, back as the server gave it, and not the endpoint of a conversation.
       expect(otaReviewsApi.getReviewThread).toHaveBeenCalledWith(OTA_KEY);
       expect(messageHubApi.getThread).not.toHaveBeenCalled();
       expect(screen.getByTestId('review-rating')).toHaveTextContent('4,5 su 5');
@@ -180,7 +178,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       fireEvent.click(screen.getByRole('button', { name: detailsLabel }));
       const bookingDialog = await screen.findByRole('dialog', { name: detailsLabel });
       expect(within(bookingDialog).getByTestId('booking-card-code')).toHaveTextContent('ABCDE-12345');
-      // The list beside it is the one of the reviews, and the review has no unread count: nothing is marked as read.
       expect(messageHubApi.list).toHaveBeenCalledWith(expect.objectContaining({ kind: 'Review' }));
       expect(messageHubApi.markRead).not.toHaveBeenCalled();
     });
@@ -214,7 +211,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       const dialog = await screen.findByRole('dialog');
       expect(within(dialog).getByText('Pubblichi la risposta?')).toBeInTheDocument();
       expect(within(dialog).getByText(/Non si può ritirare né modificare/)).toBeInTheDocument();
-      // The exact words that will be published are on the question.
       expect(within(dialog).getByTestId('review-publish-text')).toHaveTextContent('Grazie di cuore, a presto!');
       expect(otaReviewsApi.replyToOtaReview).not.toHaveBeenCalled();
 
@@ -226,7 +222,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       await waitFor(() => expect(otaReviewsApi.replyToOtaReview).toHaveBeenCalledTimes(1));
       expect(vi.mocked(otaReviewsApi.replyToOtaReview).mock.calls[0].slice(0, 2)).toEqual([ID, 'Grazie di cuore, a presto!']);
       expect(String(vi.mocked(otaReviewsApi.replyToOtaReview).mock.calls[0][2])).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
-      // The review is read again and shows the reply as published, with no box to write another one.
       expect(await screen.findByTestId('review-reply-state')).toHaveTextContent('Pubblicata');
       expect(screen.queryByTestId('review-reply-text')).not.toBeInTheDocument();
       expect(screen.getByTestId('review-reply-text-shown')).toHaveTextContent('Grazie di cuore, a presto!');
@@ -240,7 +235,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
 
       expect(await screen.findByTestId('review-reply-state')).toHaveTextContent('Da verificare');
       expect(screen.getByTestId('review-reply-verify')).toHaveTextContent('Non sappiamo ancora se il portale ha ricevuto la risposta');
-      // It is never shown as published, and it cannot be sent again by a second click.
       expect(screen.queryByRole('button', { name: 'Pubblica la risposta' })).not.toBeInTheDocument();
       expect(screen.queryByTestId('review-reply-text')).not.toBeInTheDocument();
     });
@@ -258,7 +252,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
     });
 
     it('ReviewThreadView_ReplyTheChannelManagerAnsweredNotAllowed_SaysItInTheWordsWrittenForItAfterTheReadingAndNotTheGeneralSentence', async () => {
-      // The code the server saves on the review for a 409 of the channel manager (not the `ota_…` one of the HTTP answer).
       vi.mocked(otaReviewsApi.getReviewThread).mockResolvedValue(
         review({ reply: { state: 'Error', text: 'Grazie, a presto!', errorCode: 'review_action_not_allowed' } }),
       );
@@ -280,7 +273,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       renderReview();
 
       expect(await screen.findByTestId('review-thread-limit')).toHaveTextContent('Booking.com non permette a CasaZen di leggere le recensioni né di rispondere');
-      // No placeholder review: no stars, no words, no box, no review of the host.
       expect(screen.queryByTestId('review-rating')).not.toBeInTheDocument();
       expect(screen.queryByTestId('review-guest-text')).not.toBeInTheDocument();
       expect(screen.queryByTestId('review-reply')).not.toBeInTheDocument();
@@ -332,13 +324,11 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       await screen.findByTestId('review-reply-text');
       typeReply('Una risposta a metà');
 
-      // A refusal that is not transient: the reading is not retried by itself, so the page says at once that it could not read.
       vi.mocked(otaReviewsApi.getReviewThread).mockRejectedValue(httpError(403, { code: 'forbidden' }));
       await client.invalidateQueries();
       expect(await screen.findByTestId('review-thread-error')).toHaveTextContent('Non riesco a caricare la recensione.');
       expect(screen.queryByTestId('review-guest-text')).not.toBeInTheDocument();
 
-      // Read again, the review is back with the words the host had typed.
       vi.mocked(otaReviewsApi.getReviewThread).mockResolvedValue(review());
       fireEvent.click(within(screen.getByTestId('review-thread-error')).getByRole('button', { name: 'Riprova' }));
       expect(await screen.findByTestId('review-reply-text')).toHaveValue('Una risposta a metà');
@@ -359,7 +349,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       renderReview();
       await screen.findByTestId('host-review-form');
 
-      // Without the marks nothing is asked and nothing is sent.
       fireEvent.click(screen.getByTestId('host-review-send'));
       expect(screen.getByTestId('host-review-ratings-error')).toHaveTextContent('Dai un voto da 1 a 5 a ogni voce.');
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -458,7 +447,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
     });
 
     it('ReviewThreadView_AssistantOnButNoPermissionToDecideApprovals_DrawsNothingAsksNothingOfTheQueueAndTheHostStillAnswersByHand', async () => {
-      // The host may write the bookings (`booking.write`) and the assistant is on, but deciding approvals is another permission (`approval.decide`): the draft is for who decides it.
       grants.permissions = new Set(['booking.read', 'booking.write']);
       renderReview(OTA_KEY, { assistant: true });
       await screen.findByTestId('review-reply-text');
@@ -479,7 +467,6 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       expect(await screen.findByTestId('review-draft-text')).toHaveTextContent('Grazie di cuore per le belle parole.');
       fireEvent.click(screen.getByTestId('review-draft-approve'));
 
-      // Nothing is published by the click: the host is asked first, with the exact words.
       const dialog = await screen.findByRole('dialog');
       expect(within(dialog).getByTestId('review-publish-text')).toHaveTextContent('Grazie di cuore per le belle parole.');
       expect(approvalQueueApi.approve).not.toHaveBeenCalled();
@@ -531,12 +518,10 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       fireEvent.click(screen.getByTestId('review-draft-edit'));
       fireEvent.change(within(await screen.findByTestId('review-draft-editor')).getByRole('textbox'), { target: { value: 'Grazie di cuore, a presto da tutti noi!' } });
 
-      // The reading of the queue fails (the poll of the minute): it is told above the editor, which stays with the words that were not saved yet.
       vi.mocked(approvalQueueApi.getPending).mockRejectedValue(httpError(500));
       await client.invalidateQueries({ queryKey: ['approval-queue'] });
       expect(await screen.findByTestId('review-draft-load-error')).toHaveTextContent('Non è stato possibile leggere le bozze in attesa');
       expect(within(screen.getByTestId('review-draft-editor')).getByRole('textbox')).toHaveValue('Grazie di cuore, a presto da tutti noi!');
-      // It is neither «no draft» nor the draft of the reading before.
       expect(screen.queryByTestId('review-draft-none')).not.toBeInTheDocument();
       expect(screen.queryByTestId('review-draft-text')).not.toBeInTheDocument();
 
@@ -554,13 +539,11 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       fireEvent.click(screen.getByTestId('review-draft-edit'));
       await screen.findByTestId('review-draft-editor');
 
-      // A reading that works and no longer holds the draft: there is nothing left to edit.
       vi.mocked(approvalQueueApi.getPending).mockResolvedValue([]);
       await client.invalidateQueries({ queryKey: ['approval-queue'] });
       expect(await screen.findByTestId('review-draft-none')).toBeInTheDocument();
       expect(screen.queryByTestId('review-draft-editor')).not.toBeInTheDocument();
 
-      // Another draft, which comes after, is shown to be read: the editor does not open by itself on it.
       vi.mocked(approvalQueueApi.getPending).mockResolvedValue([draft({ id: 'a2', contentText: 'Un altro testo.' })]);
       await client.invalidateQueries({ queryKey: ['approval-queue'] });
       expect(await screen.findByTestId('review-draft-text')).toHaveTextContent('Un altro testo.');

@@ -4,7 +4,6 @@ import { saveDownload } from '@/queries/save-download';
 
 const PUBLIC_FISCAL_DOCUMENT_KEY = 'public-fiscal-document';
 
-/** An issued document does not change: the page reads it when it opens and not again for the time the guest takes to look at it. */
 const SUMMARY_STALE_MS = 30_000;
 
 /**
@@ -27,9 +26,7 @@ export function usePublicFiscalDocument(documentId: string, token: string) {
 }
 
 interface DownloadInput {
-  /** The language of the page: the PDF is drawn in it. */
   language: string;
-  /** The number of the document, for the name of the file when the API's own is not readable. */
   number: string;
 }
 

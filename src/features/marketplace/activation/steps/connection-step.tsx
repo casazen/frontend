@@ -44,13 +44,9 @@ const ROW_ICON = { queued: Circle, running: Loader2, done: CheckCircle2, needsAc
 
 interface ConnectionStepProps {
   context: ActivationContext;
-  /** The username and the password of the portal, from the state of the page: they are used here, once for each property, and forgotten when every one is connected. */
   credentials: PortalCredentials;
-  /** Every chosen property is connected: the page forgets the access data. */
   onCredentialsUsed: () => void;
-  /** Opens the step where the person can change what is wrong (the access, the properties). */
   onFix: (step: ActivationStepId) => void;
-  /** Goes on to the import: every chosen property is connected. */
   onAdvance: () => void;
   onChoose: () => void;
 }
@@ -80,7 +76,6 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
   const lacksAccess = (propertyId: string) =>
     requirements !== null && !isAccessComplete(missingAccess(requirements, [propertyId], hotelIds, credentials));
 
-  // Nothing starts before the plan of each chosen property was read, and the state of the activations that exist.
   const ready = requirements !== null && propertyIds.every((propertyId, index) => plans.has(propertyId) && (activationIds[index] === null || !states[index].isPending));
 
   const { running, failures, retry, ran, settled } = useSequentialRun({
@@ -89,7 +84,6 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
     isDone: (propertyId) => connectedAt(propertyIds.indexOf(propertyId)) || lacksAccess(propertyId),
     run: async (propertyId) => {
       if (!requirements) return;
-      // The access data goes in this one call; the mutation is reset at once, so the request is not kept in memory longer than the call.
       try {
         await start.mutateAsync(startRequestFor(kind, code, propertyId, requirements, hotelIds, credentials));
       } finally {
@@ -100,7 +94,6 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
 
   const allConnected = propertyIds.length > 0 && propertyIds.every((_, index) => connectedAt(index));
   const working = running !== null;
-  // Goes on by itself once, when this visit made the connections and every one is there.
   const advanced = useRef(false);
   useEffect(() => {
     if (working || !ran || !allConnected || advanced.current) return;
@@ -133,7 +126,6 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
     if (connectedAt(index)) return 'done';
     if (failures.has(propertyId)) return 'failed';
     if (running === propertyId) return 'running';
-    // Asked, and the channel manager does not show the connection yet (its list may lag, or the connection is gone): said, never waited for in silence.
     if (settled.has(propertyId)) return 'unconfirmed';
     return lacksAccess(propertyId) ? 'needsAccess' : 'queued';
   };
@@ -183,7 +175,6 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
                       {t(fixAt === ACTIVATION_STEP.property ? 'marketplace.activation.connection.fixProperty' : 'marketplace.activation.connection.fix')}
                     </Button>
                   ) : null}
-                  {/* A refusal of the channel is corrected at the access step; where the portal has none there is nothing to correct, and the way on is to try again. */}
                   {(state === 'failed' && (!refused || !canFix)) || state === 'unconfirmed' ? (
                     <Button
                       type="button"

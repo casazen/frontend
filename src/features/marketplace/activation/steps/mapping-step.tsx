@@ -29,7 +29,6 @@ import { ChoosePropertyFirst } from './choose-property-first';
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** The name of a room of the channel, with its rate when it has one (two rates of the same room are two rows). */
 function roomLabel(room: MarketplaceChannelRoom): string {
   return room.rateName ? `${room.name} · ${room.rateName}` : room.name;
 }
@@ -37,22 +36,16 @@ function roomLabel(room: MarketplaceChannelRoom): string {
 interface MappingSectionProps {
   propertyId: string;
   propertyName: string;
-  /** The plan of the property was read: only then is a missing activation a missing connection. */
   planRead: boolean;
   activationId: string | null;
   query: UseQueryResult<MarketplaceActivationMapping>;
   overrides: Readonly<Record<string, string>>;
   showErrors: boolean;
-  /** The portal has an access step: a problem about the access can lead back to it. */
   accessStep: boolean;
   onChange: (channelRoomId: string, productId: string) => void;
   onFix: (step: ActivationStepId) => void;
 }
 
-/**
- * The rooms of the channel of one property (E09/F02/US04/T02, UX-04): one row for each room, with the room CasaZen proposes already chosen, a select to change it and the
- * choice that says the room is not one of the property's. About five rows at a time and «Mostra altre» for the rest: one topic on the screen, not a table of twenty rooms.
- */
 function MappingSection({ propertyId, propertyName, planRead, activationId, query, overrides, showErrors, accessStep, onChange, onFix }: MappingSectionProps) {
   const { t } = useTranslation();
   const titleId = useId();
@@ -136,7 +129,6 @@ function MappingSection({ propertyId, propertyName, planRead, activationId, quer
           {manageable.slice(0, visible).map((room) => {
             const choice = choices[room.channelRoomId] ?? '';
             const proposed = overrides[room.channelRoomId] === undefined && room.mappedProductId === null && room.proposedProductId !== null && room.proposedProductId === choice;
-            // The save adds or changes mappings and removes none: a room that is mapped already can be changed here, and «do not link» is not offered for it (it would be told and ignored).
             const linked = room.mappedProductId !== null;
             return (
               <li key={room.channelRoomId} className="min-w-0">
@@ -196,12 +188,9 @@ function MappingSection({ propertyId, propertyName, planRead, activationId, quer
 
 interface MappingStepProps {
   context: ActivationContext;
-  /** What the person changed, by property and room of the channel; the rest is what the server proposes. */
   overrides: Readonly<Record<string, Record<string, string>>>;
   onChange: (propertyId: string, channelRoomId: string, productId: string) => void;
-  /** The person pressed «Continue» with the mapping not ready: the rooms with no choice say so. */
   showErrors: boolean;
-  /** Opens the step where the person can change what is wrong (the connection, the access). */
   onFix: (step: ActivationStepId) => void;
   onChoose: () => void;
 }
@@ -216,7 +205,6 @@ export function MappingStep({ context, overrides, onChange, showErrors, onFix, o
   const { control } = useFormContext<ActivationWizardValues>();
   const propertyIds = useWatch({ control, name: 'propertyIds' }) ?? [];
   const activationIds = propertyIds.map((propertyId) => context.plans.get(propertyId)?.activationId ?? null);
-  // The rooms are read again until they are there: an import that was slow is not a reason to stop on an empty list.
   const mappings = useActivationMappings(
     activationIds.map((id) => ({ id })),
     { pollUntilRooms: true },

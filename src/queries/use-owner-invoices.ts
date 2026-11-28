@@ -5,7 +5,6 @@ import type { OwnerInvoiceCriteria } from '@/types';
 import { OWNER_ACCOUNTING_KEY } from './use-owner-accounting';
 import { saveDownload } from './save-download';
 
-/** Root of the query keys of the invoices to the owners: a write that makes or issues one invalidates everything under it. */
 const OWNER_INVOICES_KEY = 'owner-invoices';
 
 const ownerInvoiceKeys = {
@@ -38,11 +37,6 @@ export function useOwnerInvoices(criteria: OwnerInvoiceCriteria, enabled = true)
   });
 }
 
-/**
- * One invoice with its lines, read by its id (`enabled` only while a screen asks to see it). It changes under the person's hands (another one issues or discards it, a version is made again),
- * so it is read again every time it is opened and soon after (`staleTime`), and a write of the invoices reads it again where it is open (it is under their root key). `null` when the server
- * refuses it to the caller; a 404 is an invoice that is no longer there (or the module off), whatever the cache still holds from an earlier read.
- */
 export function useOwnerInvoice(invoiceId: string | null, enabled = true) {
   return useQuery({
     queryKey: ownerInvoiceKeys.detail(invoiceId ?? ''),
@@ -53,10 +47,6 @@ export function useOwnerInvoice(invoiceId: string | null, enabled = true) {
   });
 }
 
-/**
- * Makes the draft of the invoice of a version, or makes the draft the month already has again from it. The mutation is dropped as soon as nothing watches it (`gcTime: 0`) and keeps
- * of a failure the answer of the server without the request (`withoutRequest`).
- */
 export function useCreateOwnerInvoiceDraft() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -72,7 +62,6 @@ export function useCreateOwnerInvoiceDraft() {
   });
 }
 
-/** Issues the draft the person confirmed: the number is given by the server, once. */
 export function useIssueOwnerInvoice() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -88,7 +77,6 @@ export function useIssueOwnerInvoice() {
   });
 }
 
-/** Saves the PDF of an invoice under the name the server gave it, or under `fileName` when the page cannot read the header; the bytes are not kept. */
 export function useDownloadOwnerInvoicePdf() {
   return useMutation({
     mutationFn: ({ invoiceId, fileName }: { invoiceId: string; fileName: string }) => saveDownload(ownerInvoicesApi.downloadPdf(invoiceId), fileName),

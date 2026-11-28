@@ -11,9 +11,7 @@ import { SafetyQuickSheet } from '../safety/safety-quick-sheet';
 
 interface SafetyCardProps {
   propertyId: string;
-  /** The amenities chosen in the step (saved or not): they prefill the devices the host already has. */
   amenities: readonly string[];
-  /** Whole square metres from the first step, for the minimum of extinguishers; null when not given. */
   areaSqm: number | null;
 }
 
@@ -30,14 +28,12 @@ export function SafetyCard({ propertyId, amenities, areaSqm }: SafetyCardProps) 
   const [full, setFull] = useState(false);
   const checklist = useSafetyChecklist(propertyId);
 
-  // Every opening starts from the quick sheet.
   const changeOpen = (next: boolean) => {
     setOpen(next);
     if (!next) setFull(false);
   };
 
   const total = SAFETY_ITEM_CODES.length;
-  // An answer that is not a sheet (no list of items) is as good as no answer: the card says it cannot read it, it does not break the step.
   const items = Array.isArray(checklist.data?.items) ? checklist.data.items : null;
   const unreadable = checklist.isError || (checklist.isSuccess && items === null);
   const done = items ? items.filter((item) => item.status === 'Present' || item.status === 'NotApplicable').length : 0;
@@ -102,7 +98,6 @@ export function SafetyCard({ propertyId, amenities, areaSqm }: SafetyCardProps) 
               propertyId={propertyId}
               amenities={amenities}
               areaSqm={areaSqm}
-              // A complete sheet closes the dialog; with something still missing it stays open and says what.
               onSaved={(saved) => {
                 if (saved.isComplete) changeOpen(false);
               }}

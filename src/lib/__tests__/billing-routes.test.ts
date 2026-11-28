@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { billingPagePath, planPagePath, resolveBillingContext, toBillingReturnPath } from '../billing-routes';
 import { getPlanUpgradePath } from '../entitlement-error';
 
-// PL-16 (A1-36): plan and billing pages in each rental shell; the return pages allowed by the backend.
 describe('billing-routes', () => {
   it('planPagePath_EachRentalContext_IsThePageOfItsShell', () => {
     expect(planPagePath('short-rent')).toBe('/app/short-rent/settings/plan');

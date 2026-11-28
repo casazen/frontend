@@ -84,14 +84,12 @@ function httpError(status?: number, data?: unknown, code?: string): AxiosError {
 
 const networkError = () => httpError(undefined, undefined, AxiosError.ERR_NETWORK);
 
-/** The camera: what the picture of the video is (a test turns the phone by changing it), and the tracks. */
 const camera = { size: { width: 640, height: 480 } };
 let encoded = 0;
 const originalWidth = Object.getOwnPropertyDescriptor(HTMLVideoElement.prototype, 'videoWidth');
 const originalHeight = Object.getOwnPropertyDescriptor(HTMLVideoElement.prototype, 'videoHeight');
 const originalHidden = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
 
-/** A camera that works: a stream with one track that can be stopped and can end by itself. */
 function stubCamera(rejectWith?: { name: string }) {
   const stop = vi.fn();
   const endedListeners: Array<() => void> = [];
@@ -129,7 +127,6 @@ const setOnline = (online: boolean) => {
   });
 };
 
-/** Lets what is waiting settle, with the clock where it is. */
 const settle = () =>
   act(async () => {
     await vi.advanceTimersByTimeAsync(0);
@@ -140,7 +137,6 @@ const advance = (ms: number) =>
     await vi.advanceTimersByTimeAsync(ms);
   });
 
-/** Moves the clock in small steps until the condition holds (the screen is awaited, never a window of time guessed in advance). */
 async function advanceUntil(done: () => boolean, step = 100, limit = 300) {
   for (let spent = 0; spent < limit && !done(); spent += 1) await advance(step);
   expect(done()).toBe(true);
@@ -171,14 +167,12 @@ async function waitForTheStart() {
   await advanceUntil(() => screen.queryByTestId('checkin-presence-start') !== null && !startButton().disabled);
 }
 
-/** The guest starts and the prompts run to their end: the sequence is taken. */
 async function startRecording() {
   await waitForTheStart();
   fireEvent.click(startButton());
   await settle();
 }
 
-/** What every post was given, as it was at that moment: the screen lets the frames go once the answer is in. */
 let seen: Array<{ key: string; frames: Blob[]; timestamps: number[]; challengeToken: string }> = [];
 
 beforeEach(async () => {
@@ -239,7 +233,6 @@ describe('presence-resilience: a camera that is not there offers the assisted pa
     expect(block).toHaveAttribute('data-problem', problem);
     expect(block).toHaveTextContent(text('checkin.identity.presence.camera.fallback'));
     expect(screen.queryByTestId('checkin-presence-start')).not.toBeInTheDocument();
-    // «Riprova» for what the guest can still grant, and the person under it, enabled, with no wait.
     expect(screen.getByTestId('checkin-presence-camera-retry')).toBeEnabled();
     expect(screen.getByTestId('checkin-identity-assisted-path')).toBeEnabled();
     expect(publicCheckinApi.postPresence).not.toHaveBeenCalled();
@@ -309,7 +302,6 @@ describe('presence-resilience: a phone that is turned or a page that goes away r
     await advance(700);
     expect(phase()).toBe('recording');
 
-    // From wider than high to higher than wide.
     setScreen(480, 900);
     await settle();
 
@@ -317,11 +309,9 @@ describe('presence-resilience: a phone that is turned or a page that goes away r
     expect(screen.getByTestId('checkin-presence-notice')).toHaveAttribute('data-notice', 'rotated');
     expect(screen.getByTestId('checkin-presence-notice')).toHaveTextContent(text('checkin.identity.presence.notice.rotated'));
     await waitForTheStart();
-    // A new challenge, and the camera that was open is the one that is used: no new permission is asked.
     expect(publicCheckinApi.startPresenceChallenge).toHaveBeenCalledTimes(2);
     expect(rig.getUserMedia).toHaveBeenCalledTimes(1);
     expect(canvas().width).toBe(0);
-    // Whatever was taken before the turn is never sent.
     await advance(5_000);
     expect(publicCheckinApi.postPresence).not.toHaveBeenCalled();
   });
@@ -401,7 +391,6 @@ describe('presence-resilience: a phone that is turned or a page that goes away r
     expect(posts()).toHaveLength(1);
     expect(seen[0].key).toBe(KEY_2);
     expect(seen[0].challengeToken).toBe('challenge-2');
-    // The sequence starts at 0 again: it is a new recording, not the old one continued.
     expect(seen[0].timestamps[0]).toBe(0);
   });
 
@@ -417,7 +406,6 @@ describe('presence-resilience: a phone that is turned or a page that goes away r
     expect(rig.stop).toHaveBeenCalledTimes(1);
     expect(publicCheckinApi.postPresence).not.toHaveBeenCalled();
     expect(canvas().width).toBe(0);
-    // Nothing is asked of the server while the page is not seen.
     expect(publicCheckinApi.startPresenceChallenge).toHaveBeenCalledTimes(1);
 
     setHidden(false);
@@ -498,7 +486,6 @@ describe('presence-resilience: a connection that drops is resumed with the same 
     renderStep();
     await startRecording();
     await advanceUntil(() => posts().length === 1);
-    // The first try failed: the screen waits, it does not say it failed.
     expect(phase()).toBe('uploading');
     expect(screen.queryByTestId('checkin-identity-problem')).not.toBeInTheDocument();
 
@@ -506,7 +493,6 @@ describe('presence-resilience: a connection that drops is resumed with the same 
     await settle();
 
     expect(seen.map((one) => one.key)).toEqual([KEY_1, KEY_1]);
-    // The very same Blobs, not a second encoding of the frames.
     expect(seen[1].frames).toHaveLength(seen[0].frames.length);
     expect(seen[1].frames.every((blob, index) => blob === seen[0].frames[index])).toBe(true);
     expect(seen[1].timestamps).toEqual(seen[0].timestamps);
@@ -548,7 +534,6 @@ describe('presence-resilience: a connection that drops is resumed with the same 
     expect(phase()).toBe('failed');
     expect(screen.getByTestId('checkin-identity-problem')).toHaveTextContent(text('checkin.identity.problem.presence_invalid'));
     expect(screen.getByTestId('checkin-presence-retry')).toBeEnabled();
-    // The recording that was refused is not kept.
     expect(vi.mocked(publicCheckinApi.postPresence).mock.calls[0][1].frames).toHaveLength(0);
     expect(canvas().width).toBe(0);
   });
@@ -573,7 +558,6 @@ describe('presence-resilience: a connection that drops is resumed with the same 
     stubCamera();
     renderStep();
     await startRecording();
-    // The connection is gone while the guest follows the prompts.
     setOnline(false);
     await advanceUntil(() => phase() === 'uploading');
     await advance(5_000);
@@ -600,7 +584,6 @@ describe('presence-resilience: a connection that drops is resumed with the same 
     expect(posts()).toHaveLength(0);
     expect(screen.getByTestId('checkin-presence-kept')).toHaveTextContent(text('checkin.identity.presence.kept.offline'));
     expect(screen.getByTestId('checkin-presence-send-again')).toBeEnabled();
-    // The guest is never left without the person.
     expect(screen.getByTestId('checkin-identity-assisted-path')).toBeEnabled();
 
     setOnline(true);
@@ -609,7 +592,6 @@ describe('presence-resilience: a connection that drops is resumed with the same 
     await settle();
 
     expect(seen.map((one) => one.key)).toEqual([KEY_1]);
-    // They are the frames of the first recording, kept for this: a whole sequence, not an empty one.
     expect(seen[0].frames.length).toBeGreaterThan(20);
     expect(screen.getByTestId('identity-result-ok')).toBeInTheDocument();
   });
@@ -624,7 +606,6 @@ describe('presence-resilience: a connection that drops is resumed with the same 
     renderStep();
     await startRecording();
     await advanceUntil(() => phase() === 'kept', 500, 100);
-    // One request and three repeats, all with the same key.
     expect(posts()).toHaveLength(4);
     const held = vi.mocked(publicCheckinApi.postPresence).mock.calls[0][1];
     expect(held.frames.length).toBeGreaterThan(20);
@@ -652,7 +633,6 @@ describe('presence-resilience: a connection that drops is resumed with the same 
 
     expect(posts()).toHaveLength(4);
     expect(screen.getByTestId('checkin-presence-kept')).toHaveAttribute('data-problem', 'processing');
-    // It is the service that does not answer, not the connection of the guest: the sentence does not say there is no connection.
     expect(screen.getByTestId('checkin-presence-kept')).toHaveTextContent(text('checkin.identity.presence.kept.server'));
     expect(screen.getByTestId('checkin-presence-send-again')).toBeEnabled();
   });
@@ -669,7 +649,6 @@ describe('presence-resilience: a connection that drops is resumed with the same 
     await advanceUntil(() => phase() === 'kept');
     await advance(10_000);
 
-    // A 429 is a 4xx: not repeated by itself.
     expect(posts()).toHaveLength(1);
     expect(screen.getByTestId('checkin-presence-kept')).toHaveTextContent(text('checkin.identity.problem.too_many_requests'));
 
@@ -706,7 +685,6 @@ describe('presence-resilience: an expired challenge is renewed (AC4)', () => {
       .mockResolvedValueOnce(challengeBody({ challengeToken: 'challenge-new' }));
     renderStep();
     await waitForTheStart();
-    // The guest read the instructions for a minute.
     await advance(60_000);
     fireEvent.click(startButton());
     await settle();
@@ -750,11 +728,9 @@ describe('presence-resilience: an expired challenge is renewed (AC4)', () => {
     expect(phase()).toBe('failed');
     expect(screen.getByTestId('checkin-identity-problem')).toHaveTextContent(text('checkin.identity.problem.network'));
     expect(screen.getByTestId('checkin-presence-retry')).toBeEnabled();
-    // The camera that was open for a recording that did not start is not left on behind the failure.
     expect(rig.stop).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('checkin-presence-video')).toHaveProperty('srcObject', null);
 
-    // The next try opens it again.
     fireEvent.click(screen.getByTestId('checkin-presence-retry'));
     await waitForTheStart();
     expect(rig.getUserMedia).toHaveBeenCalledTimes(2);
@@ -775,7 +751,6 @@ describe('presence-resilience: an expired challenge is renewed (AC4)', () => {
     expect(phase()).toBe('failed');
     expect(screen.getByTestId('checkin-presence-notice')).toHaveAttribute('data-notice', 'rotated');
     expect(screen.getByTestId('checkin-identity-problem')).toHaveTextContent(text('checkin.identity.problem.network'));
-    // The turn kept the camera open for a new recording and the new challenge did not come: the camera goes with the failure, and what was taken before the turn is not kept.
     expect(rig.stop).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('checkin-presence-video')).toHaveProperty('srcObject', null);
     expect(canvas().width).toBe(0);
@@ -802,7 +777,6 @@ describe('presence-resilience: an expired challenge is renewed (AC4)', () => {
     await advanceUntil(() => posts().length > 0);
     await advance(10_000);
 
-    // One request, never repeated: a 409 is the server saying no.
     expect(posts()).toHaveLength(1);
     expect(screen.getByTestId('checkin-presence-notice')).toHaveAttribute('data-notice', 'expired');
     expect(screen.queryByTestId('checkin-identity-problem')).not.toBeInTheDocument();
@@ -844,7 +818,6 @@ describe('presence-resilience: a second tap sends nothing twice (AC5)', () => {
     await settle();
     await advanceUntil(() => phase() === 'kept');
 
-    // Nothing reached the server, and it was not the connection: the general sentence, and the recording is still there.
     expect(screen.getByTestId('checkin-presence-kept')).toHaveAttribute('data-problem', 'failed');
     expect(screen.getByTestId('checkin-presence-kept')).toHaveTextContent(text('checkin.identity.problem.failed'));
     const first = sendSequence.mock.calls[0][0];
@@ -855,13 +828,11 @@ describe('presence-resilience: a second tap sends nothing twice (AC5)', () => {
 
     expect(sendSequence).toHaveBeenCalledTimes(2);
     expect(sendSequence.mock.calls[1][1]).toBe(sendSequence.mock.calls[0][1]);
-    // Answered: the frames are let go.
     expect(first.frames).toHaveLength(0);
   });
 
   it('PresenceSequenceCapture_TwoTapsOnSendAgain_HandTheRecordingToTheSendOnceWhateverTheHookDoes', async () => {
     stubCamera();
-    // The screen on its own, with a send that is not the hook's: the guard of the screen is what is looked at.
     type CaptureProps = ComponentProps<typeof PresenceSequenceCapture>;
     const startChallenge = vi.fn<CaptureProps['startChallenge']>().mockImplementation(async () => ({ kind: 'ready', challenge: challengeBody() }));
     const sendSequence = vi
@@ -929,7 +900,6 @@ describe('presence-resilience: a second tap sends nothing twice (AC5)', () => {
 });
 
 describe('presence-resilience: the guest stops the upload and asks for a person (the way to a person is reachable while the sequence is on its way)', () => {
-  /** A request that stays on its way, as one does on a slow network, until it is cancelled; then it fails the way axios does when its signal is aborted. Gives the signal of each request. */
   function slowRequestThatCanBeCancelled() {
     const signals: Array<AbortSignal | undefined> = [];
     vi.mocked(publicCheckinApi.postPresence).mockImplementation((_token, sequence, key, signal) => {
@@ -951,7 +921,6 @@ describe('presence-resilience: the guest stops the upload and asks for a person 
     const held = posts()[0][1];
     const drawing = canvas();
 
-    // The upload is on its way: the way to a person of the step is disabled (a second call cannot start), and the screen has its own.
     expect(phase()).toBe('uploading');
     expect(held.frames.length).toBeGreaterThan(20);
     expect(screen.getByTestId('checkin-identity-assisted-path')).toBeDisabled();
@@ -963,16 +932,13 @@ describe('presence-resilience: the guest stops the upload and asks for a person 
     await settle();
     await advanceUntil(() => screen.queryByTestId('identity-result-operator') !== null);
 
-    // The request that was on its way was cancelled, and nothing was sent again.
     expect(signals[0]?.aborted).toBe(true);
     await advance(10_000);
     expect(posts()).toHaveLength(1);
-    // A person was asked for, once, and the step is the assisted path.
     expect(publicCheckinApi.requestOperator).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'operator');
     expect(screen.queryByTestId('checkin-presence')).not.toBeInTheDocument();
     expect(screen.queryByTestId('identity-result-ok')).not.toBeInTheDocument();
-    // No frame is kept: the arrays that held the recording are empty, so is the canvas, the camera is off, and nothing was written anywhere.
     expect(held.frames).toHaveLength(0);
     expect(held.timestamps).toHaveLength(0);
     expect(drawing.width).toBe(0);
@@ -1004,7 +970,6 @@ describe('presence-resilience: the guest stops the upload and asks for a person 
     stubCamera();
     renderStep();
     await startRecording();
-    // The connection is gone while the guest follows the prompts: the upload waits for it.
     setOnline(false);
     await advanceUntil(() => phase() === 'uploading');
     await advance(2_000);
@@ -1014,10 +979,8 @@ describe('presence-resilience: the guest stops the upload and asks for a person 
 
     fireEvent.click(screen.getByTestId('checkin-presence-cancel'));
     await settle();
-    // At once, not when the wait for the connection would have run out (30 s): the stop ends the wait.
     await advanceUntil(() => screen.queryByTestId('identity-result-operator') !== null, 1, 20);
 
-    // The connection that comes back later finds nothing to send: the upload is over.
     setOnline(true);
     await advance(40_000);
     expect(posts()).toHaveLength(0);
@@ -1041,14 +1004,12 @@ describe('presence-resilience: the guest stops the upload and asks for a person 
     expect(screen.getByTestId('checkin-identity-problem')).toHaveTextContent(text('checkin.identity.problem.network'));
     expect(screen.getByTestId('checkin-presence-retry')).toBeEnabled();
     expect(screen.getByTestId('checkin-identity-assisted-path')).toBeEnabled();
-    // The recording was let go with the stop: there is nothing to send again, only to record again.
     expect(held.frames).toHaveLength(0);
     expect(screen.queryByTestId('checkin-presence-send-again')).not.toBeInTheDocument();
   });
 
   it('IdentityStep_TheServerHadAnsweredBeforeTheUploadCouldBeStopped_ItsAnswerIsShownAndNobodyIsAskedFor', async () => {
     stubCamera();
-    // The sequence was refused as closed (the verification passed in another tab), and the page is still reading the state of the link when the guest taps «cancel and ask for a person».
     vi.mocked(publicCheckinApi.postPresence).mockRejectedValue(httpError(409, { code: 'identity_already_closed' }));
     let linkIsRead: (context: PublicCheckInContextDto) => void = () => undefined;
     vi.mocked(publicCheckinApi.getContext).mockReturnValue(
@@ -1103,7 +1064,6 @@ describe('presence-resilience: the end of the step (AC6)', () => {
     expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'done');
     expect(screen.getByTestId('identity-result-ok')).toBeInTheDocument();
     expect(screen.getByTestId('identity-closed-note')).toHaveTextContent(text('checkin.identity.result.closed'));
-    // The step is over, not failed.
     expect(screen.queryByTestId('checkin-identity-problem')).not.toBeInTheDocument();
   });
 
@@ -1167,7 +1127,6 @@ describe('presence-resilience: the end of the step (AC6)', () => {
 });
 
 describe('presence-resilience: accessibility', () => {
-  // axe-core waits on timers of its own: these tests run on the real clock, and wait for the screen, not for a window of time.
   beforeEach(() => {
     vi.useRealTimers();
   });
@@ -1195,7 +1154,6 @@ describe('presence-resilience: accessibility', () => {
 
   it('PresenceSequenceCapture_TheKeptRecording_HasNoAccessibilityViolations', async () => {
     stubCamera();
-    // A short challenge: the whole recording takes a third of a second on the real clock.
     vi.mocked(publicCheckinApi.startPresenceChallenge).mockImplementation(async () => challengeBody({ leadInMs: 100, stepMs: 100, steps: ['turn_left'] }));
     vi.mocked(publicCheckinApi.postPresence).mockRejectedValue(httpError(429, { code: 'too_many_requests' }));
     const { container } = renderStep();

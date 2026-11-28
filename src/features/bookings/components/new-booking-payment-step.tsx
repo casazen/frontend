@@ -36,7 +36,6 @@ const CARDS: readonly PaymentCard[] = [
 ];
 
 interface PaymentStepProps {
-  /** Why the payment link cannot be chosen now, `null` when it can: the card is shown and blocked with that reason, never hidden. */
   linkBlock: PaymentLinkBlock | null;
 }
 
@@ -50,7 +49,6 @@ export function PaymentStep({ linkBlock }: PaymentStepProps) {
   const { control, setValue, formState } = useFormContext<NewBookingValues>();
   const chosen = useWatch({ control, name: 'paymentArrangement' });
 
-  // A flex column with a gap, not `space-y-*`: the group is a `fieldset` with its own margin, which the spacing of the siblings would not move.
   return (
     <div className="flex flex-col gap-3" data-testid="booking-payment-step">
       <ChoiceGroup legend={t('booking.create.payment.legend')} minCardWidth={14}>

@@ -13,22 +13,17 @@ import { useAppShell } from './app-shell-context';
 import { DEFAULT_WORKSPACE_VIEW, useUiStore } from '@/store/ui-store';
 import { useRailTooltip } from './rail-tooltip';
 
-/** `sidebar`: the list of the sidebar (or its rail of icons). `sheet`: the tiles of the sheet "Altro" of the phone. */
 type NavVariant = 'sidebar' | 'sheet';
 
 interface GroupedNavLinksProps {
   nav: ContextNav;
-  /** The entries of the menus and the pages that hang from them: the open page is looked for among them. */
   matchEntries: RouteManifestEntry[];
   variant?: NavVariant;
-  /** Sidebar reduced to the icons (the names stay for screen readers and show as a tooltip on hover and on focus). */
   collapsed?: boolean;
   counts?: NavCounts;
   onNavigate?: () => void;
 }
 
-// The accent of the area: `--color-primary` is the accent while the redesign is on (UI-01), `-text` is the tone that
-// reads on the soft background. Without the redesign both are the primary of the app.
 const ACCENT_TEXT = 'text-[color:var(--color-primary-text,var(--color-primary))]';
 
 const LINK_STYLES: Record<NavVariant, { row: string; active: string; inactive: string }> = {
@@ -52,7 +47,6 @@ interface NavLinkItemProps {
   onNavigate?: () => void;
 }
 
-/** An entry of the sidebar: icon, name and counter; only the icon (and the name as a tooltip) when the sidebar is a rail. */
 function NavLinkItem({ entry, active, collapsed, count, onNavigate }: NavLinkItemProps) {
   const { t } = useTranslation();
   const styles = LINK_STYLES.sidebar;
@@ -82,7 +76,6 @@ function NavLinkItem({ entry, active, collapsed, count, onNavigate }: NavLinkIte
   );
 }
 
-/** An entry of the sheet of the phone: a tile with the icon, the name and, on the corner, the counter. */
 function NavTile({ entry, active, count, onNavigate }: Omit<NavLinkItemProps, 'collapsed'>) {
   const { t } = useTranslation();
   const styles = LINK_STYLES.sheet;
@@ -118,7 +111,6 @@ function NavMoreMenu({
   onNavigate,
 }: {
   entries: RouteManifestEntry[];
-  /** `path` of the entry that stands for the open page, among those of the menus. */
   activePath: string | undefined;
   collapsed: boolean;
   counts: NavCounts;
@@ -131,8 +123,6 @@ function NavMoreMenu({
 
   const activeInside = entries.some((entry) => entry.path === activePath);
   const open = choice && choice.pathname === pathname ? choice.open : activeInside;
-  // A counter inside a closed "Altro" is not hidden by it (the urgent items of the "To do" list): the toggle carries it, as the tab
-  // "Altro" of the phone does. Once the menu is open the entry shows its own.
   const counted = open ? [] : entries.filter((entry) => entry.navCount && (counts[entry.navCount] ?? 0) > 0);
   const label = t('nav.more');
   const styles = LINK_STYLES.sidebar;
@@ -188,25 +178,18 @@ function NavMoreMenu({
 }
 
 interface FooterNavLinksProps {
-  /** The entries pinned at the foot of the sidebar (`ContextNav.footer`). */
   entries: RouteManifestEntry[];
-  /** The entries of the menus and the pages that hang from them: the open page is looked for among them. */
   matchEntries: RouteManifestEntry[];
   collapsed?: boolean;
   counts?: NavCounts;
   onNavigate?: () => void;
 }
 
-/**
- * The foot of the sidebar (UI-04a): the settings of the area and «Consiglia CasaZen», apart from the daily work and always in the same
- * place, under the menu that scrolls. The same rows as the menu (and only the icons on the rail), so the open page is highlighted here too.
- */
 export function FooterNavLinks({ entries, matchEntries, collapsed = false, counts = {}, onNavigate }: FooterNavLinksProps) {
   const { pathname } = useLocation();
   if (entries.length === 0) return null;
   const activePath = resolveActiveNavEntry(pathname, matchEntries)?.path;
 
-  // The list is named by the landmark around it (the sidebar puts it in a `nav` of its own).
   return (
     <ul className="flex flex-col gap-0.5" data-testid="nav-footer">
       {entries.map((entry) => (
@@ -224,12 +207,6 @@ export function FooterNavLinks({ entries, matchEntries, collapsed = false, count
   );
 }
 
-/**
- * The menu of an area (UI-04a): labelled groups of primary entries and, only for a page whose section the user cannot
- * open, "Altro". The sidebar draws it with the counters and, collapsed, only the icons with their names as tooltips (UI-04b); its
- * foot (the settings) is `FooterNavLinks`. The sheet of the phone (`variant="sheet"`) lists what the bottom bar does not, as tiles,
- * and shows "Altro" and the foot of the sidebar as two more groups.
- */
 export function GroupedNavLinks({
   nav: originalNav,
   matchEntries,
@@ -253,7 +230,6 @@ export function GroupedNavLinks({
   const isSheet = variant === 'sheet';
   const groupCount =
     nav.sections.length + (isSheet && nav.more.length > 0 ? 1 : 0) + (isSheet && nav.footer.length > 0 ? 1 : 0);
-  // A single group needs no name.
   const showGroupLabels = groupCount > 1 && !collapsed;
 
   const renderEntry = (entry: RouteManifestEntry) => {
@@ -290,7 +266,6 @@ export function GroupedNavLinks({
           <div
             key={section.group}
             role="group"
-            // The heading names the group; without a heading (a single group, the icons only) the group names itself.
             aria-labelledby={showGroupLabels ? labelId : undefined}
             aria-label={showGroupLabels ? undefined : label}
             data-testid={`nav-group-${section.group}`}
@@ -350,7 +325,6 @@ export function GroupedNavLinks({
           />
         </div>
       )}
-      {/* The foot of the sidebar is drawn by the sidebar itself (`FooterNavLinks`, pinned under the menu); the sheet of the phone lists it last. */}
       {isSheet && nav.footer.length > 0 ? (
         <div
           role="group"

@@ -12,7 +12,6 @@ export async function wizardPath(leaseId: string, read: boolean): Promise<string
     const draft = await leasesApi.getDraft(leaseId);
     return leaseEditPath(leaseId, firstStepWithNeeds(draft.flow, registeredSteps('Imported')));
   } catch {
-    // The wizard reads the draft itself and says what is wrong with it.
     return leaseEditPath(leaseId, 2);
   }
 }

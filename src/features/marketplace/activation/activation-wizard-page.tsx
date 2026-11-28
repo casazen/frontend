@@ -63,35 +63,25 @@ import { ResultStep } from './steps/result-step';
 
 type StepSchema = ZodType<unknown, FieldValues>;
 
-/** At least one property: the first step does not advance without. The message is an i18n key, as in every form. */
 const PROPERTY_STEP_SCHEMA: StepSchema = z.object({
   propertyIds: z.array(z.string()).min(1, 'marketplace.activation.errors.noProperty'),
 });
 
-/** The short-rent properties of the host, in the order the app lists them: what a channel manager listing can be linked to. */
 const SHORT_RENT = { mode: 'short' } as const;
 
-/** What stops a step on a condition that is not met: the host is told which, by the words of the step (the shell shows the message of an error that has none of its own). */
 class StepBlockedError extends Error {}
 
-/** The steps that can fail with no message of their own: which one, to say it right. */
 type Failing = 'property' | 'access' | 'connection' | 'import' | 'mappingNone' | 'mappingUndecided' | 'mappingSave';
 
-/** What the last button hands to the result: how each property ended. */
 interface ActivationResult {
   outcomes: ActivationOutcome[];
 }
 
-/**
- * The wizard of a channel or a tool (E09/F02/US04): a `WizardShell` whose steps follow what the portal asks of the person. The steps, the plan that
- * says what the portal needs and the properties are read here and handed to the steps, which read nothing the page has read already.
- */
 function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; code: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  // The person may leave for the panel of the channel manager in this tab and come back to a step of this wizard: the page it was opened from is kept in the tab for that trip.
   const returnKey = activationWizardId(kind, code);
   const { exitPath } = useWizardReturn(returnKey);
   const leave = useWizardLeave(exitPath, t('marketplace.activation.exit.saved'), returnKey);
@@ -100,15 +90,12 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
   const saveMapping = useSaveActivationMapping();
   const activate = useActivate();
 
-  // The access data of the portal lives here and nowhere else: not in the values of the wizard, so never in its draft or in the storage of the browser.
   const [credentials, setCredentials] = useState<PortalCredentials>(NO_CREDENTIALS);
   const forgetCredentials = useCallback(() => setCredentials(NO_CREDENTIALS), []);
   const [showAccessErrors, setShowAccessErrors] = useState(false);
-  // What the person changed in the mapping of the rooms, by property and room of the channel: the rest is what the server proposes.
   const [overrides, setOverrides] = useState<Record<string, Record<string, string>>>({});
   const [showMappingErrors, setShowMappingErrors] = useState(false);
   const [failing, setFailing] = useState<Failing>('property');
-  // «Correggi» on the result opens the wizard again at the step that failed: a new shell, with the property that failed chosen.
   const [attempt, setAttempt] = useState(0);
   const [restart, setRestart] = useState<ActivationWizardValues | null>(null);
 
@@ -128,7 +115,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
   const requirements = firstPlan ? requirementsOf(firstPlan.requirements) : null;
   const channelName = firstPlan?.name ?? null;
   const planError = plans.size === 0 ? (planQueries.find((query) => query.isError)?.error ?? null) : null;
-  // A plan that could not be read leaves its property out of the lists: it is told with the way to read it again, never dropped without a word.
   const unreadProperties = propertyIds.filter((propertyId, index) => planQueries[index]?.isError === true && !plans.has(propertyId));
 
   const context: ActivationContext = {
@@ -148,7 +134,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
     },
   };
 
-  // The access on the panel of the channel manager is the organization administrator's, and the guided steps of the activation are behind their flag.
   const managedByStaff = [...plans.values()].some((plan) => plan.managedByStaff);
   const panelAvailability: PanelAvailability = managedByStaff ? 'staff'
     : !flags.octorateOnboarding ? 'unavailable' : isOrgBillingAdmin(contexts) ? 'ready' : 'notAdmin';
@@ -161,10 +146,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
   const requestedPropertyId = searchParams.get(MARKETPLACE_PROPERTY_PARAM);
   const name = channelName ?? t('marketplace.activation.thisChannel');
   const activationIdOf = (propertyId: string) => plans.get(propertyId)?.activationId ?? null;
-  /**
-   * Where the access on the panel stands for a property: the channel manager's word where its activation exists (it is what the import and the activation go by), else the
-   * guided step. A step the person confirmed before the connection existed is not the access given against what the channel manager says.
-   */
   const panelAccessOf = (propertyId: string): PanelAccessStatus => {
     const read = activationReadOf(queryClient, activationIdOf(propertyId));
     return panelAccessStatus({
@@ -178,7 +159,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
   const resolveActivationId = async (propertyId: string): Promise<string | null> =>
     activationIdOf(propertyId) ?? (await fetchActivationPlan(queryClient, kind, code, propertyId)).activationId;
 
-  /** «Correggi» of the result: the wizard opens again at `step` with the property that failed, keeping where the person came from. */
   const reopenAt = (propertyId: string, step: ActivationStepId, values: ActivationWizardValues) => {
     setRestart({ propertyIds: [propertyId], hotelIds: values.hotelIds });
     setShowAccessErrors(false);
@@ -190,10 +170,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
     navigate({ search: `?${next.toString()}` }, { replace: true });
   };
 
-  /**
-   * The last button: each chosen property is activated in its turn (`POST .../activate`), and the result tells each one. A property the server refuses, or that the
-   * channel manager does not show working, is To fix with its reason and does not stop the others; Active is only what the server says is Active.
-   */
   const activateAll = async (values: ActivationWizardValues): Promise<ActivationResult> => {
     const outcomes: ActivationOutcome[] = [];
     for (const propertyId of values.propertyIds) {
@@ -207,7 +183,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
     return { outcomes };
   };
 
-  /** The steps the answers give now: the properties, the access when the portal asks for something, and the steps of the activation itself. */
   const stepsFor = (values: ActivationWizardValues): WizardStep<ActivationWizardValues>[] => {
     const propertyStep: WizardStep<ActivationWizardValues> = {
       id: ACTIVATION_STEP.property,
@@ -215,14 +190,12 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
       title: t('marketplace.activation.steps.property.title'),
       purpose: t('marketplace.activation.steps.property.purpose', { name }),
       schema: PROPERTY_STEP_SCHEMA,
-      // The chosen properties are the ones whose plan says they are linked: a draft or an address that names another one is not a way round the plan.
       beforeNext: (answers) => {
         if (!answers.propertyIds.every((propertyId) => plans.get(propertyId)?.propertyLinked === true)) {
           setFailing('property');
           throw new StepBlockedError('A property that is not linked to the channel manager cannot be chosen');
         }
       },
-      // The plan of a chosen property that is still being read says nothing yet: the button waits for it (it would answer «not linked» to a property it knows nothing about).
       nextDisabled:
         context.planError !== null ||
         [...plans.values()].some((plan) => !plan.creatable) ||
@@ -235,7 +208,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
       label: t('marketplace.activation.steps.access.label'),
       title: t('marketplace.activation.steps.access.title', { name }),
       purpose: t('marketplace.activation.steps.access.purpose'),
-      // The access on the panel is done by the person there and seen by CasaZen: until every chosen property has it, the wizard waits.
       nextDisabled: needsPanel && panelAvailability !== 'staff' && (panelAvailability !== 'ready' || !values.propertyIds.every((propertyId) => panelAccessOf(propertyId) === 'given')),
       beforeNext: (answers) => {
         const missing = missingAccess(requirements ?? requirementsOf([]), answers.propertyIds, hotelIdsFor(answers.hotelIds, plans), credentials);
@@ -264,7 +236,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
       label: t('marketplace.activation.steps.connection.label'),
       title: t('marketplace.activation.steps.connection.title', { name }),
       purpose: t('marketplace.activation.steps.connection.purpose'),
-      // The import starts only when every chosen property has its connection on the channel manager: the state the steps of this wizard gave says it.
       beforeNext: (answers) => {
         if (!answers.propertyIds.every((propertyId) => cachedActivation(queryClient, activationIdOf(propertyId))?.connectionFound === true)) {
           setFailing('connection');
@@ -288,7 +259,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
       label: t('marketplace.activation.steps.import.label'),
       title: t('marketplace.activation.steps.import.title'),
       purpose: t('marketplace.activation.steps.import.purpose'),
-      // The mapping opens only when the rooms of every property are in (the mapping read gives them): never before, and never on a guess.
       beforeNext: async (answers) => {
         setFailing('import');
         for (const propertyId of answers.propertyIds) {
@@ -308,10 +278,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
       title: t('marketplace.activation.steps.mapping.title'),
       purpose: t('marketplace.activation.steps.mapping.purpose'),
       nextLabel: t('marketplace.activation.mapping.next'),
-      /**
-       * «Salva e continua»: what the person decided, saved for each property. Every room has a decision and at least one is mapped, or nothing leaves (an empty
-       * choice is never «all the rooms»); the rooms are those the channel manager holds now, not what the screen showed.
-       */
       beforeNext: async (answers) => {
         setFailing('mappingSave');
         const ready: Array<{ id: string; mappings: ReturnType<typeof roomChoicesToSave> }> = [];
@@ -393,7 +359,6 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
           navigate(exitPath);
         }}
         aboveFooter={
-          // The guided step of the panel has its own «Salva ed esci», and the steps keep their own buttons as they are: one is enough on the screen.
           needsPanel && panelAvailability === 'ready' && searchParams.get('step') === ACTIVATION_STEP.access ? null : (
             <SaveAndExit label={t('marketplace.activation.exit.saveAndExit')} onLeave={leave} testId="activation-save-exit" />
           )
@@ -419,17 +384,10 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
   );
 }
 
-/**
- * `/app/short-rent/marketplace/activate/:kind/:code` (E09/F02/US04, MKT-03): the guided activation of a sales channel (`channel`) or a connected tool (`tool`)
- * through the channel manager's API: the properties, what the portal asks for, the connection, the import, the mapping of the rooms, the activation and the result.
- * `?propertyId=` is the property the marketplace was about, chosen from the start; `?returnTo=` is the page the person came from, where «Salva ed esci» and the end of
- * the wizard lead (the Marketplace page when there is none, or it is not a page of the app). An address that names neither a channel nor a tool is told, not opened.
- */
 export function ActivationWizardPage() {
   const { t } = useTranslation();
   const { kind: kindSlug, code } = useParams();
   const kind = connectionKindOfSlug(kindSlug);
-  // The kind and the code end up in the path of requests: nothing that could carry a path or a query goes through.
   const valid = kind !== null && code !== undefined && parseMarketplaceEntry(`${kind}:${code}`) !== null;
 
   if (!valid) {

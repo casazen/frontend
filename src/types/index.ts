@@ -1,15 +1,14 @@
-// Re-export all types for easy imports
 export * from './property.types';
 export * from './booking.types';
 export * from './payment.types';
 export * from './payment-ledger.types';
 export * from './ota.types';
 export * from './api.types';
-export * from './guest.types';  // ✅ New
+export * from './guest.types';
 export * from './gdpr.types';
-export * from './tourist-tax.types';  // ✅ New
+export * from './tourist-tax.types';
 export * from './tourist-tax-summary.types';
-export * from './calendar.types';  // ✅ New
+export * from './calendar.types';
 export * from './pricing-adapter.types';
 export * from './price-suggestion.types';
 export * from './lease.types';

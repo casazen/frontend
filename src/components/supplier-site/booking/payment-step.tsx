@@ -13,22 +13,12 @@ import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 interface PaymentStepProps {
   slug: string;
   supplierName: string;
-  /** What the server gave for the card: the secret to ask the card with, and the amount that is blocked. */
   block: PublicBookingCardBlock & { clientSecret: string; publishableKey: string };
-  /** When the hold lapses (UTC): the block has to be confirmed before. */
   expiresAt: string;
-  /** The color of the buttons of the site. */
   buttonColor: string;
-  /** The card is blocked (Stripe says so; the request is born when the e-mail is checked too, the server decides). */
   onAuthorized: () => void;
 }
 
-/**
- * Step 5, "Pagamento": the Payment Element for the block of the card. What it says is exactly what the money does (decisions VT-D1, D24):
- * the amount is only **blocked**; it is charged only if the professional accepts; if it refuses, does not answer or the customer cancels
- * first, the block is released and nothing is charged; CasaZen holds the amount until the customer says all is fine or the time to
- * report a problem ends. No date of accounting is promised and no fee is named.
- */
 export function PaymentStep({ slug, supplierName, block, expiresAt, buttonColor, onAuthorized }: PaymentStepProps) {
   const { t, i18n } = useTranslation();
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +59,6 @@ export function PaymentStep({ slug, supplierName, block, expiresAt, buttonColor,
         mode="payment"
         publishableKey={block.publishableKey}
         clientSecret={block.clientSecret}
-        // A card with 3-D Secure normally stays in the page; if the bank sends the person away, it comes back here and the page says what it can.
         returnUrl={`${window.location.origin}${supplierSitePaths.booking(slug)}?paid=1`}
         appearance={stripeAppearanceFor(buttonColor)}
         locale={stripeLocale(i18n.language)}

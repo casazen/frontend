@@ -8,7 +8,6 @@ interface MapControlsProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onFit: () => void;
-  /** What a screen reader hears after a change («Mappa a 40 km di larghezza»). */
   announcement: string;
   className?: string;
 }

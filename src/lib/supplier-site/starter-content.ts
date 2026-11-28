@@ -8,11 +8,8 @@
  * platform and reviewed by the product owner first (VT-D20), and none is.
  */
 export interface StarterContent {
-  /** The sentence in large type (at most 90 characters, the limit of the server). */
   tagline: string;
-  /** The line under the title (180). */
   intro: string;
-  /** "Prima che arriviamo": what the customer can get ready (6 items, 160 each). */
   prep: string[];
 }
 
@@ -28,7 +25,6 @@ const LAUNDRY: StarterContent = {
   prep: ['Metti la biancheria sporca in un sacco, separata da quella pulita.', 'Indica dove ritirarla e quando.'],
 };
 
-/** Per code of the service categories of the backend catalog. A trade with no entry (events, rental, excursions) gets no starter. */
 const STARTER_BY_CATEGORY: Readonly<Record<string, StarterContent>> = {
   cleaning: CLEANING,
   laundry: LAUNDRY,
@@ -60,7 +56,6 @@ const STARTER_BY_CATEGORY: Readonly<Record<string, StarterContent>> = {
   },
 };
 
-/** The starter of the first category of the profile that has one, in the order of the profile; null when none has. */
 export function starterContentFor(categories: readonly string[] | undefined): StarterContent | null {
   for (const category of categories ?? []) {
     const starter = STARTER_BY_CATEGORY[category];

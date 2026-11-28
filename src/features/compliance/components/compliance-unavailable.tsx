@@ -2,11 +2,9 @@ import { useTranslation } from 'react-i18next';
 import { FocusBlock } from '@/components/shared/calm';
 
 interface ComplianceUnavailableProps {
-  /** The heading of the card that asked ("Cosa succede ora", "Cosa fare ora"). */
   kicker: string;
   onRetry: () => void;
   retrying: boolean;
-  /** The test id of the card, which the block keeps: its `data-next-step` says `complianceUnavailable`. */
   testId: string;
 }
 

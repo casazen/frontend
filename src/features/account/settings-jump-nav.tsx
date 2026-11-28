@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { settingsSectionId, settingsSectionOf, type SettingsSection } from './settings-sections';
 
-/** The page has more sections than this before the jump is worth a row of links: with fewer, the whole page is one look. */
 const MIN_SECTIONS_FOR_JUMP = 4;
 
 export interface JumpSection {
@@ -12,12 +11,6 @@ export interface JumpSection {
   label: string;
 }
 
-/**
- * «Vai a…» of the settings of the account (AM-08b-e): a row of links to the sections of the page, once they are more than three, and
- * the address that names one (`?section=payments`) opens the page already there: it scrolls to the section and puts the focus on its
- * title, so a screen reader and the keyboard are where the eyes are. A name that is none of the sections is ignored. The links are
- * links (the address changes, the back button does not trap the person) and the section in view is marked.
- */
 export function SettingsJumpNav({ sections }: { sections: readonly JumpSection[] }) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();

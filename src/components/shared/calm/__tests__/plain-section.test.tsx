@@ -40,7 +40,6 @@ describe('PlainSection (UI-16)', () => {
   it('PlainSection_NoBox_HasNoBorderBackgroundShadowOrRadius', () => {
     renderSection({ actionLabel: 'Tutte', href: '/app/long-rent/deadlines' });
 
-    // Not the section, not the header around the title: a card inside a card is what the calm screens took away.
     const region = screen.getByRole('region');
     for (const node of [region, region.firstElementChild!]) {
       expect(node.className).not.toMatch(/\b(border|bg-|shadow|rounded|ring)/);
@@ -119,7 +118,6 @@ describe('PlainSection (UI-16)', () => {
 
     const heading = screen.getByRole('heading');
     expect(heading).toHaveClass('break-words', 'min-w-0');
-    // A flex box would make the words of the title an anonymous flex item, which does not shrink below its longest word.
     expect(heading).not.toHaveClass('flex');
     expect(heading.parentElement).toHaveClass('flex-wrap');
   });

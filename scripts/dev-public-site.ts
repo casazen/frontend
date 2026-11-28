@@ -9,7 +9,6 @@ interface RenderedPage {
   root: string;
 }
 
-/** Mirror the public site's prerender in the demo dev server, while keeping "/" as the PMS persona entry. */
 export function devPublicSite(): Plugin {
   return {
     name: 'casazen-demo-public-site',

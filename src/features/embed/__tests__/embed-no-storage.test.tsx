@@ -19,7 +19,6 @@ import type { PublicOrgDto } from '@/types';
  * from, while each of the three widgets renders in each of its states, and while the whole app starts on such an address.
  */
 vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getPublicOrg: vi.fn(), getOrgProperty: vi.fn(() => new Promise(() => undefined)) } }));
-// The widgets are the real ones: none of their calls reaches the network here (the proof of what the booking widget keeps is in `booking-widget.test.tsx`, with fixtures).
 vi.mock('@/api/public-site-search.api', () => ({
   publicSiteSearchApi: {
     getStays: vi.fn(() => new Promise(() => undefined)),
@@ -28,7 +27,6 @@ vi.mock('@/api/public-site-search.api', () => ({
   },
 }));
 
-// The whole app (`App`) on an address of the widgets: its routes are the ones of the widgets and of the booking site, nothing else.
 const signIn = vi.hoisted(() => ({ mounted: vi.fn() }));
 vi.mock('@auth0/auth0-react', () => ({
   Auth0Provider: ({ children }: { children: ReactNode }) => {
@@ -49,7 +47,6 @@ vi.mock('@/routes', async () => {
   return { getRouter: () => router };
 });
 vi.mock('@/lib/signup-attribution', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/signup-attribution')>()), recordLandingTouch: vi.fn() }));
-// Parts of the shell that read the network or are not what is tried here: the flags are read by the server, here the widgets are on.
 vi.mock('@/contexts/feature-flags-provider', async () => {
   const { createElement } = await import('react');
   const { FeatureFlagsContext: Context } = await import('@/contexts/feature-flags-context');
@@ -65,12 +62,10 @@ const ADDRESS = `v=1&parent=${encodeURIComponent('https://quokka360.com')}`;
 const getPublicOrg = vi.mocked(publicOrgApi.getPublicOrg);
 
 interface Spies {
-  /** Every call of the browser's storage, of the cookie and of IndexedDB, with the name of what was called. */
   calls: () => string[];
   restore: () => void;
 }
 
-/** A spy on everything a page can use to keep something in the browser. They let the calls through: any call at all is the failure. */
 function spyOnTheBrowserMemory(): Spies {
   const spies: [string, MockInstance][] = [
     ...(['getItem', 'setItem', 'removeItem', 'clear', 'key'] as const).map((name): [string, MockInstance] => [`Storage.${name}`, vi.spyOn(Storage.prototype, name)]),
@@ -78,7 +73,6 @@ function spyOnTheBrowserMemory(): Spies {
     ['document.cookie (read)', vi.spyOn(Document.prototype, 'cookie', 'get')],
     ['document.cookie (write)', vi.spyOn(Document.prototype, 'cookie', 'set')],
   ];
-  // jsdom has no IndexedDB: a stand-in that only counts.
   const open = vi.fn();
   Object.defineProperty(window, 'indexedDB', { configurable: true, writable: true, value: { open } });
   spies.push(['indexedDB.open', open as unknown as MockInstance]);
@@ -125,7 +119,6 @@ const WIDGETS = [
 
 type Situation = 'loading' | 'ready' | 'unavailable';
 
-/** What each situation needs: the flag and the org, as the shell reads them. */
 const SITUATIONS: Record<Situation, { siteEmbed: boolean; flagsLoading: boolean; state: string }> = {
   loading: { siteEmbed: true, flagsLoading: true, state: 'loading' },
   ready: { siteEmbed: true, flagsLoading: false, state: 'ready' },
@@ -134,7 +127,6 @@ const SITUATIONS: Record<Situation, { siteEmbed: boolean; flagsLoading: boolean;
 
 describe('the spy on the memory of the browser', () => {
   it('spyOnTheBrowserMemory_SeesEveryWayToKeepSomething', () => {
-    // The control of the proof below: a spy that saw nothing would prove nothing.
     spies = spyOnTheBrowserMemory();
 
     localStorage.getItem('a');
@@ -167,7 +159,6 @@ describe('the pages of the widgets keep nothing in the browser (AC5)', () => {
     'embedShell_noStorageOrCookies_%s_%s_%s',
     async (widget, path, situation) => {
       const { siteEmbed, flagsLoading, state } = SITUATIONS[situation];
-      // Every language of the address, and the one a guest chose before on the same device: the frame must not look at it.
       localStorage.setItem('casazen.locale', 'en');
       const router = createMemoryRouter(buildEmbedRoutes('platform'), { initialEntries: [`/embed/villa-rossi/${path}?lang=it&${ADDRESS}`] });
       spies = spyOnTheBrowserMemory();
@@ -198,8 +189,6 @@ describe('the app on an address of the widgets (AC3)', () => {
   }
 
   it('App_OnAnEmbedAddress_NeverMountsTheSignInNorRecordsTheLandingAndTouchesNoStorage', async () => {
-    // The first thing the app does on a page is to read the language (`readStoredLocale` at import time and `I18nLocaleSync`), the sign-in gate and
-    // the landing touch: none of them may reach the browser's memory on this address.
     localStorage.setItem('casazen.locale', 'en');
     spies = spyOnTheBrowserMemory();
 
@@ -214,7 +203,6 @@ describe('the app on an address of the widgets (AC3)', () => {
   });
 
   it('App_OnTheBookingSiteOfThePlatform_StillRecordsTheLanding', async () => {
-    // The control: the same app on a page that is not a widget keeps doing what it did.
     await openApp('/book/villa-rossi');
     await screen.findByTestId('booking-site');
 

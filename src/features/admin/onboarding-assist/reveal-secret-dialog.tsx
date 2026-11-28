@@ -16,7 +16,6 @@ import { SUPPORT_VAULT_REASON_LENGTH, type SupportVaultCredentialKind, type Supp
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** What an opening put on screen: the values and the instant they go (on the clock of the browser, from the moment they arrived). */
 interface Opened {
   values: SupportVaultReveal;
   endsAt: number;
@@ -25,16 +24,9 @@ interface Opened {
 interface RevealedValuesProps {
   values: SupportVaultReveal;
   endsAt: number;
-  /** The minute is over (or the person hid them): the caller drops the values. */
   onEnd: () => void;
 }
 
-/**
- * The values of an opening, for as long as they are meant to stay: each one with a button that copies it, and the seconds that are left. They are not in an input and they
- * are not announced by the countdown (it is `aria-live="off"`: a tick a second would read out for a minute). When the minute is over (`endsAt`) the caller drops them, and it does not
- * depend on one clock being right: whichever says so first, in a second at most, ends it. The timer of the minute (set again for what is left if it fires early, against the clock
- * of the page, and it fires late on a machine that slept), the tick that draws the countdown, and the tab coming back to the front (a hidden tab may run its timers late).
- */
 function RevealedValues({ values, endsAt, onEnd }: RevealedValuesProps) {
   const { t } = useTranslation();
   const now = useNow(1000);
@@ -51,7 +43,6 @@ function RevealedValues({ values, endsAt, onEnd }: RevealedValuesProps) {
       clearTimeout(timer);
       const left = endsAt - Date.now();
       if (left <= 0) onEnd();
-      // Early, or asked by a tab that came back too soon: the rest of the minute is waited for, never given up.
       else timer = setTimeout(check, left);
     };
     timer = setTimeout(check, Math.max(0, endsAt - Date.now()));
@@ -74,7 +65,6 @@ function RevealedValues({ values, endsAt, onEnd }: RevealedValuesProps) {
       await navigator.clipboard.writeText(value);
       toast.success(t('onboardingPlan.assist.copied'));
     } catch {
-      // No clipboard (an insecure page, a refused permission): the value is still on screen for the minute it has.
       toast.error(t('onboardingPlan.assist.copyError'));
     }
   }
@@ -119,10 +109,8 @@ function RevealedValues({ values, endsAt, onEnd }: RevealedValuesProps) {
 }
 
 interface RevealSecretDialogProps {
-  /** The request the credential is opened for: the server opens it only for an open request, and only of the org and the property of that request. */
   requestId: string;
   kind: SupportVaultCredentialKind;
-  /** What the credential is for, in words (the structure, or the whole organization): said before the reason is asked. */
   subject: string;
   onClose: () => void;
 }
@@ -170,7 +158,6 @@ export function RevealSecretDialog({ requestId, kind, subject, onClose }: Reveal
         reason: reason.trim(),
         onOpened: (values) => setOpened({ values, endsAt: Date.now() + revealVisibleMs(values) }),
       });
-      // The reason is not kept either: a new opening asks a new one.
       setReason('');
     } catch (failure) {
       setError(failure);

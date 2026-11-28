@@ -7,16 +7,6 @@ export function setZodErrorMapI18n(i18n: I18nInstance): void {
   _i18n = i18n;
 }
 
-/**
- * Global Zod error map (Zod v4 `customError`).
- *
- * Zod v4 gives the message declared in the schema precedence over `customError`: this map
- * only runs for checks declared WITHOUT a message (e.g. `.max(100)`). Schema messages are
- * i18n keys and stay keys in `issue.message`; forms translate them at render time through
- * `FormFieldError` / `translateValidationMessage`.
- *
- * Here we return an already translated generic message (it needs the check parameters).
- */
 export const i18nZodErrorMap: z.ZodErrorMap = (issue) => {
   if (!_i18n) return undefined;
   const t = _i18n.t.bind(_i18n);

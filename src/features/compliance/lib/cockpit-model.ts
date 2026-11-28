@@ -33,28 +33,21 @@ import { dueTime } from './due-time';
 
 export type { CockpitTier } from './compliance-tiers';
 
-/** The state a row shows as a badge, when the dictionary of states has one for it. */
 export type CockpitBadge =
   | { kind: 'property'; status: PropertyComplianceStatus }
   | { kind: 'alloggiati'; status: AlloggiatiWebStatus };
 
 export interface CockpitRow {
-  /** One per item: the action, its target and, for a month, the month (a property has one item of a kind for each closed month). */
   id: string;
-  /** What the `data-testid`s of the row are called (`compliance-summary-<testKey>-link`), as the cockpit has always named its sections. */
   testKey: string;
-  /** How much it weighs for the host: a deadline of the law, the start of a property, or the upkeep of a stay. */
   tier: CockpitTier;
   /** A property to activate, a stay to look after, or another thing of a property (its connection, a month of ISTAT or tax). */
   group: 'property' | 'stay' | 'propertyItem';
   icon: LucideIcon;
   /** What to do, with whom or what it is about: "Alloggiati Web da inviare: Mario Rossi". For an item that is in order, what it is: "Ricevuta di Alloggiati Web: Mario Rossi". */
   title: string;
-  /** Whom or what the title is about, to tell the button of this row from the same button of another one. */
   subject: string;
-  /** Where it happens: the property of a stay, the city of a property. */
   sub?: string;
-  /** What it still lacks, in words. */
   detail?: string;
   /**
    * The traffic light the API sends for the item (NF-52). `unknown` ("da verificare") when it sends none, or one this version does not
@@ -62,47 +55,30 @@ export interface CockpitRow {
    * property that is in order).
    */
   light?: LightState;
-  /** Why the item has its light, in plain words: the code of the API translated, or the generic words of the light. Never the raw code. */
   reason?: string;
-  /** How pressing it is, in words, for what carries a deadline of the law. */
   note?: RowNote;
   badge?: CockpitBadge;
-  /** Where the button goes; null when there is nothing this user can open for it. */
   to: string | null;
-  /** The label of the button: what it does, or "Apri" for whoever may only look. */
   cta: string;
-  /** Only to read (a property that is in order, an item the API says is done): the title opens its page and there is no button. */
   quiet?: boolean;
-  /** What «Verifica nel tuo Cassetto Compliance» is about, for a row whose outcome the server says is held by the connected area (`handoffTopic`); absent for the others and for a green row. */
   drawer?: ComplianceDrawerTarget;
 }
 
-/** The rows of one level, with what the server counts of it. */
 export interface CockpitTierModel {
-  /** What needs attention, in the order the host should do it: red first, then yellow, then what nobody could say, the nearest deadline first. */
   rows: CockpitRow[];
-  /** What the server counts, which is more than it lists (it sends the first ones of some sections). */
   total: number;
-  /** Counted by the server and not listed. */
   hidden: number;
 }
 
 export interface CockpitModel {
   /** What carries a deadline of the law: the Alloggiati Web communications and the guest data they need, ISTAT, the tourist tax, the police send. */
   fine: CockpitTierModel;
-  /** The properties to activate. */
   start: CockpitTierModel;
-  /** The upkeep of the stays: the departures to close, the properties to declare ready, the identities to verify. */
   chore: CockpitTierModel;
-  /** The items the API says are in order (green), to read: they are never counted as things to do. */
   green: CockpitRow[];
-  /** The properties that are in order, to read. */
   activeProperties: CockpitRow[];
-  /** Everything the server counts as needing attention, whatever the level. */
   total: number;
-  /** What the lights say, counted from what the API sends (never worked out): how many are red, yellow, to verify, in order. */
   lights: LightSummary;
-  /** The one thing to do first, among those that have a place to go to: the worst light first, then the highest level, then the most pressing. */
   focus: CockpitRow | null;
 }
 
@@ -114,17 +90,10 @@ interface Section {
   badge?: CockpitBadge;
 }
 
-/**
- * The sections of the cockpit, in the order they win a tie: a communication that failed, the ones to send by hand, the receipts, the
- * guest data it needs, the identity of the guest, the police send and the periods, the departure to close, the property to declare ready,
- * and last the properties to activate. The level of each is `TIER_OF_FIELD`; inside a level the worst light comes first and then the nearest deadline.
- */
 const SECTIONS: readonly Section[] = [
   { field: 'alloggiatiFailures', testKey: 'alloggiati', icon: AlertCircle, group: 'stay', badge: { kind: 'alloggiati', status: 'Errore' } },
   { field: 'alloggiatiManualRequired', testKey: 'alloggiati-manual', icon: Send, group: 'stay', badge: { kind: 'alloggiati', status: 'DaInviareManualmente' } },
-  // casazen/backend#979: the guests of a Ticino property to notify to the cantonal police, an arrival day per row.
   { field: 'ticinoNotifications', testKey: 'ticino', icon: Send, group: 'propertyItem' },
-  // casazen/backend#979 (E31/F02): the guests of a property in another canton with an electronic duty to notify to the cantonal authority, an arrival day per row.
   { field: 'swissNotifications', testKey: 'swiss', icon: Send, group: 'propertyItem' },
   { field: 'manualSendsRequired', testKey: 'manual-sends', icon: Send, group: 'stay' },
   { field: 'receiptsToUpload', testKey: 'receipts', icon: FileCheck, group: 'stay' },
@@ -137,24 +106,17 @@ const SECTIONS: readonly Section[] = [
   { field: 'propertiesPending', testKey: 'properties', icon: Home, group: 'property' },
 ];
 
-/**
- * The steps of the activation wizard that can block it: their names are in `compliance.activation.steps`. The last one is the notification of the guests of a property in Switzerland
- * (E29/F02): the item of the cockpit carries the reason as its `code` and the id of the step as its `field`.
- */
 const ACTIVATION_STEPS = ['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical', 'guest-registration'];
 
 export interface CockpitContext {
   t: TFunction;
   locale: string;
   hasPermission: PermissionPredicate;
-  /** Whether a key is in the locale files (a field of the record that this version does not name is left out, never shown as a key). */
   exists: (key: string) => boolean;
 }
 
 export interface CockpitExtras {
-  /** What the Home's "Da fare" says about the same things: the property and, when the summary does not say it, the deadline of a stay. Missing: the rows do without. */
   todo?: readonly DashboardTodoItem[];
-  /** The host's properties: the state and the city of the ones to activate. */
   properties?: readonly Property[];
 }
 
@@ -211,7 +173,6 @@ export function deadlineNote(dueAt: string | null, { t, locale }: Pick<CockpitCo
 
   const wall = romeWallClock(dueAt);
   if (wall && wall.hour === 0 && wall.minute === 0) {
-    // The start of a day is the end of the one before it.
     const lastDay = addDays(wall.date, -1);
     const today = todayInRome(now);
     const text =
@@ -236,10 +197,8 @@ function unknownDeadlineNote(item: Pick<ComplianceSummaryItem, 'action'>, dueAt:
 }
 
 interface RowFacts {
-  /** What the Home's "Da fare" says about the same item: the property of a stay. */
   stay?: DashboardTodoItem;
   property?: Property;
-  /** When it is due: the summary says it, else the Home's "Da fare". */
   dueAt: string | null;
 }
 
@@ -251,7 +210,6 @@ function rowOf(item: ComplianceSummaryItem, section: Section, tier: CockpitTier,
   const cinMissing = item.action === 'ActivateProperty' && (item.missing ?? []).some((missing) => missing.code.startsWith('activation_cin'));
   const cta = known ? t(cinMissing ? 'dashboard.todo.ActivateProperty.ctaCin' : `dashboard.todo.${item.action}.cta`) : '';
 
-  // The light is the API's, never the app's: without one, or with one this version does not know, the item is "da verificare".
   const light = lightStateOf(item.light);
   const done = light === 'green';
   const period = periodName(item.period, locale) || t('compliance.item.noPeriod');
@@ -274,7 +232,6 @@ function rowOf(item: ComplianceSummaryItem, section: Section, tier: CockpitTier,
     detail: done ? undefined : missingDetail(item, context),
     light,
     reason: reasonText(item.reason, light, context),
-    // Only what the law dates has its deadline in words, and only while it is not done: the other levels stay calm. A canton with no deadline says «scadenza non nota».
     note: tier === 'fine' && !done ? (deadlineNote(facts.dueAt, context, now) ?? unknownDeadlineNote(item, facts.dueAt, context)) : undefined,
     // The state of the Alloggiati Web communication is what the reason says once the API sends the light: one pill, not two.
     badge:
@@ -284,11 +241,8 @@ function rowOf(item: ComplianceSummaryItem, section: Section, tier: CockpitTier,
           ? section.badge
           : undefined,
     to,
-    // Whoever may only look is taken to the page, not told to do what the page will not let them do.
     cta: canWrite ? cta : t('dashboard.todo.open'),
     quiet: done ? true : undefined,
-    // What the API says is in order has nothing left to go and read: no action on a green row. Elsewhere the server says which rows offer the check
-    // (`handoffTopic`): the property of a stay is not needed here, the button reads it from the booking when it is pressed.
     drawer: done ? undefined : drawerTargetOf(item),
   };
 }
@@ -304,13 +258,11 @@ export function focusToneOf(row: CockpitRow): CalmTone {
   return row.note?.tone === 'danger' || (row.badge?.kind === 'alloggiati' && row.badge.status === 'Errore') ? 'danger' : 'warning';
 }
 
-/** What a block says under the title of a row: why it has its light, then where it is and what it still lacks. */
 export function focusBodyOf(row: Pick<CockpitRow, 'reason' | 'sub' | 'detail'>): string | undefined {
   const where = [row.sub, row.detail].filter(Boolean).join(' · ');
   return [row.reason, where].filter(Boolean).join(' ') || undefined;
 }
 
-/** «Poi: ancora 3 da inviare, 21 case da attivare»: what is left after the row of the block, level by level. */
 export function thenOf(model: Pick<CockpitModel, CockpitTier>, focus: Pick<CockpitRow, 'tier'>, t: TFunction): string | undefined {
   const left = (tier: CockpitTier) => model[tier].total - (focus.tier === tier ? 1 : 0);
   const parts = [
@@ -323,13 +275,9 @@ export function thenOf(model: Pick<CockpitModel, CockpitTier>, focus: Pick<Cockp
 
 interface Ranked {
   row: CockpitRow;
-  /** The deadline as a number; infinity when none is known. */
   due: number;
-  /** The place of its section among the sections: ties go to the earlier one. */
   order: number;
-  /** The place the server gave it inside its section. */
   index: number;
-  /** A property that worked and stopped (`Suspended`) is more pressing than one that never started. */
   suspended: boolean;
 }
 
@@ -337,7 +285,6 @@ const lightOf = (row: CockpitRow): LightState => row.light ?? 'unknown';
 const lightRank = (ranked: Ranked): number => LIGHT_RANK[lightOf(ranked.row)];
 
 const byUrgency = (a: Ranked, b: Ranked) => lightRank(a) - lightRank(b) || a.due - b.due || a.order - b.order || a.index - b.index;
-/** A property that was working and stopped comes first; the others keep the order of the server (by name). The worst light comes before both. */
 const byStopped = (a: Ranked, b: Ranked) => lightRank(a) - lightRank(b) || Number(b.suspended) - Number(a.suspended) || a.index - b.index;
 
 const TIER_RANK: Readonly<Record<CockpitTier, number>> = { fine: 0, start: 1, chore: 2 };
@@ -371,7 +318,6 @@ export function buildCockpit(summary: ComplianceSummaryResult, extras: CockpitEx
     const level = tiers[tier];
     const items = sectionItems(summary, section.field);
     const listedNeeding = items.filter((item) => lightStateOf(item.light) !== 'green').length;
-    // What the server counts is what needs attention (not green): at least the items it lists as such.
     level.total += Math.max(sectionCount(summary, section.field), listedNeeding);
     level.hidden += Math.max(0, sectionCount(summary, section.field) - listedNeeding);
 
@@ -380,7 +326,6 @@ export function buildCockpit(summary: ComplianceSummaryResult, extras: CockpitEx
       const property = item.propertyId ? properties.get(item.propertyId) : undefined;
       const dueAt = item.dueAt ?? stay?.dueAt ?? null;
       const row = rowOf(item, section, tier, { stay, property, dueAt }, context, now);
-      // An item is one row: the same item in two sections (a server that lists it twice) is listed once, by the first.
       if (seen.has(row.id)) return;
       seen.add(row.id);
       const ranked: Ranked = { row, due: dueTime(dueAt), order, index, suspended: row.badge?.kind === 'property' && row.badge.status === 'Suspended' };
@@ -417,7 +362,6 @@ export function buildCockpit(summary: ComplianceSummaryResult, extras: CockpitEx
         title: property.name,
         subject: property.name,
         sub: property.city?.trim() || undefined,
-        // This row is the status of the property, not an item of the cockpit: it has no light of its own.
         badge: { kind: 'property', status: 'Active' },
         to: `/app/short-rent/properties/${property.id}`,
         cta: context.t('dashboard.todo.open'),
@@ -425,7 +369,6 @@ export function buildCockpit(summary: ComplianceSummaryResult, extras: CockpitEx
       }),
     );
 
-  // The first thing to do: the worst light first (a red of the upkeep comes before a yellow of the law), then the highest level, then the most pressing.
   const rank = (row: CockpitRow) => LIGHT_RANK[lightOf(row)] * 10 + TIER_RANK[row.tier];
   const focus = [...fine.rows, ...start.rows, ...chore.rows]
     .filter((row) => row.to !== null)

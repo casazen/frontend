@@ -17,10 +17,6 @@ export function permissionCheckOfRole(role: OrgRoleInfo): PermissionPredicate {
   };
 }
 
-/**
- * What a person finds in one area: whether it can enter, the pages of its main menu, and the others of the sidebar in menu order («Altro», then
- * the settings pinned at its foot).
- */
 export interface AreaMenu {
   area: PreviewArea;
   enters: boolean;

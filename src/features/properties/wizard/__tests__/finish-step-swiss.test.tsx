@@ -27,7 +27,6 @@ vi.mock('../finish/activation-section', () => ({ ActivationSection: () => null }
 
 type Hook<T extends (...args: never[]) => unknown> = ReturnType<T>;
 
-/** The activation of a Swiss property as the server says it: the step of the notification is open and lists what the property lacks. */
 function swissActivation(missing: string[]): ComplianceActivationResult {
   return {
     complianceStatus: 'Pending',
@@ -92,7 +91,6 @@ describe('FinishStep, the notification of the guests in the last step of «Aggiu
     expect(container.querySelector('a[target="_blank"]')).toBeNull();
     expect(screen.queryByTestId('cin-section')).not.toBeInTheDocument();
     expect(screen.queryByText(i18n.t('property.swissRegistration.title'))).not.toBeInTheDocument();
-    // In Ticino the structure number is asked right here, with what is missing, so nothing is lost on the way.
     expect(await screen.findByTestId('ticino-structure-id-form')).toBeInTheDocument();
   });
 
@@ -104,13 +102,11 @@ describe('FinishStep, the notification of the guests in the last step of «Aggiu
     expect(guestRegistrationApi.get).not.toHaveBeenCalled();
   });
 
-  // What a Swiss property lacks blocks its activation whatever the flag says (the readiness is not behind it): the host can fix it here, and «Correggi» has a place to go.
   it('FinishStep_SwissPropertyWithTheRegimesOff_ListsWhatItLacksAndAsksTheStructureNumberHere', async () => {
     renderStep('CH', false, swissActivation(['ticino_structure_id_missing']));
 
     expect(await screen.findByTestId('ticino-structure-id-form')).toBeInTheDocument();
     expect(screen.getByTestId('guest-registration-missing')).toHaveTextContent(i18n.t('guestRegistration.missing.ticino_structure_id_missing'));
-    // The guidance it always was is still there, nothing is asked of the regimes, and the place «Correggi» leads to exists.
     expect(screen.getByText(i18n.t('property.swissRegistration.title'))).toBeInTheDocument();
     expect(guestRegistrationApi.get).not.toHaveBeenCalled();
     expect(document.getElementById('property-wizard-section-guest-registration')).toBe(screen.getByTestId('property-wizard-swiss'));

@@ -12,7 +12,6 @@ export const LEASE_STATUS_VARIANTS: Record<LeaseStatus, 'default' | 'secondary' 
   Rejected: 'destructive',
 };
 
-/** Badge of the RLI registration state (LT-01): only "registered" is green. */
 export const RLI_REGISTRATION_STATE_VARIANTS: Record<RliRegistrationState, 'default' | 'secondary' | 'outline' | 'destructive' | 'success'> = {
   notSigned: 'secondary',
   toRegister: 'outline',

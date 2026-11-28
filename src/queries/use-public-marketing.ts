@@ -19,7 +19,6 @@ export function useUnsubscribe() {
   });
 }
 
-/** The person confirms the subscription with the signed values of the link (CRM-03, double opt-in); confirmed also when it already was. */
 export function useConfirmSubscription() {
   return useMutation<ConfirmResult, unknown, ConfirmLinkParams>({
     mutationFn: (params) => publicMarketingApi.confirm(params),

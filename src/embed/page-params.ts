@@ -8,21 +8,16 @@
 
 import type { EmbedLang } from './texts';
 
-/** The options of `CasaZenEmbed.mount(element, options)`; an option that is missing is read from the `data-casazen-*` attribute of the element. */
 export type EmbedOptions = Record<string, unknown>;
 
-/** A slug of an org or of a property: letters, digits and dashes, at most 100 characters. */
 const SLUG = /^[a-z0-9][a-z0-9-]{0,99}$/i;
-/** The id of a destination (`where`): the same characters as the destinations of the search bar. */
 const WHERE = /^[\w.~-]{1,100}$/;
-/** The five `utm_*` of a campaign, and a value that is a plain token (an address of e-mail or a phone number is never one). */
 const UTM_NAME = /^utm_(source|medium|campaign|term|content)$/;
 const UTM_VALUE = /^[\w.-]{1,80}$/;
 const GUESTS = /^[1-9]\d?$/;
 const CHILDREN = /^\d{1,2}$/;
 const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-/** The slug of an org or of a property, or `''` when `value` is not one. */
 export function readSlug(value: unknown): string {
   return typeof value === 'string' && SLUG.test(value) ? value : '';
 }
@@ -41,27 +36,20 @@ export function readOrigin(value: unknown): string {
   }
 }
 
-/** `it` or `en`: the language asked for, else (`auto` or nothing) the one of the `<html lang>` of the page, else Italian. */
 export function readLang(value: unknown, pageLang: string): EmbedLang {
   const tag = typeof value === 'string' && value !== '' && value !== 'auto' ? value : pageLang;
   return /^en(?![a-z])/i.test(tag) ? 'en' : 'it';
 }
 
-/** The initial height of a frame in pixels (`data-casazen-min-height`): a whole number from 100 to 3000, else 360. */
 export function readHeight(value: unknown): number {
   const height = Number(value);
   return Number.isInteger(height) && height >= 100 && height <= 3000 ? height : 360;
 }
 
-/** `data-casazen-datalayer="true"` (or `true` as an option): any other value is off. */
 export function isOn(value: unknown): boolean {
   return value === true || value === 'true';
 }
 
-/**
- * The theme a page asks for: an object, or the JSON of one of at most 500 characters (parsed in a try). The frame and the search bar check each member
- * again; here only the shape is.
- */
 export function readTheme(value: unknown): Record<string, unknown> | undefined {
   let theme = value;
   if (typeof value === 'string') {
@@ -75,7 +63,6 @@ export function readTheme(value: unknown): Record<string, unknown> | undefined {
   return typeof theme === 'object' && theme !== null && !Array.isArray(theme) ? (theme as Record<string, unknown>) : undefined;
 }
 
-/** An existing calendar date written `YYYY-MM-DD`. */
 export function isDate(value: string): boolean {
   const match = DATE.exec(value);
   if (!match) return false;
@@ -84,12 +71,10 @@ export function isDate(value: string): boolean {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
-/** The `utm_*` of the address `search` that are one of the five names and a plain token, as `[name, value]`: where the guest comes from, nothing else. */
 export function utmParams(search: string): [string, string][] {
   return [...new URLSearchParams(search)].filter(([name, value]) => UTM_NAME.test(name) && UTM_VALUE.test(value));
 }
 
-/** The stay a widget may be asked to open with: attributes first, then the address of the page. */
 interface OwnStay {
   checkin: unknown;
   checkout: unknown;
@@ -121,24 +106,17 @@ export function frameQuery(search: string, own: OwnStay): URLSearchParams {
   return out;
 }
 
-/** The query of the frame that may live in the address of the page: plain characters only (no `<`, no quotes, no `#`), at most 1000 of them. */
 const SAFE_QUERY = /^[\w.,~%+=&-]{0,1000}$/;
 
-/** The pages each widget may show: the booking engine its own page and a property, a property its own page, the guest area its entry. */
 const BOOKING_PATH = /^\/(booking|property\/[a-zA-Z0-9][a-zA-Z0-9-]{0,99})$/;
 const PROPERTY_PATH = /^\/property\/[a-zA-Z0-9][a-zA-Z0-9-]{0,99}$/;
 const GUEST_PATH = /^\/guest-access$/;
 
-/** Whether `widget` may be at `path` with `query`: a page of its own and a query made of safe characters, nothing else. */
 export function isFrameState(widget: string, path: string, query: string): boolean {
   const pages = widget === 'booking' ? BOOKING_PATH : widget === 'property' ? PROPERTY_PATH : widget === 'guest-access' ? GUEST_PATH : null;
   return pages !== null && pages.test(path) && SAFE_QUERY.test(query);
 }
 
-/**
- * Whether a parameter of a restored state may go on to the frame: one a frame keeps in its address (the stay, the place, the five `utm_*`), with a value that
- * fits what it is (the same patterns `frameQuery` asks of the parameters of the page). A switch, not a table: a name like `constructor` is no key of anything.
- */
 function fitsRestored(name: string, value: string): boolean {
   switch (name) {
     case 'checkin':
@@ -157,7 +135,6 @@ function fitsRestored(name: string, value: string): boolean {
   }
 }
 
-/** The query of a restored state as it may go on to the frame: only the parameters that fit (see `fitsRestored`), written again, so no `%`-escape of the address survives. */
 function restoredQuery(query: string): string {
   const kept = new URLSearchParams();
   for (const [name, value] of new URLSearchParams(query)) {
@@ -180,7 +157,6 @@ export function readFrameState(widget: string, search: string): { path: string; 
   return isFrameState(widget, path, query) ? { path, query: restoredQuery(query) } : null;
 }
 
-/** `search` of the page with `cz` set to the state of the frame (the rest of the query stays as it was). */
 export function writeFrameState(search: string, path: string, query: string): string {
   const params = new URLSearchParams(search);
   params.set('cz', query ? `${path}?${query}` : path);

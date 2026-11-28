@@ -18,22 +18,15 @@ import type { AccessCodeStatusItem } from '@/types';
 import { LockCodeDialog } from './lock-code-dialog';
 
 const PROPERTIES_PATH = '/app/short-rent/properties';
-/** The printable QR of the entrance of one property: the page of `src/pages/PropertyQrCode.tsx`, registered in the route manifest. */
 const ENTRANCE_QR_PATH = `${PROPERTIES_PATH}/:propertyId/qr`;
-/**
- * `?property=<id>` opens the window of one property as the page opens. This is how a page that lists what is still to do (Adempimenti, the
- * «Da fare» of the Home) leads to «Codice mancante» of a property: the state is an item that can be linked to.
- */
 const PROPERTY_PARAM = 'property';
 
-/** When the code was last set, in the words of the language of the page; nothing for a date that cannot be read. */
 function updatedOn(value: string | null, language: string): string | undefined {
   if (!value) return undefined;
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? undefined : new Intl.DateTimeFormat(language, { dateStyle: 'long' }).format(date);
 }
 
-/** «Codice impostato» / «Codice mancante»: an icon and a word on a soft background, the same tones as the other states of the app. */
 function CodeState({ isSet }: { isSet: boolean }) {
   const { t } = useTranslation();
   const Icon = isSet ? CheckCircle2 : AlertCircle;
@@ -58,7 +51,6 @@ interface IdentificationRowProps {
   onEditCode: () => void;
 }
 
-/** One property: its name (to its page), the city, whether the lock code is set, and the two things the host does here. */
 function IdentificationRow({ item, onEditCode }: IdentificationRowProps) {
   const { t, i18n } = useTranslation();
   const codeLabel = t(item.accessCodeSet ? 'compliance.identification.row.changeCode' : 'compliance.identification.row.setCode');
@@ -142,7 +134,6 @@ export function IdentificationPage() {
         <PageHeader title={t('compliance.identification.title')} description={t('compliance.identification.description')} crumbs="auto" />
 
         {isError && !data ? (
-          // An API error is never shown as "no properties".
           <ErrorState title={t('compliance.identification.loadError')} error={error} onRetry={() => void refetch()} testId="identification-error" />
         ) : isLoading ? (
           <SkeletonLine lines={4} />

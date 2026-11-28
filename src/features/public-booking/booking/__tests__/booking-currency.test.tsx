@@ -27,7 +27,6 @@ const PROPERTY_ID = '6f1c2b8e-3a4d-4e5f-8a9b-0c1d2e3f4a5b';
 const STAY = '?checkin=2026-10-16&checkout=2026-10-19&guests=2';
 
 function property(currency: string | undefined): PublicPropertyDetailDto {
-  // `currency` is a required text in the answer of the server: what these tests give it is what a malformed answer would carry.
   return {
     id: PROPERTY_ID,
     slug: 'villa-mare',
@@ -134,13 +133,11 @@ describe('the booking card with no currency in the data', () => {
 
   it.each(NO_CURRENCY)('BookingCard_StayChosenAndQuoteWithCurrency%s_WritesTheTotalTheLinesAndTheAnnouncementWithNoSymbol', async (_name, currency) => {
     vi.mocked(publicBookingApi.quoteDirectBooking).mockResolvedValue(quote(currency));
-    // The home itself says a valid currency: the quote that says none is not written in it nor in anything else (the amounts of the quote are the quote's).
     renderWith(STAY, property('EUR'), <BookingCard />);
 
     await waitFor(() => expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50 (valuta non disponibile)'));
     expect(screen.getByTestId('price-breakdown-total')).toHaveTextContent('519,50 (valuta non disponibile)');
     expect(screen.getByTestId('booking-announce')).toHaveTextContent('519,50 (valuta non disponibile)');
-    // The line of the nights says its price the same way.
     expect(screen.getByTestId('price-breakdown')).toHaveTextContent('150 (valuta non disponibile)');
     expect(screen.getByTestId('booking-card')).not.toHaveTextContent(/EUR|€/);
   });
@@ -166,7 +163,6 @@ describe('the booking card with no currency in the data', () => {
     vi.mocked(publicBookingApi.quoteDirectBooking).mockResolvedValue(quote('CHF'));
     renderWith(STAY, property('CHF'), <BookingCard />);
 
-    // The total of the quote is in: the night price of the calendar came first and already said francs.
     await waitFor(() => expect(screen.getByTestId('price-breakdown-total')).toHaveTextContent('CHF'));
     expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50');
     expect(screen.getByTestId('booking-price')).toHaveTextContent('CHF');

@@ -26,9 +26,7 @@ function SiteAddressNote({ status }: { status: OrgBookingSite['status'] }) {
 }
 
 interface VetrinaUrlCopyProps {
-  /** The address of the booking site as it really is (its own host, or the platform path on the address of the app): written as it is, never put on the page's own address. */
   url: string;
-  /** How sure that address is (`useOrgBookingSite`): the copy waits while it is read, and says so when the address is the one of CasaZen. */
   status: OrgBookingSite['status'];
   variant?: 'card' | 'inline';
 }

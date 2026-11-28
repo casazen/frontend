@@ -23,7 +23,6 @@ import { BOOKING_STATUS_VARIANTS } from './schemas/booking.schema';
 
 const LINK = 'inline-flex min-h-11 min-w-0 items-center gap-2 break-all text-sm hover:underline';
 
-/** What the booking asks of the host now, as one sentence and one way to do it; nothing when it asks nothing. */
 function nextStep(booking: Booking, canWrite: boolean, t: TFunction): { text: string; label: string; to?: string; arrival?: true } | null {
   if (!canWrite) return null;
   if (booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval') {
@@ -115,7 +114,6 @@ export function BookingDrawerContent({ id }: DetailContentProps) {
         ) : null}
       </div>
 
-      {/* The conversation with the guest of a booking made through the site (SR-12), the same as the tab Messaggi of the page. */}
       {showMessages && params.get('focus') === 'messages' && (
         <Button asChild variant="outline"><Link to={`/app/short-rent/bookings/${booking.id}?tab=messages`}>{t('booking.messages.title')}</Link></Button>
       )}
@@ -125,7 +123,6 @@ export function BookingDrawerContent({ id }: DetailContentProps) {
         open={arrivalOpen}
         onOpenChange={(open) => {
           setArrivalOpen(open);
-          // The Home behind the drawer says whether the arrival is still to register.
           if (!open) refresh();
         }}
       />

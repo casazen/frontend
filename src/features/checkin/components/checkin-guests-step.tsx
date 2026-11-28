@@ -12,7 +12,6 @@ import {
 import type { CodeTableSource } from './code-table';
 import { StayGuestPersonalFields, VehiclePlateField } from './stay-guest-fields';
 
-/** The first step: the personal data of each guest (and the plate of the car where it is asked). */
 export function CheckInGuestsStep({ resumed, step, swissDocuments, fields, declaredGuests, context, codeSource, statisticalFields, swiss, changeLeaderType, remove, addGuest, askVehiclePlate }: {
   resumed: boolean;
   step: number | null;

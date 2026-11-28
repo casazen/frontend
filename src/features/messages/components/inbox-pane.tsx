@@ -12,21 +12,12 @@ import { InboxFilters, type InboxPropertyOption } from './inbox-filters';
 import { ThreadList } from './thread-list';
 
 interface InboxPaneProps {
-  /** The conversation that is open beside the list. */
   selectedKey?: string;
-  /** The column beside an open conversation: the fields go one under the other and the rows are shorter. */
   compact?: boolean;
-  /** What stands in for an empty list when it is the one of a booking that has no conversation yet. */
   noConversation?: (state: InboxState) => ReactNode;
-  /** The reader may copy the check-in link (`booking.write`): without it the link in the preview of an automatic message is hidden. */
   canWrite?: boolean;
 }
 
-/**
- * The inbox: the filters and the list of the conversations, with their state in the address. It is the page of the messages and, as
- * the left column, what the page of a conversation draws beside the open thread; the list is the same in both, and every row keeps the
- * filters in its address.
- */
 export function InboxPane({ selectedKey, compact = false, noConversation, canWrite = false }: InboxPaneProps) {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();

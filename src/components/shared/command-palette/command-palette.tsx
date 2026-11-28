@@ -34,7 +34,6 @@ const GROUP_LABELS: Record<CommandGroup['id'], { labelKey: string }> = {
   guide: { labelKey: 'commandPalette.groups.guide' },
 };
 
-/** What an item is, for a screen reader, in the group of the recents (where pages, properties and guests are mixed). */
 const KIND_LABELS: Record<CommandKind, { labelKey: string }> = {
   page: { labelKey: 'commandPalette.kinds.page' },
   action: { labelKey: 'commandPalette.kinds.action' },
@@ -44,21 +43,15 @@ const KIND_LABELS: Record<CommandKind, { labelKey: string }> = {
   guide: { labelKey: 'commandPalette.kinds.guide' },
 };
 
-/** What the screen reader is told of the results is said after the person stopped typing, not at every key. */
 const ANNOUNCE_DELAY_MS = 400;
 
 export interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The area of the page that is open. */
   contextKey: AppContextKey;
-  /** Who is signed in: the recents are kept for them. Without one nothing is remembered. */
   userId: string | null;
-  /** The server search (UI-13). Not passed today: the palette then makes no request of its own. */
   remoteSource?: RemoteCommandSource;
-  /** Closes the palette after a choice; `navigated`: the choice led to another page. */
   onChosen: (options: { navigated: boolean }) => void;
-  /** Where the focus goes when the palette closes (see {@link CommandPaletteProvider}). */
   onCloseAutoFocus: (event: Event) => void;
 }
 
@@ -74,7 +67,6 @@ interface OptionRowProps {
   hit: CommandHit;
   domId: string;
   active: boolean;
-  /** Says what the item is before its label (in the recents). */
   kindLabel?: string;
   onChoose: (item: CommandItem) => void;
   onPoint: (event: React.PointerEvent, id: string) => void;
@@ -95,7 +87,6 @@ function OptionRow({ hit, domId, active, kindLabel, onChoose, onPoint }: OptionR
       onPointerMove={(event) => onPoint(event, item.id)}
       className={cn(
         'relative flex min-h-12 cursor-pointer items-center gap-3 rounded-lg px-3 py-2',
-        // The open row is told by its background and a bar on the left, not by a color alone.
         active &&
           "bg-primary/10 before:absolute before:bottom-2 before:left-0 before:top-2 before:w-[3px] before:rounded-full before:bg-primary before:content-['']",
       )}
@@ -127,10 +118,6 @@ interface PaletteBodyProps {
   onChosen: CommandPaletteProps['onChosen'];
 }
 
-/**
- * What is inside the dialog. It is only mounted while the palette is open, so the sources are read (and the cache of the
- * queries with them) when the person asks for the palette, not at every render of the shell.
- */
 function PaletteBody({ inputId, contextKey, userId, remoteSource, onChosen }: PaletteBodyProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -140,7 +127,6 @@ function PaletteBody({ inputId, contextKey, userId, remoteSource, onChosen }: Pa
   const lastPointer = useRef({ x: -1, y: -1 });
 
   const [query, setQuery] = useState('');
-  // The row with the cursor is remembered by the item, not by its place: a result that arrives late does not move it.
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const context = useCommandContext(contextKey);
@@ -157,19 +143,16 @@ function PaletteBody({ inputId, contextKey, userId, remoteSource, onChosen }: Pa
   }, [typed, items, prepared, query, contextKey, recentIds, remote.items]);
 
   const rows = useMemo(() => groups.flatMap((group) => group.hits), [groups]);
-  // The place of each result among all the rows, whichever group it is in (an item shows once in a view).
   const indexOfItem = useMemo(() => new Map(rows.map((hit, index) => [hit.item.id, index])), [rows]);
   const activeIndex = Math.max(0, indexOfItem.get(activeId ?? '') ?? 0);
   const hasRows = rows.length > 0;
   const rowDomId = (index: number) => `${listboxId}-option-${index}`;
   const activeDomId = hasRows ? rowDomId(activeIndex) : undefined;
 
-  // The row that has the cursor stays in sight when the arrows move it down or up a long list.
   useEffect(() => {
     const row = activeDomId ? document.getElementById(activeDomId) : null;
     const list = listRef.current;
     if (!row || !list) return;
-    // The first row has the heading of its group above it: back to the top, not just to the row.
     if (activeIndex === 0) list.scrollTop = 0;
     else row.scrollIntoView?.({ block: 'nearest' });
   }, [activeDomId, activeIndex]);
@@ -200,7 +183,6 @@ function PaletteBody({ inputId, contextKey, userId, remoteSource, onChosen }: Pa
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    // Enter that picks a letter in an input method is not a choice.
     if (event.nativeEvent.isComposing) return;
     switch (event.key) {
       case 'ArrowDown':
@@ -235,7 +217,6 @@ function PaletteBody({ inputId, contextKey, userId, remoteSource, onChosen }: Pa
   };
 
   const pointAt = (event: React.PointerEvent, id: string) => {
-    // A list that scrolls under a still mouse makes the browser send a move without a movement: it is not the person pointing.
     const { clientX: x, clientY: y } = event;
     if (x === lastPointer.current.x && y === lastPointer.current.y) return;
     lastPointer.current = { x, y };
@@ -265,7 +246,6 @@ function PaletteBody({ inputId, contextKey, userId, remoteSource, onChosen }: Pa
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
-            // A new text starts again from the first result.
             setActiveId(null);
           }}
           onKeyDown={onKeyDown}
@@ -275,10 +255,6 @@ function PaletteBody({ inputId, contextKey, userId, remoteSource, onChosen }: Pa
       </div>
 
       {hasRows ? (
-        // The listbox is what scrolls: the popup of the combobox (`aria-controls` of the box), not a wrapper around it. The
-        // focus stays in the box, the cursor moves with the arrows and scrolls the list; a click does not take the focus
-        // from the box either, and `tabIndex={-1}` keeps the browsers that let a scroller take the focus (Chrome) from making
-        // the list a stop of its own between the box and the close button.
         <div
           ref={listRef}
           role="listbox"
@@ -346,7 +322,6 @@ function PaletteBody({ inputId, contextKey, userId, remoteSource, onChosen }: Pa
         </span>
       </div>
 
-      {/* Said after the person stopped typing: how many results there are, or that there are none. */}
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only" data-testid="command-palette-status">
         {announced}
       </div>
@@ -354,13 +329,6 @@ function PaletteBody({ inputId, contextKey, userId, remoteSource, onChosen }: Pa
   );
 }
 
-/**
- * The global search (UI-06): a dialog with a text box and the list of what the text finds, in groups. It opens with Ctrl+K
- * (Cmd+K on a Mac) and from the search of the header, and finds the pages of the menus, the actions and the properties,
- * bookings and guests the pages have already loaded; choosing a result goes there. It is a combobox with a listbox
- * (`aria-activedescendant`: the focus stays in the text box); the arrows, Home and End move through the results, Enter
- * chooses, Esc closes and the focus goes back to where it was. On a phone the dialog is a sheet from the bottom (`Dialog`).
- */
 export function CommandPalette({
   open,
   onOpenChange,
@@ -378,7 +346,6 @@ export function CommandPalette({
       <DialogContent
         data-command-palette-dialog=""
         data-testid="command-palette"
-        // The input is the first thing in the dialog: it takes the focus, and the arrows reach the rest through it.
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           document.getElementById(inputId)?.focus();

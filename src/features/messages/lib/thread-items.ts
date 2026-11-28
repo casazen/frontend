@@ -2,21 +2,15 @@ import type { ThreadItem } from '@/components/shared/message-thread';
 import type { PendingThreadMessage } from '@/queries/use-thread-send';
 import type { MessageHubMessage, MessageHubThreadDetail } from '@/types';
 
-/**
- * A row of the conversation: a message the server stored (`message`), or one this page is sending or could not send (`pending`, with the
- * key of its send). The shared log draws both; the bubble of the hub reads what it needs from the original.
- */
 export interface HubThreadItem extends ThreadItem {
   message?: MessageHubMessage;
   pending?: PendingThreadMessage;
 }
 
-/** The words for who wrote a message when the message does not say it by name. */
 export interface SenderLabels {
   guest: string;
   you: string;
   assistant: string;
-  /** An automatic message of CasaZen that no person wrote (the check-in link in the chat of the portal). */
   automation: string;
 }
 
@@ -56,7 +50,6 @@ export function resentMessageIds(messages: readonly MessageHubMessage[]): Set<st
   return resent;
 }
 
-/** The rows of a conversation: its messages oldest first, then what this page is still sending or could not send. */
 export function buildThreadItems(thread: MessageHubThreadDetail, pending: readonly PendingThreadMessage[], labels: SenderLabels): HubThreadItem[] {
   return [
     ...thread.messages.map(

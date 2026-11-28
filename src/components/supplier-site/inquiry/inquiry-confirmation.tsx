@@ -85,17 +85,10 @@ function Done({ slug, supplierName, result }: { slug: string; supplierName: stri
 }
 
 interface InquiryConfirmationProps {
-  /** The request the link of the e-mail was about (`?inquiry=`). */
   inquiryId: string;
-  /** The secret of the link, read from the fragment: null when the link had none that fits. */
   token: string | null;
 }
 
-/**
- * The check of the e-mail of a request on measure (SP-12c), on the page the link opens: it says the request is with the supplier, that
- * it already was, or that the link is no good or ran out. The token stays in memory for the one call (the page above takes it out of
- * the address bar at once).
- */
 export function InquiryConfirmation({ inquiryId, token }: InquiryConfirmationProps) {
   const { t } = useTranslation();
   const { model } = useSupplierSite();
@@ -105,8 +98,6 @@ export function InquiryConfirmation({ inquiryId, token }: InquiryConfirmationPro
       {t('supplierSite.inquiry.confirm.again')}
     </Link>
   );
-  // A link that is no good may be one already used (the token leaves the address when the page opens, so a reload cannot use it again):
-  // whoever already checked the e-mail finds the request with its code.
   const invalidActions = (
     <>
       {again}

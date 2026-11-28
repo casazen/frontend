@@ -27,18 +27,14 @@ import { PortalStateMark, ReasonLine } from './owner-readiness-table';
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** The states a new batch can invite: an owner that is ready, or whose last invitation lapsed or was withdrawn. An invited or accepted one is never invited again by the batch. */
 const INVITABLE: ReadonlySet<OwnerPortalState> = new Set<OwnerPortalState>(['ready', 'expired', 'revoked']);
 
-/** The states in the order the lifecycle is told, with the counts shown above the list. */
 const LIFECYCLE: readonly OwnerPortalState[] = ['ready', 'invited', 'accepted', 'expired', 'revoked'];
 
-/** The reasons an owner is left out of a batch that are not facts of the readiness. */
 const EXCLUSION_CODES: ReadonlySet<string> = new Set(['already_invited', 'already_accepted', 'owner_not_found']);
 
 const camel = (code: string) => code.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
 
-/** What was asked of one owner's invitation: a new link (the one in force withdrawn) or only the withdrawal. They are different acts, and each asks its own confirmation. */
 interface Pending {
   kind: 'resend' | 'revoke';
   invitation: OwnerInvitationStatus;
@@ -50,7 +46,6 @@ interface Outcome {
   text: string;
 }
 
-/** The previewed batch: the owners it was asked for (the confirmation judges the same selection again) and what the server said. Never the link, never a token. */
 interface Previewed {
   ownerIds: string[];
   preview: OwnerInvitationPreview;
@@ -64,7 +59,6 @@ function ExclusionLine({ code }: { code: string }) {
 }
 
 interface OwnerInvitationPanelProps {
-  /** The readiness the page already read: the reasons an owner is not ready for the portal are its own. */
   report: OwnerReadinessReport;
 }
 
@@ -89,7 +83,6 @@ export function OwnerInvitationPanel({ report }: OwnerInvitationPanelProps) {
   const [outcome, setOutcome] = useState<Outcome | null>(null);
 
   const busy = preview.isPending || confirm.isPending || resend.isPending || revoke.isPending;
-  // An error of a read, a 404 first: «not found» is never what an older answer held, and an error is never «nothing to invite».
   const notFound = invitations.isError && getHttpStatus(invitations.error) === 404;
   const list = useMemo(() => (invitations.isError ? [] : (invitations.data ?? [])), [invitations.data, invitations.isError]);
 
@@ -107,7 +100,6 @@ export function OwnerInvitationPanel({ report }: OwnerInvitationPanelProps) {
     return result;
   }, [list]);
 
-  // Only the owners that can be invited, and still can: a selection never outlives the state that made it possible.
   const selectedIds = list.filter((owner) => selected.has(owner.ownerId) && INVITABLE.has(normalizePortalState(owner.state))).map((owner) => owner.ownerId);
   const nameOf = (ownerId: string) => list.find((owner) => owner.ownerId === ownerId)?.displayName ?? t('ownerOnboarding.invitations.anOwner');
 
@@ -184,7 +176,6 @@ export function OwnerInvitationPanel({ report }: OwnerInvitationPanelProps) {
       </div>
     );
   } else if (invitations.isError) {
-    // A failed read is told as such, with a way to ask again: never an empty list that reads as «nobody to invite».
     body = (
       <Alert
         variant="danger"
@@ -235,7 +226,6 @@ export function OwnerInvitationPanel({ report }: OwnerInvitationPanelProps) {
               <li key={owner.ownerId} className="flex min-w-0 flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between" data-testid="owner-invitation-row" data-state={state}>
                 <div className="flex min-w-0 items-start gap-3">
                   {invitable ? (
-                    // The box is small: the label around it is the touch target (44 px), and clicking it ticks the box.
                     <label htmlFor={checkId} className="-m-2.5 flex size-11 shrink-0 cursor-pointer items-center justify-center">
                       <Checkbox
                         id={checkId}
@@ -323,8 +313,6 @@ export function OwnerInvitationPanel({ report }: OwnerInvitationPanelProps) {
       {body}
 
       {!notFound && !invitations.isError && invitations.watchOver ? (
-        // A link is still in force but the page has asked by itself for ten minutes: it stops (each read works out the whole portfolio on the server) and says so in neutral words,
-        // never as a failure, with the button that asks again.
         <div className="flex flex-wrap items-center gap-2" role="status" data-testid="owner-invitations-watch-over">
           <p className="min-w-0 flex-1 text-sm text-foreground/70">{t('ownerOnboarding.invitations.watchOver')}</p>
           <Button type="button" size="sm" variant="outline" className="min-h-11" disabled={busy} loading={invitations.isFetching} onClick={invitations.checkAgain} data-testid="owner-invitations-check-again">

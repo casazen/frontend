@@ -13,33 +13,22 @@ import {
 import { useUiStore } from '@/store/ui-store';
 import { cn } from '@/lib/utils';
 
-/** An action of a page: a link when it has `to`, a button when it has `onClick`. */
 export interface PageHeaderAction {
   label: string;
   icon?: LucideIcon;
   to?: string;
   onClick?: () => void;
-  /** Only a button can be disabled (a link that cannot be followed is not shown). */
   disabled?: boolean;
   testId?: string;
-  /**
-   * How loud the page's one action is, when it is the `primary` of the page: `outline` for a page that only reads (its numbers are the focal point, so it has no filled
-   * button). The menu "⋯" ignores it.
-   */
   variant?: 'default' | 'outline';
 }
 
-/** An action of the menu "⋯": it can be marked as one that is hard to take back. */
 export interface PageHeaderMenuAction extends PageHeaderAction {
   danger?: boolean;
 }
 
 export type PageHeaderMenuItem = PageHeaderMenuAction | { separator: true };
 
-/**
- * Where the primary action goes on a phone: `bar` fixes it at the bottom, above the bottom bar, as wide as the screen;
- * `fab` as a rounded button on the right; `none` leaves it in the header, next to the title.
- */
 export type MobilePrimaryMode = 'bar' | 'fab' | 'none';
 
 function ActionContent({ action }: { action: PageHeaderAction }) {
@@ -52,9 +41,6 @@ function ActionContent({ action }: { action: PageHeaderAction }) {
   );
 }
 
-// On a phone the action leaves the flow of the header and sits above the bottom bar (`fixed`). The strip around the button lets
-// the page show through and scroll under it (`pointer-events-none`); only the button takes the finger. The page makes room for
-// it (`AppShellLayout`) and the toasts come up over it (`AppToaster`), both told by `mobilePrimaryVisible`.
 const BAR_STYLES = {
   wrapper:
     'max-md:pointer-events-none max-md:fixed max-md:inset-x-0 max-md:bottom-(--primary-bottom) max-md:z-40 max-md:bg-linear-to-t max-md:from-background max-md:via-background/90 max-md:to-transparent max-md:px-4 max-md:pb-3 max-md:pt-6',
@@ -124,10 +110,6 @@ interface PageHeaderMenuProps {
   items: PageHeaderMenuItem[];
 }
 
-/**
- * The other actions of a page, in the menu "⋯" (UI-05): a Radix menu, so the arrows move, Enter takes the action, Esc closes
- * it and the focus goes back to the button. A link is a link (it can be opened in a new tab), a button is a button.
- */
 export function PageHeaderMenu({ items }: PageHeaderMenuProps) {
   const { t } = useTranslation();
 

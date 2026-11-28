@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-/** The pages for the people who build the app, by their address: a new page adds its line here, and nothing else in this file. */
 const DEV_PAGES = [
   '/dev/primitives',
   '/dev/list-view',
@@ -34,8 +33,6 @@ describe('devRoutes (UI-07)', () => {
     expect(devRoutes).toEqual([]);
   });
 
-  // Each page imports everything it shows: the first time, on a slow machine, that takes longer than the 5 seconds a test is
-  // given by default.
   it.each(DEV_PAGES)('devRoutes_Page_%s_LoadsOnDemand', { timeout: 30_000 }, async (path) => {
     vi.stubEnv('DEV', true);
     vi.resetModules();

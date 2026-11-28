@@ -75,8 +75,6 @@ export function DrawerBody({ id, onClose, mayCorrect, mayClose, closedIds, onCor
     const { invoice } = detail;
     const issued = invoice.status === 'Issued';
     const draft = invoice.status === 'Draft';
-    // A draft that holds the number of a rejected TD17 is issued, never discarded; one that is kept (nothing gives it a TD17 now) can be neither, and says why, and is closed as «non più dovuta» by who may. A rejected TD17
-    // is corrected when the server says it can be. The original a correction discarded is history, as in its row: «Sostituita», its rejection, the way to what replaces it, and no action; a draft that was closed is history too.
     const issuable = draft && canManage && canIssueDraft(invoice);
     const discardable = draft && canManage && canDiscardDraft(invoice);
     const correctable = mayCorrect && invoice.canCorrect;

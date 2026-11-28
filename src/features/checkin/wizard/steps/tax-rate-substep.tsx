@@ -12,14 +12,12 @@ import { useMunicipalityRate, useSaveMunicipalityRate } from '@/queries/use-chec
 import type { SaveMunicipalityRateRequest } from '@/types/checkin-wizard.types';
 import { rateEffectiveFrom } from '../lib/checkin-wizard-model';
 
-/** What the API accepts of a declared rate: 0.01 to 50 per person per night, an exemption age of 0 to 18, a source of at most 500 characters. */
 const MIN_RATE = 0.01;
 const MAX_RATE = 50;
 const MAX_EXEMPTION_AGE = 18;
 const MAX_SOURCE_LENGTH = 500;
 const SEASON_DAY = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
-/** A number typed with a comma or a point, or null when it is not one. */
 function parseNumber(value: string): number | null {
   const text = value.trim().replace(',', '.');
   if (text === '') return null;
@@ -27,7 +25,6 @@ function parseNumber(value: string): number | null {
   return Number.isFinite(number) ? number : null;
 }
 
-/** The fields of the form as typed. The messages are i18n keys, shown by `FormFieldError`. */
 const rateFormSchema = z
   .object({
     rate: z.string(),
@@ -86,18 +83,10 @@ function requestOf(values: RateFormValues, effectiveFrom: string): SaveMunicipal
 interface TaxRateSubstepProps {
   bookingId: string;
   propertyId: string;
-  /** The check-in day of the stay (`YYYY-MM-DD`): the rate must apply from it, or the stay in front of the host would still lack one. */
   checkIn: string;
-  /** Called when the rate is saved or the host gives up: the tax step shows again. */
   onClose: () => void;
 }
 
-/**
- * "Enter your municipality tax" (NF-46, ADR-037-R5): the rate the host declares for a comune that has no official one in CasaZen, private to the
- * organization: the amount per person per night, the season, the age under which guests are exempt, the night cap and where the amount comes
- * from. It sits inside the form of the wizard, so it is not a form of its own: its fields are plain controls, its buttons do not submit, and
- * saving it returns to the same step, where the tax is worked out again with it.
- */
 export function TaxRateSubstep({ bookingId, propertyId, checkIn, onClose }: TaxRateSubstepProps) {
   const { t } = useTranslation();
   const rate = useMunicipalityRate(propertyId);
@@ -107,7 +96,6 @@ export function TaxRateSubstep({ bookingId, propertyId, checkIn, onClose }: TaxR
   const [errors, setErrors] = useState<RateFormErrors>({});
   const [problem, setProblem] = useState<string | null>(null);
 
-  // What the organization declared before is the starting point; what the host types replaces it.
   const values: RateFormValues = {
     rate: edits.rate ?? (declared ? String(declared.ratePerPersonPerNight) : ''),
     minimumAge: edits.minimumAge ?? (declared ? String(declared.minimumAge) : ''),
@@ -128,7 +116,6 @@ export function TaxRateSubstep({ bookingId, propertyId, checkIn, onClose }: TaxR
         found[name] ??= issue.message;
       }
       setErrors(found);
-      // The first field in error takes the focus (NF-11).
       const first = (['rate', 'minimumAge', 'maxNights', 'seasonStart', 'seasonEnd', 'sourceNote'] as const).find((name) => found[name]);
       if (first) document.getElementById(`tax-rate-${first}`)?.focus();
       return;
@@ -148,7 +135,6 @@ export function TaxRateSubstep({ bookingId, propertyId, checkIn, onClose }: TaxR
     'aria-invalid': errors[name] ? (true as const) : undefined,
     'aria-describedby': `${idOf(name)}-error`,
   });
-  // The attributes of each field, ready for the markup: its id, whether it is in error, and where the error is read.
   const a11y = {
     rate: a11yOf('rate'),
     minimumAge: a11yOf('minimumAge'),

@@ -1,6 +1,5 @@
 import { parseStayDate, romeDateOf } from '@/lib/stay-dates';
 
-/** A zone at the end of a date with a time: `Z`, `+02:00`, `-0500`. */
 const ZONE = /T[\d:.]+(?:Z|[+-]\d{2}(?::?\d{2})?)$/i;
 
 /**

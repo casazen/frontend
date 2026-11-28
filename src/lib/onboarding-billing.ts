@@ -31,7 +31,6 @@ export const BILLING_ITEM_STEPS: Readonly<Record<BillingSetupItemKey, BillingSte
   sdi_issuer_registration_pending: BILLING_STEPS.sdi,
 };
 
-/** The step of each section of the setup: where an item that the app does not know yet (an epic added it) is still opened, by the section it says it belongs to. */
 export const BILLING_SECTION_STEPS: Readonly<Record<BillingSetupSectionName, BillingStepId>> = {
   issuer: BILLING_STEPS.issuer,
   vat: BILLING_STEPS.vat,
@@ -43,15 +42,10 @@ export const BILLING_SECTION_STEPS: Readonly<Record<BillingSetupSectionName, Bil
   italy: BILLING_STEPS.italy,
 };
 
-/** True for an item key this version of the app knows (it has a step and a text). */
 export function isBillingItemKey(value: unknown): value is BillingSetupItemKey {
   return typeof value === 'string' && Object.hasOwn(BILLING_ITEM_STEPS, value);
 }
 
-/**
- * The step that fixes a missing item: the one of its key; for a key the app does not know (the server is newer than the app) the one of its section; `null` when it knows
- * neither, and the caller then opens the wizard where it would open it without a step (at the first thing that is missing), never at a step that has nothing to do with it.
- */
 export function billingStepOfItem(item: { key: unknown; section?: unknown }): BillingStepId | null {
   if (isBillingItemKey(item.key)) return BILLING_ITEM_STEPS[item.key];
   if (typeof item.section === 'string' && Object.hasOwn(BILLING_SECTION_STEPS, item.section)) return BILLING_SECTION_STEPS[item.section as BillingSetupSectionName];
@@ -63,7 +57,6 @@ export function billingStepOfReason(reason: unknown): BillingStepId | null {
   return isBillingItemKey(reason) ? BILLING_ITEM_STEPS[reason] : null;
 }
 
-/** The key of the text that says what a missing item is, in plain words (the guide and the summary of the wizard); a key the app does not know reads as a neutral line. */
 export function billingItemTextKey(key: unknown): string {
   return isBillingItemKey(key) ? `billingWizard.items.${key}` : 'billingWizard.items.unknown';
 }

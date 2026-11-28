@@ -37,7 +37,6 @@ function sync(changes: Partial<BookingOctorateSync> = {}): BookingOctorateSync {
   return { state: 'Synced', lastOperation: 'Create', lastSyncedAt: null, errorCode: null, canRetry: false, ...changes };
 }
 
-/** `GET /bookings/:id`, the only answer that carries the mirror on the channel manager. */
 function detail(mirror: Partial<BookingOctorateSync> | null): Booking {
   return { id: 'booking-1', propertyId: 'property-1', octorateSync: mirror === null ? null : sync(mirror) } as Booking;
 }
@@ -98,7 +97,6 @@ describe('the result of the new booking, one line for each part', () => {
 
     expect(screen.getByTestId('booking-done-booking')).toHaveAttribute('data-state', 'created');
     expect(queryLine()).not.toBeInTheDocument();
-    // Nothing is asked about a connection that is not there.
     expect(bookingsApi.getById).not.toHaveBeenCalled();
   });
 
@@ -110,7 +108,6 @@ describe('the result of the new booking, one line for each part', () => {
   });
 
   it('NewBookingDone_CallerWhoMayNotReadTheBooking_AsksNothing', () => {
-    // A read they may not make would send them to the page of no access.
     permissions = new Set(['booking.write']);
     renderDone({ channelManager: true });
 
@@ -136,7 +133,6 @@ describe('the result of the new booking, one line for each part', () => {
   });
 
   it('NewBookingDone_PropertyOfWhichNothingIsKnown_SaysNothingWhileTheBookingHasNoMirror', async () => {
-    // A draft taken up at the summary: the wizard never checked the availability of this stay, so it asks the booking (and goes on asking, see below) and says only what is there.
     vi.mocked(bookingsApi.getById).mockResolvedValue(detail(null));
     renderDone({ channelManager: null });
 
@@ -161,8 +157,6 @@ describe('the line of the channel manager changes by itself', () => {
     vi.useRealTimers();
   });
 
-  // The time passes; then, one `act` after the other, the notifications the reads queued at its end are flushed: the client tells the screen with a timer of 0,
-  // which the fake clock makes 1 ms while it is ticking, and React shows what changed when the `act` that holds the notification is left.
   const advance = async (ms: number) => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(ms);
@@ -186,14 +180,11 @@ describe('the line of the channel manager changes by itself', () => {
     expect(line()).toHaveAttribute('data-state', 'synced');
     expect(bookingsApi.getById).toHaveBeenCalledTimes(2);
 
-    // Settled: it stops asking.
     await advance(30_000);
     expect(bookingsApi.getById).toHaveBeenCalledTimes(2);
   });
 
   it('NewBookingDone_PropertyOfWhichNothingIsKnown_ShowsTheLineWhenTheRowComesAfterTheFirstRead', async () => {
-    // The push writes its row a moment after the booking, so the first read finds none; nothing says the property is connected (a draft taken up at the summary).
-    // A failure of the channel manager that comes after it must still be shown: the result keeps asking while the time it waits is not over.
     vi.mocked(bookingsApi.getById)
       .mockResolvedValueOnce(detail(null))
       .mockResolvedValue(detail({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true }));
@@ -247,8 +238,6 @@ describe('the line of the channel manager changes by itself', () => {
   });
 
   it('NewBookingDone_StillBeingSentAfterTheTimeItWaits_StopsClaimingItAndFollowsAgainWhenAskedToCheck', async () => {
-    // The server keeps saying "being sent": after a minute and a half the result stops asking and says no answer has come; «Check again» reads at once and
-    // follows it for the time it waits once more, so the outcome is shown without a second press.
     vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Pending' }));
     renderDone({ channelManager: true });
 
@@ -276,7 +265,6 @@ describe('the line of the channel manager changes by itself', () => {
     await advance(0);
     expect(line()).toHaveAttribute('data-state', 'pending');
 
-    // It asks again by itself from then on, and says no answer has come once more when the time is over.
     const reads = vi.mocked(bookingsApi.getById).mock.calls.length;
     await advance(6_000);
     expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBeGreaterThan(reads);
@@ -297,7 +285,6 @@ describe('«Retry» of the channel manager', () => {
     expect(line()).toHaveTextContent(text('booking.create.done.channelManager.failed'));
     expect(screen.getByTestId('booking-done-channel-manager-reason')).toHaveTextContent(text('booking.create.done.channelManager.reasons.datesUnavailable'));
     expect(screen.getByTestId('booking-done-channel-manager-retry')).toBeEnabled();
-    // The reason is in plain words: never a code, never the name of the supplier.
     expect(line()).not.toHaveTextContent(/octorate/i);
   });
 
@@ -311,7 +298,6 @@ describe('«Retry» of the channel manager', () => {
   });
 
   it('NewBookingDone_CreationRefusedBecauseTheDatesAreTaken_SaysSoAndTheNextStepIsToCheckTheCalendars', async () => {
-    // The channel manager already has the nights: there is no reservation of CasaZen there that could differ from the booking, and asking again meets the same refusal.
     vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Conflict', errorCode: 'octorate_dates_unavailable', canRetry: true }));
     renderDone({ channelManager: true });
 
@@ -320,7 +306,6 @@ describe('«Retry» of the channel manager', () => {
     expect(line()).toHaveTextContent(text('booking.create.done.channelManager.datesTaken'));
     expect(line()).not.toHaveTextContent(text('booking.create.done.channelManager.conflict'));
     expect(line()).not.toHaveTextContent(/octorate/i);
-    // The button is the API's to offer (`canRetry`); the next step is not to press it but to look at the calendars.
     expect(screen.getByTestId('booking-done-channel-manager-retry')).toBeEnabled();
     expect(screen.getByText(text('booking.create.done.next.checkChannelManager'))).toBeInTheDocument();
     expect(screen.queryByText(text('booking.create.done.next.retryChannelManager'))).not.toBeInTheDocument();
@@ -335,7 +320,6 @@ describe('«Retry» of the channel manager', () => {
   });
 
   it('NewBookingDone_FailedForACallerWhoMayNotWriteTheBooking_HasNoRetry', async () => {
-    // `canRetry` is the API's, narrowed by what the caller may do: the button is not for them.
     vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ ...failed, canRetry: false }));
     renderDone({ channelManager: true });
 
@@ -353,7 +337,6 @@ describe('«Retry» of the channel manager', () => {
 
     await waitFor(() => expect(line()).toHaveAttribute('data-state', 'pending'));
     expect(bookingsApi.retryOctorateSync).toHaveBeenCalledWith('booking-1', undefined);
-    // The booking is read again, and the row still holds the failure until the push starts: the line does not go back to it.
     await waitFor(() => expect(bookingsApi.getById).toHaveBeenCalledTimes(2));
     expect(line()).toHaveAttribute('data-state', 'pending');
     expect(screen.queryByTestId('booking-done-channel-manager-retry')).not.toBeInTheDocument();
@@ -372,7 +355,6 @@ describe('«Retry» of the channel manager', () => {
   });
 
   it('NewBookingDone_RequestOfTheCardInFlight_DisablesEveryButtonOfTheCard', async () => {
-    // A second press would not be a second try: it would be a second link, or a second push.
     vi.mocked(bookingsApi.getById).mockResolvedValue(detail(failed));
     vi.mocked(bookingsApi.retryOctorateSync).mockReturnValue(new Promise(() => undefined));
     renderDone({ channelManager: true, booking: { paymentLinkUrl: LINK }, values: { paymentArrangement: 'paymentLink' } });
@@ -401,7 +383,6 @@ describe('«Retry» of the channel manager', () => {
 
 describe('what is left of the channel manager when it cannot be read', () => {
   it('NewBookingDone_BookingNotFound_IsNotFoundEvenWithItsStateStillInTheCache', async () => {
-    // A query keeps its old data when a later read fails: a 404 must not show the state the booking used to have.
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     client.setQueryData(bookingMirrorKey('booking-1'), { octorateSync: sync({ state: 'Synced' }) });
     vi.mocked(bookingsApi.getById).mockRejectedValue(http(404, { status: 404 }));
@@ -436,7 +417,6 @@ describe('the payment link', () => {
     const payment = screen.getByTestId('booking-done-payment');
     expect(payment).toHaveAttribute('data-state', 'linkSent');
     expect(payment).toHaveTextContent(text('booking.create.done.paymentLink.sent'));
-    // A credential: it is copied, never shown.
     expect(document.body).not.toHaveTextContent('secret-token');
     expect(document.body.innerHTML).not.toContain('secret-token');
   });
@@ -517,7 +497,6 @@ describe('the payment link', () => {
 
 describe('accessibility of the result (UI-07)', () => {
   it('NewBookingDone_EveryLineAtOnce_HasNoViolationAxeCanFind', async () => {
-    // The worst case on one screen: the channel manager failed (with its button), the link is there (copy, send again) and the copy fallback is open.
     vi.mocked(copyTextToClipboard).mockRejectedValue(new Error('denied'));
     vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true }));
     const { container } = renderDone({ channelManager: true, booking: { paymentLinkUrl: LINK }, values: { paymentArrangement: 'paymentLink' } });
@@ -539,7 +518,6 @@ describe('the way of paying done by hand, and the one next step', () => {
     expect(screen.getByTestId('booking-done-payment')).toHaveAttribute('data-state', arrangement);
     expect(screen.getByTestId('booking-done-payment')).toHaveTextContent(text(key));
     expect(screen.getByText(text('booking.create.done.next.recordIncome'))).toBeInTheDocument();
-    // No link, no button to send one: nothing was started.
     expect(screen.queryByTestId('booking-done-payment-copy')).not.toBeInTheDocument();
   });
 

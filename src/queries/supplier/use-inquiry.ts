@@ -14,27 +14,18 @@ import i18n from '@/i18n/config';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import type { SendSupplierOfferBody, SupplierOfferResponse, SupplierRequestMessage, SupplierRequestThread, SupplierServiceDispute } from '@/types/supplier-inquiry';
 
-/** How often a thread that is on screen is read again, and the most it waits when nothing has been happening (30 s, 60 s, then 2 minutes). */
 const POLL_MS = 30_000;
 const POLL_MAX_MS = 120_000;
 
-/** Under `['supplier', 'inbox']`: every action of the supplier on the request (a take, a refusal, an offer) reads the thread again. */
 const threadKey = (id: string | undefined) => ['supplier', 'inbox', 'thread', id] as const;
 const disputeKey = (id: string | undefined) => ['supplier', 'dispute', id] as const;
 
-/** What a step of the supplier on a request on measure reads again: the thread, the request and its lists, the numbers, the home. */
 function refreshInquiry(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
   void queryClient.invalidateQueries({ queryKey: ['supplier', 'dashboard'] });
   void queryClient.invalidateQueries({ queryKey: ['service-requests'] });
 }
 
-/**
- * The conversation of a request on measure (SP-10b), its offer and the time left to answer. With `poll` it is read again every 30 seconds
- * while the page is visible (a hidden tab asks nothing), and less often while nothing changes: the seconds double twice, up to two minutes,
- * and start again when something does. It is read again when the page opens. Reading marks the customer's messages as read, which is why
- * only the page of the request asks for it, and not the drawer of the list.
- */
 export function useSupplierRequestThread(id: string | undefined, options: { poll?: boolean } = {}) {
   const unchanged = useRef(0);
   const lastSeen = useRef<string | null>(null);
@@ -56,7 +47,7 @@ export function useSupplierRequestThread(id: string | undefined, options: { poll
 /** Adds the message the server just stored to the thread in the cache, unless the next reading already brought it. */
 function withMessage(thread: SupplierRequestThread | undefined, message: SupplierRequestMessage): SupplierRequestThread | undefined {
   return thread && !thread.messages.some((existing) => existing.id === message.id)
-    ? // The first answer of the supplier stops its hour: the thread says so from now on.
+    ?
       { ...thread, messages: [...thread.messages, message], respondBy: null }
     : thread;
 }
@@ -68,18 +59,15 @@ function useSendSupplierMessage(id: string) {
     mutationFn: (body: string) => postSupplierRequestMessage(id, body),
     onSuccess: (message) => {
       queryClient.setQueryData<SupplierRequestThread>(threadKey(id), (thread) => withMessage(thread, message));
-      // Its first message stops the clock of the hour: the lists and the numbers read it again.
       void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox', 'list'] });
       void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox', 'counts'] });
     },
     onError: (error) => {
-      // The conversation closed meanwhile (the customer cancelled, the request was refused): the composer gives way to the note.
       if (getHttpStatus(error) === 409) void queryClient.invalidateQueries({ queryKey: threadKey(id) });
     },
   });
 }
 
-/** What the thread and the request say after the supplier sent or took back an offer: the answer of the server, without another request. */
 function keepOffer(queryClient: QueryClient, id: string, answer: SupplierOfferResponse) {
   queryClient.setQueryData<SupplierRequestThread>(threadKey(id), (thread) =>
     thread ? { ...thread, negotiation: answer.negotiation, offer: answer.offer ?? null, respondBy: null } : thread,
@@ -87,11 +75,6 @@ function keepOffer(queryClient: QueryClient, id: string, answer: SupplierOfferRe
   refreshInquiry(queryClient);
 }
 
-/**
- * The supplier answers a request on measure with an offer, or replaces the one that waits (SP-10b-b). The error is the caller's to show where
- * the supplier is looking (the sheet stays open and says why: a time the agenda cannot do, an offer outside the limits); a request that changed
- * meanwhile is read again.
- */
 export function useSendSupplierOffer(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -106,7 +89,6 @@ export function useSendSupplierOffer(id: string) {
   });
 }
 
-/** The supplier takes its offer back: the request stays new and the conversation goes on (the customer is not told by e-mail). */
 export function useWithdrawSupplierOffer(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -116,17 +98,12 @@ export function useWithdrawSupplierOffer(id: string) {
       toast.success(i18n.t('supplier.inquiry.offer.withdrawnToast'));
     },
     onError: (error) => {
-      // The offer may be gone already (the customer answered, it lapsed): the page shows what it is now.
       refreshInquiry(queryClient);
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('supplier.inquiry.offer.failed'));
     },
   });
 }
 
-/**
- * The complaint against the supplier about this job, or `null` when there is none (the server answers 404 `service_dispute_not_found`, which is
- * an answer and not a failure). Asked only for a job that can have one (`enabled`): paid inside CasaZen, and taken.
- */
 export function useSupplierDispute(id: string | undefined, enabled: boolean) {
   return useQuery({
     queryKey: disputeKey(id),
@@ -143,7 +120,6 @@ export function useSupplierDispute(id: string | undefined, enabled: boolean) {
   });
 }
 
-/** The supplier's one reply to the complaint (SP-15c-c). A complaint decided meanwhile is read again. */
 export function useReplySupplierDispute(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -160,7 +136,6 @@ export function useReplySupplierDispute(id: string) {
   });
 }
 
-/** A message written on this page that the server has not confirmed yet. */
 interface PendingInquiryMessage {
   key: string;
   text: string;

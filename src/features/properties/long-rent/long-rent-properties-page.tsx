@@ -28,7 +28,6 @@ export function LongRentPropertiesPage() {
   const { rows, isLoading, isError, error, refetch, leasesKnown, leasesFailed, refetchLeases } = useLongRentPropertyRows({ fresh: true, canReadLeases: canReadLease });
   const canWrite = hasPermission('long-rent', 'property.write');
   const navigate = useNavigate();
-  // "Richiedi intervento" from the row of a property (LR-07b): the window of the request, opened on that property.
   const [requestFor, setRequestFor] = useState<string | null>(null);
 
   const list = useLongRentPropertiesList({
@@ -75,7 +74,6 @@ export function LongRentPropertiesPage() {
       />
 
       {requestFor ? (
-        // Mounted when asked, so it starts from nothing every time; once made, the page of the new request is the way on (as from Interventi).
         <ServiceRequestForm
           propertyId={requestFor}
           context="long-rent"

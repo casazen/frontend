@@ -18,12 +18,8 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const TOKEN = 'tok-123';
 
-/** Filling several guests over three steps takes a few seconds in jsdom, more on a loaded CI runner. */
 const FORM_TEST_TIMEOUT_MS = 30_000;
 
-// Every wait of the file (`findBy*`, `waitFor`) gave up after the 1 s default, which a form this size does not meet on a loaded
-// machine. Explicit conditions only, no fixed waits: a wait ends as soon as its condition holds, so the ceiling costs nothing
-// when the machine is idle (QA-INFRA-01). Below the test timeout above.
 configure({ asyncUtilTimeout: 15_000 });
 
 const booker: PublicCheckInGuestPrefill = {
@@ -115,10 +111,6 @@ function fillGuest(index: number, guest: GuestInput) {
   change(card, /^Cittadinanza/, 'Italia');
 }
 
-/**
- * The form is on screen AND the page has started it from the guests on file. That effect runs after the first render of the context and
- * replaces the cards of the guests (new keys): a card taken before it is detached, and what is typed on it never reaches the form.
- */
 async function formReady() {
   await screen.findByTestId('checkin-page');
   if (screen.queryByTestId('checkin-document-step')) {
@@ -139,7 +131,6 @@ function fillDocument(index: number) {
   change(card, /^Luogo di rilascio/, 'Firenze');
 }
 
-/** Last step: the privacy notice is only shown (legal obligation, no checkbox to tick), then the form is sent. */
 async function acceptAndSubmit() {
   await goToConsents();
   acknowledgePrivacy();
@@ -168,7 +159,6 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  // The page changes the language of the app for as long as it is on screen and gives it back: a test never leaves it changed.
   cleanup();
   await i18n.changeLanguage('it');
   document.documentElement.lang = 'it';
@@ -197,7 +187,6 @@ describe('CheckInPage', () => {
     expect(notice).toHaveTextContent('Versione dell’informativa: notice-2026-10');
     expect(within(notice).getByRole('checkbox')).not.toBeChecked();
     expect(screen.getByTestId('checkin-submit')).toBeDisabled();
-    // A disabled button says what it waits for, in a line under it (UX round 2026-11), which goes once the box is ticked.
     expect(screen.getByTestId('checkin-submit-hint')).toHaveTextContent('spunta prima le caselle obbligatorie');
     expect(screen.getByTestId('checkin-submit')).toHaveAttribute('aria-describedby', 'checkin-submit-hint');
 
@@ -228,7 +217,6 @@ describe('CheckInPage', () => {
     expect(checkboxes[0]).not.toBeChecked();
     fireEvent.click(checkboxes[0]);
 
-    // Fill in the required marketing email after ticking the channel (label: "Il tuo indirizzo email *")
     const emailInput = await screen.findByLabelText(/il tuo indirizzo email/i);
     fireEvent.change(emailInput, { target: { value: 'guest@example.com' } });
 
@@ -315,7 +303,6 @@ describe('CheckInPage', () => {
     fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-2');
 
-    // The form starts with the declared guests: the head and two family members.
     expect(screen.getByTestId('stay-guest-0-type')).toHaveTextContent('Capofamiglia');
     expect(screen.getByTestId('stay-guest-1-type')).toHaveTextContent('Familiare');
     expect(screen.getByTestId('stay-guest-2-type')).toHaveTextContent('Familiare');
@@ -326,7 +313,6 @@ describe('CheckInPage', () => {
     expect(screen.queryByTestId('stay-guest-0-minor')).not.toBeInTheDocument();
 
     await goToDocuments();
-    // Only the head of family carries the document.
     expect(screen.queryByTestId('stay-guest-1-document')).not.toBeInTheDocument();
     expect(screen.queryByTestId('stay-guest-2-document')).not.toBeInTheDocument();
     fillDocument(0);
@@ -386,7 +372,6 @@ describe('CheckInPage', () => {
 
   it('codeTablesImported_choosingAnOfficialEntry_sendsItsCode', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, availableCodeTables: ['Comuni', 'Stati'] });
-    // Synthetic entry (test data, not an official code).
     vi.mocked(publicCheckinApi.searchCodes).mockImplementation(async (_token, list) => {
       if (list === 'stati') return [{ table: 'Stati', code: '100000100', description: 'ITALIA', citizenshipLabel: 'Italiano' }];
       if (list === 'comuni' || list === 'luoghi') return [{ table: 'Comuni', code: '900000001', description: 'TEST Firenze', province: 'FI' }];
@@ -431,7 +416,6 @@ describe('CheckInPage', () => {
 
     await submitSingleGuest();
 
-    // Back to the first step with an error: the gender field shows the server message.
     expect(
       await screen.findByText('Seleziona maschio o femmina: sono gli unici valori accettati da Alloggiati Web.'),
     ).toBeInTheDocument();
@@ -528,7 +512,6 @@ describe('CheckInPage', () => {
       expect(screen.getByLabelText('Sprache')).toHaveValue('de');
       expect(document.documentElement.lang).toBe('de');
       expect(guestCard(0).getByLabelText(/^Vorname/)).toBeInTheDocument();
-      // Nothing is saved when the page only follows what the API resolved.
       expect(publicCheckinApi.setLanguage).not.toHaveBeenCalled();
     });
 
@@ -558,7 +541,6 @@ describe('CheckInPage', () => {
       expect(await screen.findByRole('heading', { name: 'Check-in des invités' })).toBeInTheDocument();
       expect(publicCheckinApi.setLanguage).toHaveBeenCalledWith(TOKEN, 'fr');
       expect(document.documentElement.lang).toBe('fr');
-      // The guest locale lives for the page: the language chosen for the app (it or en) is not touched.
       expect(localStorage.getItem('casazen.locale')).toBeNull();
 
       view.unmount();
@@ -578,7 +560,6 @@ describe('CheckInPage', () => {
 
     it('language_TextsCannotBeLoaded_GoBackToThePreviousLanguageAndSayWhy', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       vi.mocked(publicCheckinApi.setLanguage).mockResolvedValue({ language: 'de' });
-      // The file of the language is not there yet and the network gives out while it is added.
       i18n.removeResourceBundle('de', 'translation');
       const addBundle = vi.spyOn(i18n, 'addResourceBundle').mockImplementationOnce(() => {
         throw new Error('chunk');
@@ -590,7 +571,6 @@ describe('CheckInPage', () => {
         fireEvent.change(select, { target: { value: 'de' } });
 
         expect(await screen.findByTestId('checkin-language-not-loaded')).toHaveTextContent('Non siamo riusciti a caricare questa lingua');
-        // The page is in the language it had, and the control, the voice of the screen reader and the texts agree on it.
         expect(select.value).toBe('it');
         expect(document.documentElement.lang).toBe('it');
         expect(i18n.language).toBe('it');
@@ -618,7 +598,6 @@ describe('CheckInPage', () => {
 
       fireEvent.change(screen.getByLabelText('Lingua'), { target: { value: 'fr' } });
       expect(await screen.findByRole('heading', { name: 'Check-in des invités' })).toBeInTheDocument();
-      // The save answers: the page must not start the form again from what the server has on file.
       await act(async () => {
         saved({ language: 'fr' });
         await new Promise((resolve) => setTimeout(resolve, 0));
@@ -634,11 +613,9 @@ describe('CheckInPage', () => {
       await formReady();
       fillGuest(0, { firstName: 'Giulia' });
 
-      // The session moved on (another `status`): a new object, the same guests on file.
       vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, status: 'Inviato' });
       await act(async () => {
         await view.client.refetchQueries({ queryKey: ['checkin', TOKEN] });
-        // The query client tells its observers on the next tick: let the page render the new context and run its effects.
         await new Promise((resolve) => setTimeout(resolve, 0));
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
@@ -652,7 +629,6 @@ describe('CheckInPage', () => {
       renderPage();
       await screen.findByRole('heading', { name: 'Gäste-Check-in' });
 
-      // A key of the host side is not in the German subset: the page never shows a raw key, English answers.
       expect(i18n.t('checkin.link.copyTitle')).toBe('Check-in link');
     });
   });
@@ -684,7 +660,6 @@ describe('CheckInPage', () => {
         documentIssuedOn: '2020-05-10',
         documentExpiresOn: '2030-05-09',
       });
-      // What the region does not require is not shown and not sent; the exemption of the tourist tax is the host's alone.
       expect(payload.guests[0]).not.toHaveProperty('tourismType');
       expect(payload.guests[0]).not.toHaveProperty('taxExemptionCode');
     });
@@ -792,9 +767,7 @@ describe('CheckInPage', () => {
       acknowledgePrivacy();
     fireEvent.click(screen.getByTestId('checkin-submit'));
 
-      // In the language of the page, from the key of the message.
       expect(await screen.findByText('Die Dokumentnummer darf nur Buchstaben und Ziffern enthalten, höchstens 20.')).toBeInTheDocument();
-      // A key the page does not know: the message of the server.
       expect(screen.getByText('Un messaggio che questa versione non conosce.')).toBeInTheDocument();
     });
 
@@ -833,7 +806,6 @@ describe('CheckInPage', () => {
     const type = (name: string, value: string) => fireEvent.change(field(name), { target: { value } });
     const next = () => fireEvent.click(screen.getByRole('button', { name: /Salva risposta/ }));
 
-    /** From the invoice step to the send, and the payload that went out. */
     async function sendFromInvoiceStep() {
       next();
       await screen.findByText(i18n.t('checkin.invoiceFinished'));
@@ -850,7 +822,6 @@ describe('CheckInPage', () => {
       expect(screen.queryByTestId('checkin-progress')).not.toBeInTheDocument();
       expect(screen.getByTestId('checkin-invoice-yes')).not.toBeChecked();
       expect(screen.getByTestId('checkin-invoice-no')).not.toBeChecked();
-      // One step, one topic: nothing of the fields is there until the guest says yes.
       expect(screen.queryByTestId('checkin-invoice-data')).not.toBeInTheDocument();
       expect(screen.queryByLabelText('Codice fiscale')).not.toBeInTheDocument();
     });
@@ -917,7 +888,6 @@ describe('CheckInPage', () => {
       await toInvoiceStep();
 
       fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
-      // The kind alone is no data: it would ask the server for an identification the guest never saw.
       fireEvent.click(screen.getByTestId('checkin-invoice-kind-Company'));
 
       expect((await sendFromInvoiceStep()).invoice).toEqual({ needInvoice: true });
@@ -936,13 +906,10 @@ describe('CheckInPage', () => {
       expect(screen.getByTestId('checkin-invoice-step')).toBeInTheDocument();
       expect(screen.queryByTestId('checkin-privacy-notice')).not.toBeInTheDocument();
 
-      // The step never blocks the check-in: the guest who does not want to say more answers no and goes on, with nothing sent.
       fireEvent.click(screen.getByTestId('checkin-invoice-no'));
       expect(await sendFromInvoiceStep()).not.toHaveProperty('invoice');
     });
 
-    // AC-NF04-1: about five fields at a time. The server asks no address (a «yes» with a name and a fiscal code is complete for it), so the step
-    // holds only what identifies the guest and the address is under «Altre opzioni».
     it('invoiceStep_AYes_ShowsOnlyWhatIdentifiesTheGuestAndKeepsTheAddressUnderMoreOptions', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       await toInvoiceStep();
 
@@ -1031,7 +998,6 @@ describe('CheckInPage', () => {
       next();
 
 
-      // Back on the invoice step, with the error on the field the server named and everything the guest typed still there.
       expect(await screen.findByText(/Il codice fiscale non è valido/)).toBeInTheDocument();
       expect(screen.getByTestId('checkin-invoice-step')).toBeInTheDocument();
       expect(field('fiscalCode')).toHaveAttribute('aria-invalid', 'true');
@@ -1041,7 +1007,6 @@ describe('CheckInPage', () => {
       expect(screen.getByTestId('checkin-submit-error')).toHaveTextContent('correggi i campi evidenziati');
       expect(toast.error).not.toHaveBeenCalled();
 
-      // The guest corrects and sends again: the guests were never lost.
       type('fiscalCode', 'rssmra80a01h501u');
       const payload = await sendFromInvoiceStep();
       expect(payload.invoice).toMatchObject({ needInvoice: true, name: 'Mario Rossi', fiscalCode: FISCAL_CODE, city: 'Roma' });
@@ -1058,8 +1023,6 @@ describe('CheckInPage', () => {
       expect(field('name').value).toBe('');
     });
 
-    // Privacy (AC-E06-F02-US01-04): the link is anonymous, so the page is write-only for the invoice data. The context says that the booking has
-    // some, never what it is; the step says so, shows no field of it and offers to send others with the fields empty.
     it('invoiceStep_TheBookingHasData_SaysSoShowsNothingOfItAndStartsTheNewFieldsEmpty', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       const leaked = { fiscalCode: FISCAL_CODE, vatNumber: 'IT12345678903', pec: 'segreto@pec.it', name: 'Nome Segreto' };
       vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, hasInvoiceData: true, invoiceRequested: true, ...leaked });
@@ -1121,7 +1084,6 @@ describe('CheckInPage', () => {
       type('fiscalCode', 'XYZ');
       fireEvent.click(screen.getByRole('button', { name: /Antwort speichern/ }));
 
-      // The error is in German too, and no word of Italian or English is on the step.
       expect(await screen.findByText(/Die Steuernummer \(codice fiscale\) ist ungültig/)).toBeInTheDocument();
       expect(screen.getByTestId('checkin-invoice-step')).not.toHaveTextContent(/Esempio|Example|Perché/);
     });

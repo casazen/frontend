@@ -22,26 +22,17 @@ import {
   type SubmittedPractice,
 } from './lib/guided-form-link';
 
-/**
- * `/guided-form`: the module that the signed link of a contract opens in the test environments (CF-SIM). The real service that prepares
- * the contract has no test environment of its own, so this page plays it: it checks the link the way the service does, takes the
- * practice in when the person sends it, and offers a test panel to move the practice through its states and to download the sample
- * documents. Public, like the real module (no sign-in); outside the test environments the API answers 404 and the page says it is not
- * available. The signed parameters leave the address as soon as the page has read them.
- */
 export function GuidedFormPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   useSeoMeta({ title: t('guidedForm.title'), noindex: true });
 
-  // The link as it arrived, read once; the practice sent from this tab, if the page is opened again without the signed parameters (a reload).
   const [link] = useState<GuidedFormLink>(() => readGuidedFormLink(searchParams));
   const [practice, setPractice] = useState<SubmittedPractice | null>(() => (link.hasSignedParams ? null : readSavedPractice()));
   const check = useCfSimulatorLink(link.params, practice === null);
 
   useEffect(() => {
     if (!hasSignedParams(searchParams)) return;
-    // A new link starts a new round: the signed parameters leave the address and the earlier practice of this tab is forgotten.
     clearSavedPractice();
     setSearchParams(withoutSignedParams(searchParams), { replace: true });
   }, [searchParams, setSearchParams]);
@@ -114,7 +105,6 @@ export function GuidedFormPage() {
   );
 }
 
-/** One column on a quiet background: the module has no menu, it is a page of its own. */
 function Shell({ children }: { children: ReactNode }) {
   return (
     <main className="flex min-h-dvh justify-center border-t-4 border-primary bg-muted/40 px-4" data-testid="guided-form-page">
@@ -123,7 +113,6 @@ function Shell({ children }: { children: ReactNode }) {
   );
 }
 
-/** What the person must know before anything: this is a test, nothing leaves CasaZen's test environment. */
 function TestNotice() {
   const { t } = useTranslation();
   return (
@@ -139,7 +128,6 @@ interface GuidedFormCardProps {
   onSent: (practice: SubmittedPractice) => void;
 }
 
-/** The module before the practice is sent: the municipality received, whether the link is good, and the one button. */
 function GuidedFormCard({ link, check, onSent }: GuidedFormCardProps) {
   const { t } = useTranslation();
   const create = useCfSimulatorCreatePractice();

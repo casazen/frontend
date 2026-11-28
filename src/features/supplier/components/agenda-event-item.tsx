@@ -22,7 +22,6 @@ const KINDS: Record<DayEventKind, { icon: LucideIcon; labelKey: string; tone: st
 
 const TIME_OFF_REASONS = ['Vacation', 'Holiday', 'Illness', 'Other'];
 
-/** What an entry is called: the service of a request (else its category), the name it was given, or else the name of its kind. */
 function eventTitle(event: DayEvent, t: TFunction): string {
   if (event.kind === 'request') return event.serviceName?.trim() || getServiceCategoryLabel(event.label, t);
   if (event.label) return event.label;
@@ -32,7 +31,6 @@ function eventTitle(event: DayEvent, t: TFunction): string {
   return t(KINDS[event.kind].labelKey);
 }
 
-/** The line under the title: the kind of entry and, for a job, who asks and where ("Nome C." until the job is taken). */
 function eventSubtitle(event: DayEvent, t: TFunction): string {
   const kind = t(KINDS[event.kind].labelKey);
   if (event.kind !== 'request') return kind;
@@ -41,7 +39,6 @@ function eventSubtitle(event: DayEvent, t: TFunction): string {
     .join(' · ');
 }
 
-/** A job whose time is in trouble (the conflicts of the next 30 days): by icon and by words, never by color alone. */
 function ConflictPill({ severity }: { severity: SupplierConflictSeverity }) {
   const { t } = useTranslation();
   const danger = severity === 'danger';
@@ -63,21 +60,15 @@ function ConflictPill({ severity }: { severity: SupplierConflictSeverity }) {
 
 interface AgendaEventItemProps {
   event: DayEvent;
-  /** `row`: the hours, then the entry, then its status, in one line (the day). `stack`: one under the other (a narrow column of the week). */
   layout: 'row' | 'stack';
 }
 
-/**
- * One entry of the agenda: the hours (or "tutto il giorno"), what it is and, for a job, how it stands. A job opens its request.
- * Titles of the calendar are personal data of the owner: the agenda is the owner's own page.
- */
 export function AgendaEventItem({ event, layout }: AgendaEventItemProps) {
   const { t } = useTranslation();
   const meta = KINDS[event.kind];
   const Icon = meta.icon;
   const time = event.timeRange ?? t('supplier.allDay');
 
-  // The day has room for an icon beside the words; a column of the week has none to spare: its icon goes in the line of the kind.
   const body =
     layout === 'row' ? (
       <>
@@ -151,7 +142,6 @@ const STATES: Record<DayState, { icon: LucideIcon; tone: string }> = {
   timeOff: { icon: Plane, tone: 'text-foreground/70' },
 };
 
-/** How the day stands for the customers, in words with an icon: never by color alone. */
 export function DayStateLabel({ state }: { state: DayState }) {
   const { t } = useTranslation();
   const { icon: Icon, tone } = STATES[state];
@@ -163,7 +153,6 @@ export function DayStateLabel({ state }: { state: DayState }) {
   );
 }
 
-/** A "Disponibile" event of the calendar holds this day until the supplier answers (the banner above asks). */
 export function PendingDayBadge({ date }: { date: string }) {
   const { t } = useTranslation();
   return (

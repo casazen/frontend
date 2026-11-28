@@ -28,7 +28,6 @@ import {
 interface PropertyPhotoManagerProps {
   propertyId: string;
   propertyName: string;
-  /** Upload, order, cover and delete. Without it the gallery is read only (the API checks the same permission). */
   canEdit: boolean;
 }
 
@@ -64,7 +63,6 @@ export function PropertyPhotoManager({ propertyId, propertyName, canEdit }: Prop
 
   const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
-    // The same file can be chosen again after a failure.
     event.target.value = '';
     if (files.length === 0) return;
     const problem = validatePhotoSelection(files, photos.length, rules, t);
@@ -255,7 +253,6 @@ function PhotoTile({
 }: PhotoTileProps) {
   const { t } = useTranslation();
   const [failed, setFailed] = useState(false);
-  // A relative path (the old container storage) cannot be shown: on the web host it would load the app's index.html.
   const displayable = isDisplayableMediaUrl(url);
   const position = index + 1;
 

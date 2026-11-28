@@ -27,7 +27,6 @@ import { compactIdentifier, FISCAL_CODE, PARTITA_IVA, taxProfileChanges } from '
 export function FiscalWizardPage() {
   const { t } = useTranslation();
   const profile = useFiscalTaxProfile();
-  // The popup alerts wait in their queue while this page is on screen (ADR-025-R7): it has no `WizardShell`.
   useWizardOpenFlag();
 
   return (
@@ -35,7 +34,6 @@ export function FiscalWizardPage() {
       <div className={cn(FOCUS_COLUMN, 'space-y-6 md:space-y-8')} data-testid="fiscal-wizard-page">
         <PageHeader title={t('fiscal.wizard.title')} description={t('fiscal.wizard.description')} crumbs="auto" />
         {profile.isError && !profile.data ? (
-          // A failed load is never shown as an empty form.
           <ErrorState
             title={t('fiscal.wizard.loadError')}
             error={profile.error}
@@ -55,7 +53,6 @@ export function FiscalWizardPage() {
   );
 }
 
-/** The reason a field is not valid, with an icon: it is told by the words and the icon, not by the color alone. */
 function FieldProblem({ id, testId, children }: { id: string; testId: string; children: ReactNode }) {
   return (
     <p id={id} role="alert" data-testid={testId} className="flex items-start gap-1.5 break-words text-sm text-danger-foreground">
@@ -69,7 +66,6 @@ function TaxProfileForm({ saved }: { saved: FiscalTaxProfile }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const update = useUpdateFiscalTaxProfile();
-  // Prefilled from the saved profile: the form is mounted only once the profile is loaded.
   const [hasPartitaIva, setHasPartitaIva] = useState(saved.hasPartitaIva);
   const [partitaIvaNumber, setPartitaIvaNumber] = useState(saved.partitaIvaNumber ?? '');
   const [fiscalCode, setFiscalCode] = useState(saved.fiscalCode ?? '');
@@ -96,7 +92,6 @@ function TaxProfileForm({ saved }: { saved: FiscalTaxProfile }) {
   };
 
   return (
-    // The two numbers side by side once the form is wide enough for them (under each other when it is not).
     <form className="@container space-y-5 rounded-2xl border bg-card p-4 sm:p-6" onSubmit={onSubmit} noValidate data-testid="fiscal-wizard-form">
       <div className="space-y-5">
         <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 font-medium">

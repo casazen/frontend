@@ -6,7 +6,6 @@ import type { OrgDomainConfig } from '@/types/domain.types';
 import { getDomainState, ownerLoginState } from '../domain/domain-state';
 import { resolveEmbedBase } from './embed-snippet';
 
-/** The tab of the domain, where everything this line says is changed: this page shows it and never edits it. */
 const DOMAIN_SETTINGS_PATH = '/app/short-rent/settings/domain';
 
 interface EmbedDomainStatusProps {
@@ -25,17 +24,11 @@ function Row({ label, testId, children }: { label: string; testId: string; child
   );
 }
 
-/**
- * Where the code of this page comes from, in one quiet block (E41/F03/US01, NF-147): the domain and whether it is served, what runs on it (the guest area, the owner portal, the
- * sign-in of the owners, the links the agency sends) as the domain settings say it, and a link to the tab of the domain. It reads the settings and shows them with the words of
- * the tab of the domain; it has no form, and changes nothing. Without a verified domain it says so in one sentence: the code then names the address of CasaZen and the org.
- */
 export function EmbedDomainStatus({ site, config }: EmbedDomainStatusProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const { base } = resolveEmbedBase(site);
   const customState = config.publicHostMode === 'CustomDomain' && config.customDomain ? getDomainState(config.domainVerificationStatus, config.status?.detail) : null;
-  // The surfaces are the choices of a domain that is served; the tab of the domain shows them under the same condition.
   const surfaces = config.surfaces && config.domainVerificationStatus === 'Verified' ? config.surfaces : null;
 
   let domainValue: React.ReactNode;

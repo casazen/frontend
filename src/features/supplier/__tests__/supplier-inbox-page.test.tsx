@@ -17,7 +17,6 @@ vi.mock('@/services/supplier-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/supplier-api')>()),
   ...api,
 }));
-// The list also reads the catalog of the supplier, for the choices of its filter by service.
 vi.mock('@/api/supplier-services.api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/supplier-services.api')>()),
   ...servicesApi,
@@ -79,9 +78,7 @@ function renderPage(initial = '/app/supplier/inbox') {
   );
 }
 
-/** The table of the list, once it is there: the page has the table and the cards of a phone, and a media query shows one. */
 const findTable = () => screen.findByRole('table', { name: 'Richieste' });
-/** What the list asked the server last (the page also asks, for its one action, for the first request to answer). */
 const lastParams = () =>
   api.fetchSupplierInbox.mock.calls.map(([params]) => params as SupplierInboxParams).filter((params) => params.pageSize === 20).at(-1);
 
@@ -106,14 +103,12 @@ describe('SupplierInboxPage (SU-08, SP-08c)', () => {
     renderPage();
 
     const table = within(await findTable());
-    // The name of the job is what opens the row in the drawer of the shell.
     expect(await table.findByRole('button', { name: 'Pulizie' })).toBeInTheDocument();
     expect(lastParams()).toEqual({ tab: 'da-rispondere', page: 1, pageSize: 20 });
     expect(table.getByText('Roma (00184)')).toBeInTheDocument();
     expect(table.getByText('Zen Stays')).toBeInTheDocument();
     expect(table.getByText('50 €')).toBeInTheDocument();
     expect(table.getByTestId('take-r-open')).toBeEnabled();
-    // The number of what waits for an answer is on its chip, from the server; and the page offers the most urgent one.
     expect(screen.getByTestId('list-chip-da-rispondere')).toHaveTextContent('1');
     await waitFor(() => expect(screen.getByTestId('supplier-inbox-urgent')).toHaveAttribute('href', '/app/supplier/inbox/r-open'));
   });
@@ -128,7 +123,6 @@ describe('SupplierInboxPage (SU-08, SP-08c)', () => {
     const table = within(await findTable());
     expect(await table.findByRole('button', { name: 'Pulizie' })).toBeInTheDocument();
     expect(lastParams()).toEqual({ tab: 'archivio', q: 'pulizia', when: 'oggi', from: '2026-09-01', to: '2026-09-30', page: 1, pageSize: 20 });
-    // A closed request has no quick action: the row opens its drawer.
     expect(table.queryByTestId('take-r-rejected')).not.toBeInTheDocument();
     expect(table.queryByTestId('complete-r-rejected')).not.toBeInTheDocument();
   });

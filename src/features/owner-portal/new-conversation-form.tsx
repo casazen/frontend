@@ -37,11 +37,6 @@ interface NewConversationFormProps {
   onCancel: () => void;
 }
 
-/**
- * A new conversation with the agency (E07/F07/US01/T03, AC-NF111-5): a topic, exactly the item it is about (a property, a stay, a document or a published statement of the
- * person's own), a subject and the first words. The subject and the words live in this form only: not in the address, not in a storage, not in a log. What is not the
- * person's own (an id from a link) is not on offer, and the server answers 404 for it anyway. A refusal stays on screen, with the words typed; a success opens the conversation.
- */
 export function NewConversationForm({ initial, onCancel }: NewConversationFormProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -61,7 +56,6 @@ export function NewConversationForm({ initial, onCancel }: NewConversationFormPr
   const [body, setBody] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
 
-  // What is on offer is what the last answer of each read says: after a refusal nothing of the answer before it stays on offer (a document of an access that was withdrawn).
   const propertiesNow = currentData(properties);
   const staysNow = currentData(stays);
   const documentsNow = currentData(documents);

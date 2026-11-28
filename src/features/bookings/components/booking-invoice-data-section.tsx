@@ -10,7 +10,6 @@ import { useInvoiceData } from '@/queries/use-invoice-data';
 import { INVOICE_DATA_SOURCES, type BookingInvoiceData } from '@/types';
 import { Fact, Facts } from './booking-facts';
 
-/** The address on one line, the way it is written on an envelope; a country other than Italy is named in the language of the page. */
 function addressLine(data: BookingInvoiceData, language: string): string {
   const street = [data.addressStreet, data.addressCivic].filter(Boolean).join(' ');
   const town = [data.postalCode, data.city].filter(Boolean).join(' ');
@@ -44,7 +43,6 @@ export function BookingInvoiceDataSection({ bookingId, editing: controlledEditin
   const editing = controlledEditing ?? localEditing;
   const setEditing = onEditingChange ?? setLocalEditing;
 
-  // When the sub-step closes the focus goes back to the button that opened it, not to the top of the page.
   const opener = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef(false);
   useEffect(() => {

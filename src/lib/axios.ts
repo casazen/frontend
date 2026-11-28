@@ -12,36 +12,24 @@ declare module 'axios' {
      * requires a token and is not sent at all when none can be obtained.
      */
     public?: boolean;
-    /** The calling screen handles authentication failures without a global redirect. */
     localAuthRecovery?: boolean;
-    /** Internal: the request was already replayed once after a forced token refresh. */
     authRetried?: boolean;
   }
 }
 
 export interface ApiAuthHandlers {
-  /** Returns the access token; throws (e.g. Auth0 `login_required`) when there is none. */
   getAccessToken: () => Promise<string | undefined>;
-  /** Fetches a fresh token bypassing the cache; used once after a 401 before re-login. */
   refreshAccessToken?: () => Promise<string | undefined>;
-  /** Starts an interactive re-login (Auth0 redirect). */
   onSessionExpired?: () => void;
 }
 
-/** Path of the existing "no access" page used for 403 on protected reads. */
 export const NO_ACCESS_PATH = '/app/no-access';
 
-/**
- * Page shown on a 403 `account_inactive` (PL-03), for reads and writes alike: outside the workspace and the onboarding
- * guard, it calls no API.
- */
 export const ACCOUNT_INACTIVE_PATH = '/account-inactive';
 
-/** A second re-login inside this window means the redirect did not help: stop to avoid a loop. */
 export const RELOGIN_GUARD_MS = 60_000;
 export const RELOGIN_GUARD_STORAGE_KEY = 'cz-api-relogin-at';
 
-/** Auth0 token errors that only an interactive login can solve. */
 const INTERACTIVE_LOGIN_ERRORS = new Set([
   'login_required',
   'consent_required',
@@ -50,13 +38,8 @@ const INTERACTIVE_LOGIN_ERRORS = new Set([
   'invalid_grant',
 ]);
 
-/** 403 bodies with these codes (or none) mean "no access"; any other code is a business rule. */
 const GENERIC_FORBIDDEN_CODES = new Set(['forbidden', 'access_denied']);
 
-/**
- * 403 `code` of the backend host onboarding gate (PL-02): the host features wait for the onboarding and the current
- * legal consents. Handled for reads and writes alike by the onboarding handler, never as "no access".
- */
 export const ONBOARDING_REQUIRED_CODE = 'onboarding_required';
 
 let authHandlers: ApiAuthHandlers | null = null;
@@ -65,22 +48,18 @@ let accountInactiveHandler: (() => void) | null = null;
 let onboardingRequiredHandler: (() => void) | null = null;
 let reloginRequested = false;
 
-/** Registered by the auth bridge (Auth0 or demo); `null` when no auth provider is mounted. */
 export function setApiAuthHandlers(handlers: ApiAuthHandlers | null): void {
   authHandlers = handlers;
 }
 
-/** Registered by the app shell: navigates to the no-access page. */
 export function setApiForbiddenHandler(handler: (() => void) | null): void {
   forbiddenHandler = handler;
 }
 
-/** Registered by the app shell: opens the "account disabled" page on a 403 `account_inactive` (PL-03). */
 export function setApiAccountInactiveHandler(handler: (() => void) | null): void {
   accountInactiveHandler = handler;
 }
 
-/** Registered by the app shell: opens the onboarding on a 403 `onboarding_required` (PL-02). */
 export function setApiOnboardingRequiredHandler(handler: (() => void) | null): void {
   onboardingRequiredHandler = handler;
 }
@@ -103,7 +82,6 @@ function writeLastRelogin(timestamp: number): void {
   }
 }
 
-/** Starts at most one re-login per page, and none if the previous one was less than a minute ago. */
 function requestRelogin(): void {
   const onSessionExpired = authHandlers?.onSessionExpired;
   if (!onSessionExpired || reloginRequested) return;
@@ -150,7 +128,6 @@ async function attachAccessToken(config: InternalAxiosRequestConfig): Promise<In
 }
 
 function isAccessDenied(config: InternalAxiosRequestConfig, data: unknown): boolean {
-  // Only reads: a forbidden write keeps the user on the page and is reported by the mutation.
   const method = (config.method ?? 'get').toLowerCase();
   if (method !== 'get' && method !== 'head') return false;
   const code = getProblemCode(data);
@@ -176,9 +153,6 @@ export function handleAccountStateForbidden(data: unknown): boolean {
   return false;
 }
 
-/**
- * Create axios instance with base configuration
- */
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: apiConfig.baseURL,
   timeout: apiConfig.timeout,
@@ -209,12 +183,10 @@ async function handleResponseError(error: unknown): Promise<AxiosResponse> {
       } catch {
         refreshed = undefined;
       }
-      // Replay once: the request interceptor attaches the refreshed (now cached) token.
       if (refreshed) return axiosInstance.request(config);
     }
     requestRelogin();
   } else if (status === 403 && !handleAccountStateForbidden(data) && isAccessDenied(config, data)) {
-    // A 403 of the account (deactivated, onboarding) has its own page and never the no-access page nor a re-login: it was handled just above, before the generic 403.
     forbiddenHandler?.();
   }
 

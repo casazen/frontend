@@ -5,7 +5,6 @@ import { Check, CheckCircle2, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-/** How a point of "What happens now" stands, besides done (the default). It is the colour of its icon; the text of the point says it in words. */
 export type WizardDoneTone = "attention" | "problem";
 
 const TONE_CLASS: Record<WizardDoneTone, string> = {
@@ -13,39 +12,22 @@ const TONE_CLASS: Record<WizardDoneTone, string> = {
   problem: "text-[color:var(--color-danger-foreground,#b4232a)]",
 };
 
-/** Where an action of the confirmation goes. `label` says what it does ("Open the property"), already translated. */
 export interface WizardDoneAction {
   label: string;
   to: To;
 }
 
 export interface WizardDoneProps {
-  /** The confirmation: what was done ("Property created"). */
   title: string;
-  /** A line under it, if it adds something (the name of what was created). */
   description?: string;
-  /** One sentence that says what the screen is for, between the confirmation and the list («Ecco cosa succede ora»). */
   lead?: string;
-  /**
-   * What happens now, in two or three short points (a flow with an element for each part may have a line for each). Only true things: what the system
-   * does, and what is still up to the person. A point that is not completed says so in its words and takes `tone`: `attention` (still to do, or on its
-   * way) or `problem` (it failed); the check mark of a done point is for what is done.
-   */
   whatNext: ReadonlyArray<{ text: string; icon?: LucideIcon; tone?: WizardDoneTone }>;
-  /** The recommended next step: toward the thing that was created. */
   primary: WizardDoneAction;
-  /** The other thing the person is likely to want. A flow that lets the person leave only one way (the bulk change of the calendar: "Save and exit") gives none. */
   secondary?: WizardDoneAction;
   className?: string;
-  /** What follows from the thing that was done and only the flow that did it can tell (a follow-up), between "What happens now" and the actions. */
   children?: React.ReactNode;
 }
 
-/**
- * The last screen of a guided flow: it confirms what was done, says "What happens now" and offers two ways on, the main
- * one toward what was just created. There is no dead end: both actions are links. The focus goes to the confirmation
- * when the screen opens, so a screen reader reads it.
- */
 export function WizardDone({ title, description, lead, whatNext, primary, secondary, className, children }: WizardDoneProps) {
   const { t } = useTranslation();
   const titleRef = React.useRef<HTMLHeadingElement>(null);

@@ -4,7 +4,6 @@ import type { LeaseNeed } from '@/types';
 import { cn } from '@/lib/utils';
 import { guideNeed } from './wizard-messages';
 
-/** Something left to do and the step where it is put right. */
 export interface MissingItem {
   step: number;
   need: LeaseNeed;
@@ -12,9 +11,7 @@ export interface MissingItem {
 
 interface MissingNoteProps {
   items: MissingItem[];
-  /** The step on screen: a thing of this step is reached by putting the focus on its field, a thing of another one by a link. */
   current: number;
-  /** How many times the person pressed the main button with something left: from the first time the note is said aloud, as an alert. */
   pressed?: number;
   onGo: (need: LeaseNeed) => void;
   hrefOfStep: (step: number) => string;
@@ -37,7 +34,6 @@ export function MissingNote({ items, current, pressed = 0, onGo, hrefOfStep, cla
     );
   }
 
-  // The first two things are named, the others counted: «Manca: il canone mensile · il deposito e altre 2 cose».
   const named = items.slice(0, 2).map((item) => guideNeed(t, i18n, item.need));
   const more = items.length - named.length;
   const sameStep = first.step === current;
@@ -57,7 +53,6 @@ export function MissingNote({ items, current, pressed = 0, onGo, hrefOfStep, cla
   );
 
   return (
-    // A new element for each press: a screen reader says the sentence again.
     <div key={pressed} role={pressed > 0 ? 'alert' : undefined} className={className} data-testid="lease-wizard-remaining" data-pressed={pressed > 0 ? 'true' : undefined}>
       {sameStep ? (
         <button type="button" className={box} onClick={() => onGo(first.need)}>

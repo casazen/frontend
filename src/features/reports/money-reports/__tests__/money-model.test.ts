@@ -13,7 +13,6 @@ import {
   reportView,
 } from '../money-model';
 
-/** The currency formats separate the number and the symbol with a no-break space: the tests compare with a plain one. */
 const plain = (text: string | null) => text?.replace(/[\u00a0\u202f]/g, ' ') ?? null;
 
 function balance(overrides: Partial<BalanceRow>): BalanceRow {
@@ -53,7 +52,6 @@ describe('money reports: the numbers of the server are written, never worked out
     await i18n.changeLanguage('it');
   });
 
-  // Money: the cents the server sends are written digit for digit, whatever their size, with no division and no rounding.
   it.each([
     { cents: 123456, text: /^1\.?234,56 €$/ },
     { cents: 5, text: /^0,05 €$/ },
@@ -72,7 +70,6 @@ describe('money reports: the numbers of the server are written, never worked out
     expect(plain(formatCents(123456, 'chf', 'it'))).toMatch(/^1\.?234,56 CHF$/);
   });
 
-  // Money: an amount the server does not have, or a value that is not a whole count of cents, is never turned into a number.
   it.each([null, undefined, 12.5, Number.NaN, Number.POSITIVE_INFINITY, 2 ** 60])('FormatCents_%s_IsNotAnAmount', (value) => {
     expect(formatCents(value as number | null, 'EUR', 'it')).toBeNull();
   });
@@ -81,8 +78,6 @@ describe('money reports: the numbers of the server are written, never worked out
     expect(plain(formatCents(1050, 'XX', 'it'))).toBe('10,50 XX');
   });
 
-  // Money: the collections and the channel costs add every property in the currency of the property and say no currency, so a symbol would
-  // be false for a house in francs: their amounts are written as the number alone, with the same digits as every other amount.
   it.each([
     { cents: 123456, locale: 'it', text: /^1\.?234,56$/ },
     { cents: 123456, locale: 'en', text: /^1,234\.56$/ },
@@ -103,7 +98,6 @@ describe('money reports: the numbers of the server are written, never worked out
     expect(formatSummedCents(value as number | null, 'it')).toBeNull();
   });
 
-  // Money: percentages are the server's four decimals, written as they are (never rounded to a whole number).
   it.each([
     { rate: 0.1534, text: '15,34%' },
     { rate: 0.12, text: '12%' },
@@ -119,7 +113,6 @@ describe('money reports: the numbers of the server are written, never worked out
     expect(formatRate(value as number | null, 'it')).toBeNull();
   });
 
-  // Money: two currencies are never put in one table with one total; the server's total of each is the one shown with its rows.
   it('BalanceSections_TwoCurrencies_AreTwoSectionsEachWithItsOwnTotal', () => {
     const totals: BalanceTotal[] = [
       { currency: 'CHF', amount: 80, amountCents: 8000, stayCount: 1 },
@@ -151,7 +144,6 @@ describe('money reports: the numbers of the server are written, never worked out
     expect(balanceSections({ rows: [], totals: [] })).toEqual([]);
   });
 
-  // Data: a bucket is a day or a month as the server cut it; a month the period cuts at one end says which days it covers.
   it('BucketName_DayAndMonth_AreWrittenInTheLanguageOfTheApp', () => {
     expect(bucketName({ unit: 'day', from: '2026-10-09' }, 'it')).toBe('9 ott 2026');
     expect(bucketName({ unit: 'month', from: '2026-10-01' }, 'it')).toBe('ottobre 2026');
@@ -176,7 +168,6 @@ describe('money reports: the numbers of the server are written, never worked out
 });
 
 describe('reportView: what a money report read stands for', () => {
-  // Trust: a 404 is "not found" even when the query still holds the old figures (TanStack Query keeps the data on an error).
   it('ReportView_NotFoundWithOldDataInTheCache_IsNotFoundNeverTheOldFigures', () => {
     expect(reportView({ data: { old: true }, isError: true, error: failure(404) })).toEqual({ kind: 'notFound' });
   });

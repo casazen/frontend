@@ -29,7 +29,6 @@ afterEach(() => {
   window.history.replaceState({}, '', '/');
 });
 
-/** What the Auth0 SDK is told about the address the app opens on. */
 function skipRedirectCallbackFor(address: string): boolean | undefined {
   window.history.replaceState({}, '', address);
   render(
@@ -42,7 +41,6 @@ function skipRedirectCallbackFor(address: string): boolean | undefined {
 
 describe('Auth0 and the callback of the channel manager (E02/F01/US01/T04)', () => {
   it('AuthBridge_CallbackPageOfTheChannelManager_IsLeftAloneByTheAuth0Sdk', () => {
-    // The SDK takes any address with a `code` and a `state` for the end of its own login and would fail on these.
     expect(skipRedirectCallbackFor('/app/short-rent/integrations/octorate?code=the-code&state=the-state')).toBe(true);
   });
 

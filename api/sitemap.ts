@@ -18,29 +18,19 @@
  * Runbook: backend `docs/runbooks/seo-domain.md`.
  */
 
-/** Backend endpoint, relative to `VITE_API_BASE_URL` (which ends with `/api`). */
 export const SITEMAP_UPSTREAM_PATH = 'public/sitemap.xml';
 
-/** Backend endpoint of the index of the booking sites' sitemaps (`/sitemap-book.xml`). */
 export const BOOKING_SITEMAP_INDEX_UPSTREAM_PATH = 'public/sitemap-book.xml';
 
-/** Backend endpoint of the sitemap of the supplier showcases (`/sitemap-supplier.xml`). */
 export const SUPPLIER_SITEMAP_UPSTREAM_PATH = 'public/sitemap-supplier.xml';
 
-/** The Host the crawler used (Vercel sets `x-forwarded-host` on a rewritten request), only a plain host name; else null. */
 function requestHost(headers: Headers | undefined): string | null {
   const value = (headers?.get('x-forwarded-host') ?? headers?.get('host') ?? '').split(',')[0].trim().toLowerCase();
   return /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*(:\d{1,5})?$/.test(value) ? value : null;
 }
 
-/** Same alphabet as the org slugs the backend accepts: anything else is a 404 before the backend is called. */
 const ORG_SLUG = /^[A-Za-z0-9-]{1,100}$/;
 
-/**
- * Backend path of the sitemap a rewrite asks for, or null when the request names an org that cannot exist:
- * no parameter is the compliance sitemap, `name=book` the index of the booking sites, `name=supplier` the supplier
- * showcases, `org` one org's sitemap.
- */
 export function sitemapUpstreamPath(searchParams: URLSearchParams): string | null {
   const org = searchParams.get('org');
   if (org !== null) return ORG_SLUG.test(org) ? `public/orgs/${org}/sitemap.xml` : null;
@@ -52,7 +42,6 @@ export function sitemapUpstreamPath(searchParams: URLSearchParams): string | nul
 const UPSTREAM_TIMEOUT_MS = 8000;
 const CACHE_OK = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
 
-/** Absolute URL of a backend sitemap, or null when `VITE_API_BASE_URL` is not an absolute http(s) URL. */
 export function sitemapUpstreamUrl(
   apiBaseUrl: string | undefined,
   path: string = SITEMAP_UPSTREAM_PATH,
@@ -70,7 +59,6 @@ export function sitemapUpstreamUrl(
   if (base.protocol !== 'https:' && base.protocol !== 'http:') return null;
 
   const url = new URL(path, base);
-  // BK-16: the guides sitemap becomes the sitemap of an org's own host when the Host of the request is one (the backend decides).
   if (host && path === SITEMAP_UPSTREAM_PATH) url.searchParams.set('host', host);
   return url;
 }
@@ -110,7 +98,6 @@ export async function GET(request?: Request): Promise<Response> {
     return unavailable(error instanceof Error ? error.name : 'request failed');
   }
 
-  // An org that is unknown, renamed or has nothing published has no sitemap (not an outage); same for the org's own host.
   if (response.status === 404 && (upstream.pathname.includes('/orgs/') || upstream.searchParams.has('host'))) return notFound();
   if (!response.ok) return unavailable(`backend answered ${response.status}`);
   if (!body.includes('<urlset') && !body.includes('<sitemapindex')) return unavailable('backend answer is not a sitemap');
@@ -121,7 +108,6 @@ export async function GET(request?: Request): Promise<Response> {
   });
 }
 
-/** Same status and headers as GET, without a body (e.g. `curl -I`). */
 export async function HEAD(request?: Request): Promise<Response> {
   const response = await GET(request);
   return new Response(null, { status: response.status, headers: response.headers });

@@ -8,32 +8,24 @@ import { carryLinkAttribution } from '@/lib/booking-link';
  * (the search, the property page, the checkout) so that a person never has to choose the dates twice.
  */
 
-/** The query parameter of a pet; the others are those of `booking-url.ts`. */
 const PETS_QUERY_KEY = 'pets';
 
 export interface StayState {
-  /** First night, `YYYY-MM-DD`; empty while not chosen. */
   checkIn: string;
-  /** Day of the departure; empty while not chosen. */
   checkOut: string;
   adults: number;
   children: number;
   pets: boolean;
 }
 
-/** What is wrong with a stay that an address carries (a link from an old page, a typed one). */
 export type StayProblem = 'checkInPast' | 'checkOutNotAfterCheckIn' | 'overCapacity' | 'petsNotAllowed';
 
 export interface StayLimits {
-  /** Today in Europe/Rome. */
   today: string;
-  /** Most people the home takes, adults and children together. */
   maxGuests?: number;
-  /** False when the home takes no pets; left out when it is not known (a site with many homes: the search says which take them). */
   petsAllowed?: boolean;
 }
 
-/** The stay as the address says it, without any check. */
 export function readRawStay(search: URLSearchParams): StayState {
   const params = parseBookingSearchParams(search);
   const pets = search.get(PETS_QUERY_KEY)?.trim().toLowerCase();
@@ -73,10 +65,6 @@ export function readStay(search: URLSearchParams, limits: StayLimits): { stay: S
   return { stay: { ...raw, checkIn, checkOut }, problems };
 }
 
-/**
- * `search` with the changes of `patch` written: the other parameters (the language, the destination) stay, the dates are the
- * same as ever (`checkin`, `checkout`), and the pet is written only when there is one.
- */
 export function writeStay(search: URLSearchParams, patch: Partial<StayState>): URLSearchParams {
   const merged = { ...readRawStay(search), ...patch };
   const next = mergeBookingSearchParams(search, {
@@ -90,16 +78,10 @@ export function writeStay(search: URLSearchParams, patch: Partial<StayState>): U
   return next;
 }
 
-/** A link to `path` that carries the stay (and the other parameters of `base`, if given). */
 export function stayHref(path: string, stay: Partial<StayState>, base: URLSearchParams = new URLSearchParams()): string {
   return createPath({ pathname: path, search: writeStay(base, stay).toString() });
 }
 
-/**
- * A link to another page of the site (`path`) that carries the stay and where the guest came from: the `utm_*` of the address `search` follow the stay from the page of
- * a home to its checkout (E27/F01/US02, NF-123), where they go to the booking as its attribution. They are in the address and nowhere else: nothing is stored on the device,
- * and only the three parameters that are values the booking keeps are carried (`carryLinkAttribution`).
- */
 export function siteLink(path: string, stay: Partial<StayState>, search: URLSearchParams): string {
   return carryLinkAttribution(stayHref(path, stay), search);
 }

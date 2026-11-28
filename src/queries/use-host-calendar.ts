@@ -30,7 +30,6 @@ export function useHostCalendar(query: HostCalendarQuery | undefined, options: H
     placeholderData: keepPreviousData,
     retry: retryTransientErrors(1),
     refetchOnMount: options.refetchOnMount ?? 'always',
-    // Initial imports and OTA changes happen in background jobs, without a mutation in this tab.
     refetchInterval: options.refetchOnMount === false ? false : 30_000,
     refetchIntervalInBackground: false,
   });

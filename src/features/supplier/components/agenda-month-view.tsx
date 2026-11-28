@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { agendaHref } from '../lib/agenda-range';
 import { DAY_STATE_LABEL_KEYS, WEEKDAYS, dayStateOf, weekdayOf, type WorkingDayView } from '../lib/supplier-agenda';
 
-// Any Monday: the short names of the week, in the language of the app, come from its seven days.
 const A_MONDAY = '2026-10-12';
 const COUNT_PILL = 'rounded-full bg-primary-soft px-1.5 text-xs font-semibold text-primary-text';
 
@@ -16,7 +15,6 @@ interface MonthCellProps {
   pending: boolean;
 }
 
-/** A day of the month: its number, how many things are in it and, by icon, whether it is closed or waits for an answer. It opens the day. */
 function MonthCell({ day, today, pending }: MonthCellProps) {
   const { t, i18n } = useTranslation();
   const state = dayStateOf(day);
@@ -55,14 +53,11 @@ function MonthCell({ day, today, pending }: MonthCellProps) {
 }
 
 interface AgendaMonthViewProps {
-  /** Every day of the month, in order. */
   days: readonly WorkingDayView[];
   today: string;
-  /** The days a "Disponibile" event of the calendar holds until it is answered. */
   pendingDates: ReadonlySet<string>;
 }
 
-/** The month as a grid of weeks, Monday first: one cell a day, no detail. A cell opens the day. */
 export function AgendaMonthView({ days, today, pendingDates }: AgendaMonthViewProps) {
   const { t, i18n } = useTranslation();
   if (days.length === 0) return null;

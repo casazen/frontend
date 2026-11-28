@@ -15,7 +15,6 @@ import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import type { BookingFlowMode, BookingFlowSettings, PropertyReadyTrigger } from '@/types/booking-flow.types';
 import { useBookingFlowSettings, useUpdateBookingFlowSettings } from './use-booking-flow-settings';
 
-/** The steps the organization can switch between CasaZen and the host, and the member of the settings each one is. */
 type SwitchableStep = 'checkInLink' | 'arrival' | 'departure' | 'propertyReady';
 
 const MODE_OF: Record<SwitchableStep, keyof Pick<BookingFlowSettings, 'checkInLinkMode' | 'arrivalMode' | 'departureMode' | 'propertyReadyMode'>> = {
@@ -58,10 +57,6 @@ function isChanged(form: Form, settings: BookingFlowSettings): boolean {
   return (Object.keys(saved) as (keyof Form)[]).some((key) => saved[key] !== form[key]);
 }
 
-/**
- * «Flusso», a tab of Prenotazioni (casazen/backend#978): every step of a booking and, for the ones CasaZen can do by itself, whether it does (the default) or the host does.
- * What is automatic no longer lands in the «Da fare» list. One block, one button: whoever is not the organization administrator reads it and is told who can change it.
- */
 export function BookingFlowPage() {
   const { t } = useTranslation();
   const { contexts } = useWorkspace();

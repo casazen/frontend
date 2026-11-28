@@ -61,7 +61,6 @@ describe('NavChildLinks (UI-04a)', () => {
   });
 
   it('NavChildLinks_UserWhoMayOpenNone_ShowsNothing', () => {
-    // The verifications are the only page that hangs from the approval queue, and they ask their own permission.
     const { container } = renderLinks('/app/short-rent/approval-queue', (_ctx, permission) => permission !== 'verification.decision');
 
     expect(container).toBeEmptyDOMElement();
@@ -73,7 +72,6 @@ describe('NavChildLinks (UI-04a)', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  // An isolated test of a page renders it without the workspace or the router (as the pages' own tests do).
   it('NavChildLinks_NoWorkspace_ListsEveryChildOfThePage', () => {
     render(
       <MemoryRouter>
@@ -96,10 +94,6 @@ describe('NavChildLinks (UI-04a)', () => {
   });
 });
 
-// The sidebar keeps a parent highlighted and leaves its children out of the menus: the page of the parent is the way in. A
-// parent page that forgot `<NavChildLinks>` would leave its children without one. The rental areas, the Amministrazione and the staff
-// console do it with tabs on every page of the section (`NavSectionTabs`, in `PageHeader`: see its test); the supplier area links from
-// the parent.
 describe('pages that hang from a menu entry link to their children', () => {
   const sources = import.meta.glob<string>(['/src/**/*.tsx', '!/src/**/*.test.tsx', '!/src/**/__tests__/**'], {
     query: '?raw',

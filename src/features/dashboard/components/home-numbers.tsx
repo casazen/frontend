@@ -10,7 +10,6 @@ interface HomeNumbersProps {
   period: HomePeriod;
 }
 
-/** "Prossimi arrivi": the next three, with when they come. Not a `StatTile`: a number says nothing here, names do. */
 function NextArrivals({ arrivals, today }: { arrivals: DashboardArrival[]; today: string }) {
   const { t, i18n } = useTranslation();
   const when = (date: string) =>
@@ -41,10 +40,6 @@ function NextArrivals({ arrivals, today }: { arrivals: DashboardArrival[]; today
   );
 }
 
-/**
- * The numbers of the Home, each against the period before: occupancy, revenue (only for who may read payments: the server leaves
- * it out for the others), the bookings to come with how many wait for an answer, and who arrives next. On a phone all values are visible in the same grid.
- */
 export function HomeNumbers({ overview, period }: HomeNumbersProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;

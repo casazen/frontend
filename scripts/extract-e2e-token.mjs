@@ -1,7 +1,3 @@
-/**
- * Local-only helper: log in via the existing web Auth0 callback and write the
- * access token to %TEMP%/casazen-e2e-access.token. Does not print secrets.
- */
 import { chromium } from '@playwright/test';
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';

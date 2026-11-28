@@ -8,14 +8,9 @@ import { AgendaEventItem, DayStateLabel, PendingDayBadge } from './agenda-event-
 interface AgendaWeekViewProps {
   days: readonly WorkingDayView[];
   today: string;
-  /** The days a "Disponibile" event of the calendar holds until it is answered. */
   pendingDates: ReadonlySet<string>;
 }
 
-/**
- * The seven days of a week. On a phone and on a tablet they are a list, one under the other (seven columns would be
- * unreadable); from a wide screen they stand side by side. The name of a day opens that day.
- */
 export function AgendaWeekView({ days, today, pendingDates }: AgendaWeekViewProps) {
   const { t, i18n } = useTranslation();
 

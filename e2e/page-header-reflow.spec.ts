@@ -21,23 +21,19 @@ interface HeaderPage {
   path: string;
   profile: DemoProfile;
   heading: string | RegExp;
-  /** The controls of the header: they are on the screen too, not only the document does not scroll sideways. */
   controls: (page: Page) => Locator;
   supplier?: boolean;
 }
 
 const childLinks = (page: Page) => page.getByTestId('nav-child-links');
-/** The tabs of a section of the menu, which are a native menu on a phone (`NavSectionTabs`). */
 const sectionMenu = (page: Page) => page.getByTestId('nav-section-select');
 
 const PAGES: HeaderPage[] = [
   { name: 'dashboard (period select)', path: '/app/short-rent', profile: 'dual', heading: /^Buongiorno/, controls: (page) => page.getByTestId('home-performance').getByRole('button') },
-  // The page answers «Sono in regola?» (NF-52): the entry of the menu is still «Adempimenti».
   { name: 'compliance (menu of its section)', path: '/app/short-rent/compliance', profile: 'dual', heading: 'Sono in regola?', controls: sectionMenu },
   { name: 'booking site (menu of its section)', path: '/app/short-rent/vetrina', profile: 'dual', heading: 'Sito di prenotazione', controls: (page) => page.getByRole('heading', { level: 1 }) },
   { name: 'guests (menu of the section of the bookings)', path: '/app/short-rent/guests', profile: 'dual', heading: 'Ospiti', controls: sectionMenu },
   { name: 'fiscal report (standalone)', path: '/app/long-rent/fiscal', profile: 'dual', heading: 'Report fiscale', controls: (page) => page.getByRole('heading', { level: 1 }) },
-  // The pages that hang from the audit are the tabs of its section (a menu on a phone), as in the rental areas.
   { name: 'CIN audit of the console (menu of its section)', path: '/app/admin/cin', profile: 'admin', heading: 'Conformità CIN', controls: sectionMenu },
   { name: 'supplier availability (link to the calendar)', path: '/app/supplier/availability', profile: 'supplier', heading: 'Disponibilità', controls: childLinks, supplier: true },
   { name: 'bookings (new booking)', path: '/app/short-rent/bookings', profile: 'dual', heading: 'Prenotazioni', controls: (page) => page.getByTestId('new-booking') },

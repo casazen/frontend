@@ -12,7 +12,6 @@ import type {
   SupportVaultReveal,
 } from '@/types/onboarding.types';
 
-/** The staff queue of the «Do it for me» requests (`/admin/onboarding/assist-requests`, UX-15, NF-107). */
 export const ADMIN_ASSIST_KEY = ['admin', 'onboarding-assist'] as const;
 
 /**
@@ -52,17 +51,9 @@ export function useAssistRequestDetail(id: string, options?: { enabled?: boolean
 interface UpdateVariables {
   id: string;
   status: AssistUpdateStatus;
-  /** At most 500 characters, no e-mail address: the server refuses it (422 `assist_note_invalid`) and the dialog says so under the field. */
   note?: string;
 }
 
-/**
- * Takes a request, completes it or cancels it, with an optional note (`PUT /admin/onboarding/assist-requests/{id}`). The server writes the line of the log of the
- * organization of the request with the staff user as the actor, and for a request that is done it closes the «Da fare» of the host. The queue is read again after
- * it, also after a refusal (409 `assist_request_closed`: somebody closed it first), and a success says «Richiesta aggiornata». The note is free text, so the
- * mutation is dropped as soon as nothing observes it (`gcTime: 0`) and a failure is kept without the request that was sent (`withoutRequest`); the screen turns the
- * failure into words next to the field (422 `assist_note_invalid`, `assist_status_invalid`, 404 `assist_request_not_found`).
- */
 export function useUpdateAssistRequest() {
   const queryClient = useQueryClient();
 
@@ -83,9 +74,7 @@ export function useUpdateAssistRequest() {
 interface RevealVariables {
   id: string;
   kind: SupportVaultCredentialKind;
-  /** 10 to 300 characters: kept in the audit of the opening, never shown to the host. */
   reason: string;
-  /** Takes the values of the opening, the one and only way they leave the call: they are in the state of the dialog that asked, and nowhere else. */
   onOpened: (values: SupportVaultReveal) => void;
 }
 

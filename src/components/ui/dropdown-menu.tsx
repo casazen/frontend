@@ -7,12 +7,6 @@ const DropdownMenu = DropdownMenuPrimitive.Root;
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
-/**
- * The menu eases in (`animate-in`) and goes away at once: it has no exit animation (UI-07). Radix opens a menu when the pointer goes
- * down on the trigger and, while a closing menu is still in the page for its exit animation, its layer still listens for pointers
- * outside it: a click on the trigger in those 150 ms opened the menu and dismissed it in the same instant, so it did not reopen
- * (the area switcher of the sidebar failed one time in two in a test that chooses an area and opens the menu again).
- */
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
@@ -73,7 +67,6 @@ const DropdownMenuLabel = React.forwardRef<
 ));
 DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
 
-/** One choice of a `DropdownMenuRadioGroup`: the chosen one is announced as checked and shows a tick at the end. */
 const DropdownMenuRadioItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>

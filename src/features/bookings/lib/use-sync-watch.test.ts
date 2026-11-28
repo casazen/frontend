@@ -25,7 +25,6 @@ describe('useSyncWatch', () => {
     expect(result.current.waitOver).toBe(false);
     expect(result.current.interval(pending)).not.toBe(false);
 
-    // The page is drawn again when the wait ends: nobody has to touch it.
     act(() => {
       vi.advanceTimersByTime(2_000);
     });

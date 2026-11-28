@@ -46,11 +46,9 @@ describe('AlloggiatiBookingPanel: a stay that owes no communication', () => {
     current.status = statusOf('NotDue');
     renderPanel();
 
-    // The state the API gives a no-show has its own words, never the raw key of a missing text.
     expect(screen.getByTestId('alloggiati-status-badge')).toHaveTextContent('Non dovuta');
     expect(document.body).not.toHaveTextContent('alloggiati.statusLabel');
     expect(screen.getByTestId('booking-alloggiati-not-due')).toHaveTextContent('nessuna comunicazione alla Questura');
-    // No term to meet, nothing to declare as sent, no complaint about data that nobody has to send.
     expect(screen.queryByTestId('booking-alloggiati-deadline')).not.toBeInTheDocument();
     expect(screen.queryByTestId('alloggiati-resend-button')).not.toBeInTheDocument();
     expect(screen.queryByText('Dati ospite incompleti')).not.toBeInTheDocument();

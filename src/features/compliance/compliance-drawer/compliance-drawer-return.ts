@@ -14,29 +14,20 @@ import { isRelativeAppRoute } from './compliance-drawer-model';
  * return asks nothing («È stato inviato?»), records no result and changes no compliance state: what the connected area shows stays there.
  */
 
-/** Where the tab keeps the record of a handoff in progress. */
 export const RETURN_STORAGE_KEY = 'cz-compliance-drawer-return';
 
-/** How long a record may be restored when the server does not say (the server's default is an hour). */
 const FALLBACK_LIFETIME_MS = 60 * 60 * 1000;
 
-/** The longest the id of a handoff (opaque, random) or the key of a control may be in the record. */
 const MAX_TOKEN_LENGTH = 200;
 
-/** The longest the filters (the query string) of the route may be in the record. */
 const MAX_FILTERS_LENGTH = 1024;
 
-/** How long, after the return, the control that started the handoff may still take the focus (its row may need a moment to load). */
 const FOCUS_WINDOW_MS = 15_000;
 
-/** What the tab keeps while the host is away. */
 export interface SavedReturn {
   handoffId: string;
-  /** The page the host comes from: a relative route of the app, without its query. */
   route: string;
-  /** The query string of that page (`''` or `?…`): its filters. */
   filters: string;
-  /** The key of the control that started the handoff (`originKeyOf`): it takes the focus when the host is back. */
   origin: string;
   /** Until when it may be restored (ms since the epoch). */
   expiresAt: number;
@@ -47,7 +38,6 @@ export interface ReturnToSave {
   route: string;
   filters: string;
   origin: string;
-  /** The server's `expiresAt` (ISO, UTC). */
   expiresAt: string;
 }
 
@@ -58,7 +48,6 @@ const isFilters = (value: unknown): value is string =>
   value.length <= MAX_FILTERS_LENGTH &&
   (value === '' || (value.startsWith('?') && !/[\s\\]/.test(value) && !value.includes('://')));
 
-/** True when the record holds exactly what it should: the id, a relative route of the app, its filters, the control and a future expiry. */
 function isSavedReturn(value: unknown, now: number): value is SavedReturn {
   if (typeof value !== 'object' || value === null) return false;
   const record = value as Record<string, unknown>;
@@ -74,10 +63,6 @@ function isSavedReturn(value: unknown, now: number): value is SavedReturn {
   );
 }
 
-/**
- * Keeps where to come back to, before the host leaves. False when the record is not one the shell would restore or the tab cannot keep it
- * (the storage is blocked or full): the host still goes, and comes back by the browser's back button to the page as it was.
- */
 export function saveReturn(input: ReturnToSave, now: number = Date.now()): boolean {
   const expires = Date.parse(input.expiresAt);
   const record: SavedReturn = {
@@ -96,7 +81,6 @@ export function saveReturn(input: ReturnToSave, now: number = Date.now()): boole
   }
 }
 
-/** Forgets the record: it is restored once, and never after the host has been back. */
 export function forgetReturn(): void {
   try {
     window.sessionStorage.removeItem(RETURN_STORAGE_KEY);
@@ -105,7 +89,6 @@ export function forgetReturn(): void {
   }
 }
 
-/** The record of the tab, or `null` when there is none, it cannot be read, it is not what it should be or it has expired (and then it is forgotten). */
 export function readReturn(now: number = Date.now()): SavedReturn | null {
   let raw: string | null;
   try {
@@ -117,7 +100,6 @@ export function readReturn(now: number = Date.now()): SavedReturn | null {
   try {
     const value: unknown = JSON.parse(raw);
     if (isSavedReturn(value, now)) {
-      // Only the fields of the record: whatever else the storage held is not carried on.
       return { handoffId: value.handoffId, route: value.route, filters: value.filters, origin: value.origin, expiresAt: value.expiresAt };
     }
   } catch {
@@ -127,22 +109,16 @@ export function readReturn(now: number = Date.now()): SavedReturn | null {
   return null;
 }
 
-/**
- * The one way out of CasaZen: the same tab, to the address the server returned. An address that is not https is never opened (false: the host
- * stays in CasaZen). The address is opened exactly as it came; nothing is added to it: no property, no stay, no person.
- */
 export function openDestination(address: string): boolean {
   if (!isHttpsAddress(address)) return false;
   window.location.assign(address);
   return true;
 }
 
-/** A return that has been restored: where the host was put back and which control to give the focus to. */
 export interface Arrival {
   route: string;
   filters: string;
   origin: string;
-  /** The control has taken the focus (or there is none to take it): it is asked for once. */
   focused: boolean;
 }
 
@@ -165,41 +141,28 @@ export function getArrival(): Arrival | null {
   return arrival;
 }
 
-/**
- * Reads the record of the tab ONCE and forgets it: the return of the host. It is called when the shell mounts, and again when the browser brings
- * a page back from its memory (`pageshow`). Without a record it answers the return already taken, if any, so a second call (a render run twice)
- * changes nothing.
- */
 export function takeArrival(now: number = Date.now()): Arrival | null {
   const saved = readReturn(now);
   if (saved === null) return arrival;
   forgetReturn();
   publish({ route: saved.route, filters: saved.filters, origin: saved.origin, focused: false });
-  // The control is asked for the focus for a short while only: one that is not on the page by then (a row that is gone) never takes it later.
   window.setTimeout(markArrivalFocused, FOCUS_WINDOW_MS);
   return arrival;
 }
 
-/** The control of the return has taken the focus: nobody else asks for it again. */
 export function markArrivalFocused(): void {
   if (arrival !== null && !arrival.focused) publish({ ...arrival, focused: true });
 }
 
-/** The host moved on, or closed the notice: the return is over. */
 export function clearArrival(): void {
   if (arrival !== null) publish(null);
 }
 
-/** For the tests: the return, and what the tab keeps, as if the page had just loaded. */
 export function resetReturnForTests(): void {
   forgetReturn();
   publish(null);
 }
 
-/**
- * The control that started a handoff takes the focus when the host is back (a ref for the element). It is asked for once, by the control whose
- * key is the one of the return; a control that is not on the page (a row that is no longer there) never takes it.
- */
 export function useReturnFocus<T extends HTMLElement>(origin: string): RefObject<T | null> {
   const ref = useRef<T>(null);
   const current = useSyncExternalStore(subscribeArrival, getArrival, getArrival);

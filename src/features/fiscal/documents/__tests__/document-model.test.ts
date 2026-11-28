@@ -60,7 +60,6 @@ describe('documentStatesOf (every state not completed is shown as such, never as
 
     expect(main.key).toBe(`fiscalDocuments.list.state.${state}`);
     expect(main.tone).toBe(tone);
-    // The state is never told by color alone: it always has an icon.
     expect(main.icon).toBeTruthy();
   });
 
@@ -114,7 +113,6 @@ describe('documentStatesOf (every state not completed is shown as such, never as
       expect((it_.fiscalDocuments.list.state as Record<string, string>)[key], `it ${key}`).toBeTruthy();
       expect((en.fiscalDocuments.list.state as Record<string, string>)[key], `en ${key}`).toBeTruthy();
     }
-    // The model never builds a key that has no words.
     const built = [
       document({ sdiStatus: 'to_send' }),
       document({ sdiStatus: 'submitted' }),
@@ -159,7 +157,6 @@ describe('documentActionsOf', () => {
     expect(documentActionsOf(document({ status }), DEFAULT_FEATURE_FLAGS)).toMatchObject({ pdf: false, xml: false });
   });
 
-  // Flag rule: the endpoint of the PDF of the channel manager answers 404 while either flag is off, so no request is made and no error is shown.
   it('DocumentActionsOf_AnImportedDocument_IsReadOnlyAndNeverHasAnXml', () => {
     expect(documentActionsOf(importedDocument(), IMPORT_ON)).toEqual({ pdf: true, xml: false, readOnly: true, pdfUnavailable: false });
     expect(documentActionsOf(importedDocument({ hasXml: true }), IMPORT_ON).xml).toBe(false);
@@ -183,7 +180,6 @@ describe('unavailabilityOf (a 404 is always "not found", even when the list stil
     ['a document that is not found', failure(404, { code: FISCAL_DOCUMENT_ERROR.notFound }), 'document'],
     ['a 404 with no code', failure(404, undefined), 'document'],
     ['an XML the document does not have', failure(404, { code: FISCAL_DOCUMENT_ERROR.xmlUnavailable }), 'xml'],
-    // The server also sends it when the channel manager could not be read just now: nothing is taken away, the person may ask again.
     ['a PDF the channel manager could not give', failure(404, { code: FISCAL_DOCUMENT_ERROR.octoratePdfUnavailable }), null],
     ['a failure that is not a 404', failure(500, { code: FISCAL_DOCUMENT_ERROR.notFound }), null],
     ['the schema of the invoice not installed (422)', failure(422, { code: FISCAL_DOCUMENT_ERROR.schemaUnavailable }), null],
@@ -214,7 +210,6 @@ describe('filters', () => {
     expect(periodProblemOf({ from, to })).toBe(expected);
   });
 
-  // The files hold the issued documents only and do not read the status: with a filter that has nothing to put in them they are not asked.
   it.each([
     ['no filter', NO_FILTERS, null],
     ['the issued ones', { ...NO_FILTERS, status: 'Issued' }, null],
@@ -234,7 +229,6 @@ describe('money and days (as the server wrote them)', () => {
   it('FormatDocumentAmount_AnAmount_IsNotRoundedAndKeepsItsOwnCurrency', () => {
     expect(formatDocumentAmount(122.1, 'EUR', 'it').replace(/\s/g, ' ')).toBe('122,10 €');
     expect(formatDocumentAmount(1234.5, 'CHF', 'it').replace(/\s/g, ' ')).toContain('CHF');
-    // More decimals than any currency has: a figure the server wrote is never cut by the format.
     expect(formatDocumentAmount(10.005, 'EUR', 'en')).toContain('10.005');
   });
 
@@ -263,7 +257,6 @@ describe('file names (no personal data)', () => {
     expect(name).toBe('documento-A-12.pdf');
     expect(name).not.toMatch(/mario|rossi/i);
     expect(documentFileName(document({ number: null }), 'xml', undefined)).toBe('documento.xml');
-    // A number is never a path.
     expect(documentFileName(document({ number: '../../x/1' }), 'xml', null)).toBe('documento-x-1.xml');
   });
 
@@ -283,7 +276,6 @@ describe('reads', () => {
     ['a 403', { enabled: true, isError: true, status: 403, hasData: false }, 'forbidden'],
     ['a 500', { enabled: true, isError: true, status: 500, hasData: false }, 'failed'],
     ['a failure with no answer', { enabled: true, isError: true, status: undefined, hasData: false }, 'failed'],
-    // A query keeps its old data when a later read fails: the error comes first, and a 404 is "not found" whatever the query still holds.
     ['a 404 while the query still holds rows', { enabled: true, isError: true, status: 404, hasData: true }, 'notFound'],
     ['a 500 while the query still holds rows', { enabled: true, isError: true, status: 500, hasData: true }, 'failed'],
   ])('DocumentsReadOf_%s_IsRead', (_case, input, expected) => {
@@ -330,24 +322,19 @@ describe('documentWriteActionsOf (what may be changed, by state)', () => {
 
   it.each([
     ['a draft of CasaZen', draft(), { ...none, issue: true, refresh: true, discard: true }],
-    // A credit note that is a draft is the amounts of the document it credits: it is issued or dropped, never made again from a booking.
     ['a credit note that is a draft', draft({ kind: 'CreditNote' }), { ...none, issue: true, discard: true }],
-    // An issued document is e-mailed to the guest: the e-mail is a write on the document, behind the same right and the same flag.
     ['an invoice that was issued', document(), { ...none, credit: true, email: true }],
     ['a receipt that was issued', document({ kind: 'Receipt' }), { ...none, credit: true, email: true }],
     ['a credit note that was issued', document({ kind: 'CreditNote' }), { ...none, email: true }],
     // An invoice the SDI rejected never was issued: it is corrected from its panel, and the server refuses a credit note of it every time (422 `document_rejected_use_correction`); the guest gets the corrected one.
     ['an invoice the SDI rejected', document({ sdiStatus: 'rejected', sdiErrorCode: '00404' }), none],
     ['an invoice the SDI delivered', document({ sdiStatus: 'delivered' }), { ...none, credit: true, email: true }],
-    // The draft that replaces a rejected invoice holds its number: it is issued and made again from the data, never dropped (422 `document_replacement_holds_number`).
     ['the draft that replaces a rejected invoice', draft({ replacesDocumentId: 'd0000000-0000-4000-8000-0000000000aa' }), { ...none, issue: true, refresh: true }],
     ['a dropped draft', draft({ status: 'Discarded' }), none],
     ['a document of the channel manager', importedDocument({ status: 'Draft' }), none],
     ['a document of the channel manager that is issued', importedDocument({ status: 'Issued' }), none],
-    // The server refuses these with 422 every time (`document_owner_invoice`, `document_self_billing`): their own pages send them.
     ['an invoice to an owner', document({ purpose: 'OwnerInvoice' }), none],
     ['a self-billed invoice', document({ purpose: 'SelfBilling' }), none],
-    // A kind this client has no words for (the server is newer) or a proforma is not e-mailed to the guest.
     ['a proforma that was issued', document({ kind: 'Proforma' }), none],
     ['a kind of the future that was issued', document({ kind: 'Estimate' }), none],
   ])('DocumentWriteActionsOf_%s_IsRead', (_case, candidate, expected) => {
@@ -358,7 +345,6 @@ describe('documentWriteActionsOf (what may be changed, by state)', () => {
 describe('the e-mail of a document to its guest (E12/F01/US02/T01): what it says and whether asking again helps', () => {
   const t = i18n.getFixedT('it');
 
-  /** A failed call as the client of axios gives it: with the answer of the server, or none at all (the network). */
   const failedCall = (status: number | undefined, body: unknown = {}) => (status === undefined ? new AxiosError('Network Error', AxiosError.ERR_NETWORK) : failure(status, body));
 
   it.each([
@@ -378,7 +364,6 @@ describe('the e-mail of a document to its guest (E12/F01/US02/T01): what it says
     const codes = ['document_not_issued', 'document_owner_invoice', 'document_self_billing', 'document_read_only', 'document_recipient_email_invalid', 'document_email_not_sent', 'fiscal_document_not_found'];
     const messages = codes.map((code) => emailProblemOf(failedCall(422, { code }), t).message);
 
-    // Seven refusals, seven different sentences, none of them the generic one.
     expect(new Set(messages).size).toBe(codes.length);
     for (const message of messages) {
       expect(message).not.toBe(t('fiscalDocuments.email.failed'));
@@ -390,13 +375,11 @@ describe('the e-mail of a document to its guest (E12/F01/US02/T01): what it says
   it('EmailProblemOf_ADeniedCallAndAFailedCall_AreToldInTheirOwnWords', () => {
     expect(emailProblemOf(failedCall(403, ''), t)).toEqual({ retry: false, message: t('apiErrors.forbidden') });
     expect(emailProblemOf(failedCall(undefined), t)).toEqual({ retry: true, message: t('apiErrors.network') });
-    // A 5xx has no words of its own (its free text is never shown): the sentence says the call may be repeated; a refusal with no code says it may not.
     expect(emailProblemOf(failedCall(500, 'Internal error'), t)).toEqual({ retry: true, message: t('fiscalDocuments.email.failed') });
     expect(emailProblemOf(failedCall(404, ''), t)).toEqual({ retry: false, message: t('fiscalDocuments.email.refused') });
   });
 
   it('EmailLinkDayOf_IsTheRomeDayOfTheInstantTheServerGives_InTheLanguageOfThePerson', () => {
-    // 23:30 UTC of the 18th is already the 19th in Rome.
     expect(emailLinkDayOf({ linkExpiresAt: '2026-12-18T23:30:00Z' }, 'it')).toBe(formatDocumentDay('2026-12-19', 'it'));
     expect(emailLinkDayOf({ linkExpiresAt: '2026-12-18T23:30:00Z' }, 'en')).toBe(formatDocumentDay('2026-12-19', 'en'));
   });
@@ -457,8 +440,6 @@ describe('numbering (the number the next document is expected to get)', () => {
   });
 
   it('NumberingOf_NoIssuedDocumentOfTheSeriesAmongTheOnesRead_ExpectsNothingAndNeverTheFirstNumber', () => {
-    // The list may leave documents out (a person who reaches only some of the properties, the newest 100) and the counter of the server starts above the numbers
-    // already used: an empty series in what was read is no proof that it is empty there.
     expect(numberingOf('2027', issued)).toEqual({ series: '2027', last: null, next: null });
     expect(numberingOf('2026', [])).toEqual({ series: '2026', last: null, next: null });
   });
@@ -482,7 +463,6 @@ describe('the credit note', () => {
     expect(parseCreditAmount(text)).toBe(amount);
   });
 
-  // A separator of thousands is not read: a figure is never read as another one.
   it.each(['', '0', '-5', '1.250,00', '12,345', 'abc', '12 EUR'])('ParseCreditAmount_%s_IsNotAnAmount', (text) => {
     expect(parseCreditAmount(text)).toBeNull();
   });

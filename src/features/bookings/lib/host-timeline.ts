@@ -20,11 +20,9 @@ import { bookingChannelName } from './ota-stay';
  * come from the API as written and are never turned into instants, so no time zone moves them.
  */
 
-/** The ways the calendar page shows the host's stays: the Timeline of every property, or the month, the week or the day of one. */
 export const CALENDAR_PAGE_VIEWS = ['timeline', ...HOST_CALENDAR_VIEWS] as const;
 export type CalendarPageView = (typeof CALENDAR_PAGE_VIEWS)[number];
 
-/** How many days the Timeline shows at once. */
 export const TIMELINE_ZOOMS = [7, 14, 30] as const;
 export type TimelineZoom = (typeof TIMELINE_ZOOMS)[number];
 
@@ -35,31 +33,21 @@ const LEAD_DAYS = 2;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-/**
- * The view the address asks for (`?view=`). Without one, a screen with room (a tablet or a computer) opens the Timeline and a
- * phone the month of one property: the Timeline there is a strip that scrolls sideways, one tap away.
- */
 export function parseCalendarView(value: string | null, wideScreen: boolean): CalendarPageView {
   const asked = CALENDAR_PAGE_VIEWS.find((view) => view === value);
   return asked ?? (wideScreen ? 'timeline' : 'month');
 }
 
-/** The number of days the address asks for (`?zoom=`): 7, 14 or 30; anything else is 14. */
 export function parseTimelineZoom(value: string | null): TimelineZoom {
   const asked = Number(value);
   return TIMELINE_ZOOMS.find((zoom) => zoom === asked) ?? DEFAULT_ZOOM;
 }
 
-/**
- * The day the calendar is around: the first day of the Timeline, or the day the month, the week or the day is around. The
- * address holds it as `?from=`; without one it is today (two days earlier in the Timeline).
- */
 export function resolveCalendarAnchor(from: string | null, view: CalendarPageView, today: string): string {
   if (from && isStayDate(from)) return from;
   return view === 'timeline' ? addDays(today, -LEAD_DAYS) : today;
 }
 
-/** The days of the Timeline, the first one included. */
 export function timelineDays(start: string, zoom: number): string[] {
   return Array.from({ length: zoom }, (_, index) => addDays(start, index));
 }
@@ -73,17 +61,14 @@ export function timelineQuery(start: string, zoom: number, propertyId: string): 
   return propertyId ? { ...days, propertyId } : days;
 }
 
-/** How far the arrows move the Timeline: a week, and half a window when it shows a month. */
 function timelineStep(zoom: number): number {
   return zoom >= 30 ? 15 : 7;
 }
 
-/** The first day of the Timeline after the arrows: back (`-1`) or forward (`1`). */
 export function shiftTimelineStart(start: string, zoom: number, direction: -1 | 1): string {
   return addDays(start, direction * timelineStep(zoom));
 }
 
-/** What the toolbar says the Timeline is showing: "5–18 ottobre 2026", "28 set – 11 ott 2026". */
 export function timelineLabel(start: string, zoom: number, language: string): string {
   const end = addDays(start, zoom - 1);
   const sameYear = start.slice(0, 4) === end.slice(0, 4);
@@ -94,7 +79,6 @@ export function timelineLabel(start: string, zoom: number, language: string): st
   return `${from} – ${formatStayDate(end, language, { day: 'numeric', month: 'short', year: 'numeric' })}`;
 }
 
-/** Saturday and Sunday: the columns of the weekend are tinted. */
 export function isWeekendDay(day: string): boolean {
   const weekday = new Date(`${day}T00:00:00Z`).getUTCDay();
   return weekday === 0 || weekday === 6;
@@ -105,14 +89,10 @@ function dayNumber(day: string): number {
   return Date.UTC(year, month - 1, date) / MS_PER_DAY;
 }
 
-/** Days from `from` to `to` (negative when `to` is earlier); both must be calendar dates. */
 function daysBetween(from: string, to: string): number {
   return Math.round(dayNumber(to) - dayNumber(from));
 }
 
-/* ------------------------------------------------------------------------------------------------------------- Geometry */
-
-/** Where the nights of an item fall in the window: the column it starts in, how many columns, and whether the window cuts it. */
 export interface DaySpan {
   index: number;
   length: number;
@@ -120,7 +100,6 @@ export interface DaySpan {
   clippedEnd: boolean;
 }
 
-/** The columns of the nights `from` to `to` (departure day, not a night) in the window of `zoom` days from `start`; null when none falls in it. */
 function spanInWindow(from: string, to: string, start: string, zoom: number): DaySpan | null {
   const first = daysBetween(start, from);
   const after = daysBetween(start, to);
@@ -136,7 +115,7 @@ function spanInWindow(from: string, to: string, start: string, zoom: number): Da
  */
 function assignLanes(items: readonly HostCalendarStayItem[]): { lanes: Map<string, number>; count: number } {
   const sorted = [...items].sort((a, b) => a.from.localeCompare(b.from) || b.to.localeCompare(a.to) || a.id.localeCompare(b.id));
-  const ends: string[] = []; // the day each lane is free from
+  const ends: string[] = [];
   const lanes = new Map<string, number>();
   for (const item of sorted) {
     let lane = ends.findIndex((end) => end <= item.from);
@@ -151,11 +130,6 @@ function assignLanes(items: readonly HostCalendarStayItem[]): { lanes: Map<strin
   return { lanes, count: Math.max(1, ends.length) };
 }
 
-/**
- * The stays and blocks of a property that share a night with another one, from today on (the same rule as the server's, which puts
- * the first of them among the things to do of the Home): the departure day is free for an arrival. Only nights inside the window
- * count, as for the server's alerts of the same range.
- */
 function conflictingIds(items: readonly HostCalendarStayItem[], today: string, windowStart: string, windowEnd: string): Set<string> {
   const ids = new Set<string>();
   const sorted = [...items].sort((a, b) => a.from.localeCompare(b.from) || a.to.localeCompare(b.to) || a.id.localeCompare(b.id));
@@ -163,7 +137,6 @@ function conflictingIds(items: readonly HostCalendarStayItem[], today: string, w
     const a = sorted[i];
     for (let j = i + 1; j < sorted.length; j += 1) {
       const b = sorted[j];
-      // In order of arrival: from here on nothing starts before `a` leaves.
       if (b.from >= a.to) break;
       const sharedTo = a.to < b.to ? a.to : b.to;
       if (sharedTo <= b.from || sharedTo <= today || b.from > windowEnd || sharedTo <= windowStart) continue;
@@ -174,18 +147,14 @@ function conflictingIds(items: readonly HostCalendarStayItem[], today: string, w
   return ids;
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ Rows */
-
 export interface TimelineBar {
   item: HostCalendarStayItem;
   span: DaySpan;
   lane: number;
   kind: CalendarKind;
-  /** It shares a night with another stay or block of the property. */
   conflict: boolean;
 }
 
-/** An intervention: a mark on the day of the work; several on one day sit one under the other (`slot`). */
 export interface TimelineChip {
   item: HostCalendarServiceItem;
   index: number;
@@ -195,24 +164,16 @@ export interface TimelineChip {
 export interface TimelineRow {
   property: HostCalendarProperty;
   bars: TimelineBar[];
-  /** How many rows of bars the property needs (at least one). */
   lanes: number;
   chips: TimelineChip[];
-  /** How many marks the busiest day of the property has (0: no marks, no room for them). */
   slots: number;
 }
 
 const isStay = (item: HostCalendarItem): item is HostCalendarStayItem => item.type === 'Booking' || item.type === 'Ical' || item.type === 'Block';
 const isService = (item: HostCalendarItem): item is HostCalendarServiceItem => item.type === 'Service';
 
-/** A stay or a block with days that make sense: arrival before departure. An item the app does not understand is left out. */
 const isDrawable = (item: HostCalendarItem): boolean => isStayDate(item.from) && isStayDate(item.to) && (isService(item) ? item.to >= item.from : item.to > item.from);
 
-/**
- * How a stay or a block is drawn: by its state (a booking), by where it comes from (a portal) or as closed by the host. A pending
- * stay of the booking site that is not a request to answer is a checkout where the guest is paying right now (dotted edge); any
- * other pending stay (one the host entered and has yet to confirm) and a "pay at the property" request wait for the host (dashed).
- */
 export function stayKindOf(item: HostCalendarStayItem): CalendarKind {
   switch (item.type) {
     case 'Ical':
@@ -226,7 +187,6 @@ export function stayKindOf(item: HostCalendarStayItem): CalendarKind {
   }
 }
 
-/** The rows of the Timeline: the properties as the API lists them, each with its bars on lanes and its marks on their days. */
 export function buildTimelineRows(calendar: HostCalendarResponse, start: string, zoom: number, today: string): TimelineRow[] {
   const windowEnd = addDays(start, zoom - 1);
   const byProperty = new Map<string, HostCalendarItem[]>();
@@ -264,7 +224,6 @@ export function buildTimelineRows(calendar: HostCalendarResponse, start: string,
   });
 }
 
-/** The kind of drawer an item opens (`useDetailDrawer`): the booking has its own, the others are registered in `config/detail-kinds`. */
 export function drawerKindOf(item: HostCalendarItem): 'booking' | 'ical' | 'block' | 'intervention' {
   switch (item.type) {
     case 'Booking':
@@ -278,9 +237,6 @@ export function drawerKindOf(item: HostCalendarItem): 'booking' | 'ical' | 'bloc
   }
 }
 
-/* ----------------------------------------------------------------------------------------------------------------- Words */
-
-/** Where a stay came from, in words: the booking site, by hand, a portal (each portal of the channel manager by its own name, `booking.channels.*`). */
 export function channelLabel(channel: HostCalendarItemChannel | undefined, t: TFunction): string {
   switch (channel) {
     case 'Direct':
@@ -303,18 +259,15 @@ export function channelLabel(channel: HostCalendarItemChannel | undefined, t: TF
   }
 }
 
-/** Who the stay is of, or where the block comes from: what the bar says. */
 export function stayItemTitle(item: HostCalendarStayItem, t: TFunction): string {
   if (item.type === 'Booking') return item.guestName?.trim() || t('booking.calendar.guestUnknown');
   return blockSourceLabel(toHostCalendarBlockEvent(item), t);
 }
 
-/** What an intervention is: the service as the supplier named it, else its category. */
 export function serviceItemTitle(item: HostCalendarServiceItem, t: TFunction): string {
   return item.serviceName?.trim() || getServiceCategoryLabel(item.category ?? '', t) || t('booking.calendar.legend.service');
 }
 
-/** "10:00–12:00" (Europe/Rome) when the intervention has a time, else an empty string. */
 export function serviceTimeText(item: HostCalendarServiceItem, language: string): string {
   const clock = (instant: string | undefined) => (instant ? formatRomeDateTime(instant, language, { hour: '2-digit', minute: '2-digit' }) : '');
   const from = clock(item.startAt);
@@ -322,7 +275,6 @@ export function serviceTimeText(item: HostCalendarServiceItem, language: string)
   return from && to ? `${from}–${to}` : from;
 }
 
-/** "dal 7 ottobre al 10 ottobre, 3 notti": the nights of a stay or a block in a sentence a screen reader reads well. */
 export function itemRangeText(item: HostCalendarStayItem, t: TFunction, language: string): string {
   const day = (value: string) => formatStayDate(value, language, { day: 'numeric', month: 'long' });
   return t('booking.calendar.timeline.range', { arrival: day(item.from), departure: day(item.to), count: nightsBetween(item.from, item.to) });

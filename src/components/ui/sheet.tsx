@@ -9,7 +9,6 @@ const Sheet = SheetPrimitive.Root;
 const SheetTrigger = SheetPrimitive.Trigger;
 const SheetPortal = SheetPrimitive.Portal;
 
-/** Accessible (screen-reader only) label of the close button. */
 function SheetCloseLabel() {
   const { t } = useTranslation();
   return <span className="sr-only">{t('shared.close')}</span>;
@@ -22,7 +21,6 @@ const SheetOverlay = React.forwardRef<
   <SheetPrimitive.Overlay
     ref={ref}
     className={cn(
-      // The same layer as a dialog (60%): the page stays readable behind it. The sheet from the bottom dims less (below).
       'fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className,
     )}
@@ -31,7 +29,6 @@ const SheetOverlay = React.forwardRef<
 ));
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
-/** Pulled down this far, or less but fast enough, the sheet from the bottom lets go (px, px, px per ms). */
 const DRAG_CLOSE_DISTANCE = 96;
 const DRAG_FLICK_DISTANCE = 32;
 const DRAG_FLICK_SPEED = 0.5;
@@ -53,7 +50,6 @@ function SheetHandle({ onClose, className }: { onClose: () => void; className?: 
   const place = (event: React.PointerEvent<HTMLElement>, distance: number, following: boolean) => {
     const sheet = event.currentTarget.closest<HTMLElement>('[data-sheet-side], [data-dialog-sheet], [data-detail-sheet]');
     if (!sheet) return;
-    // `--sheet-drag` is where the closing animation starts from (`styles/sheet-bottom.css`).
     sheet.style.setProperty('--sheet-drag', `${distance}px`);
     sheet.style.transform = distance > 0 ? `translateY(${distance}px)` : '';
     sheet.style.transition = following ? 'none' : 'transform 200ms ease-out';
@@ -103,7 +99,6 @@ const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content> & {
     side?: 'left' | 'right' | 'bottom';
-    /** `false` draws no dark layer over the page: a panel beside the content that stays in use (the days of the calendar), used with `modal={false}` on the `Sheet`. */
     overlay?: boolean;
   }
 >(({ side = 'left', overlay = true, className, children, ...props }, ref) => {
@@ -115,13 +110,11 @@ const SheetContent = React.forwardRef<
         ref={ref}
         data-sheet-side={side}
         className={cn(
-          // The side panels slide on the spring of the sheet from the bottom (`styles/sheet-bottom.css`) and leave faster.
           'fixed z-50 flex h-full flex-col gap-4 border bg-background p-0 shadow-lg transition ease-[cubic-bezier(0.32,0.72,0,1)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:duration-400',
           side === 'left' &&
             'inset-y-0 left-0 w-3/4 max-w-sm data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
           side === 'right' &&
             'inset-y-0 right-0 w-3/4 max-w-sm data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
-          // From the bottom edge, as tall as its content up to most of the screen, clear of the home indicator of a phone.
           side === 'bottom' &&
             'inset-x-0 bottom-0 h-auto max-h-[85dvh] gap-0 rounded-t-2xl border-b-0 pb-[env(safe-area-inset-bottom)]',
           className,
@@ -134,7 +127,6 @@ const SheetContent = React.forwardRef<
           ref={closeRef}
           className={cn(
             'absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none',
-            // A touch target: the handle is for the finger that can drag, this is for everyone else.
             side === 'bottom' && 'right-2 top-1.5 flex h-11 w-11 items-center justify-center rounded-full',
           )}
         >
@@ -164,7 +156,6 @@ const SheetTitle = React.forwardRef<
 ));
 SheetTitle.displayName = SheetPrimitive.Title.displayName;
 
-/** What the sheet is about, in a sentence: a screen reader reads it when the sheet opens (the tip of `HelpTip`, UI-07). */
 const SheetDescription = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>

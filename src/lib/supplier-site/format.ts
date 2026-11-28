@@ -3,11 +3,6 @@ import { addDays, formatStayDate, romeWallClock, todayInRome } from '@/lib/stay-
 
 const pad = (value: number) => String(value).padStart(2, '0');
 
-/**
- * A free slot as a person says it: "oggi alle 14:00", "domani alle 09:30", "giovedì 9 ottobre alle 14:00". The day and the
- * clock are those of Rome (the supplier works there), whatever the time zone of the browser; an instant that is not a date
- * gives an empty string.
- */
 export function formatSlotLabel(startUtc: string, t: TFunction, locale: string): string {
   const clock = romeWallClock(startUtc);
   if (!clock) return '';
@@ -19,7 +14,6 @@ export function formatSlotLabel(startUtc: string, t: TFunction, locale: string):
   return t('supplierSite.slot.day', { day, time });
 }
 
-/** The time the supplier has to answer a booking (its setting), in words and exact: "45 minuti", "3 ore". */
 export function formatDeadline(minutes: number, t: TFunction): string {
   if (minutes < 90) return t('supplierSite.deadline.minutes', { count: minutes });
   return t('supplierSite.deadline.hours', { count: Math.round(minutes / 60) });
@@ -34,11 +28,6 @@ export function formatTypicalResponse(minutes: number, t: TFunction): string {
   return t('supplierSite.responseTime.hours', { count: Math.round(minutes / 60) });
 }
 
-/**
- * A stretch of time as a person says it, on the clock of Rome: "giovedì 5 novembre alle 09:00–11:00"; an end on another day is said whole.
- * The two instants are the UTC ones the server gave (the offer carries the Rome offset next to them, which is what keeps the two passes of
- * the hour that happens twice apart). An end that is not a date leaves only the start.
- */
 export function formatSlotRange(startUtc: string, endUtc: string, t: TFunction, locale: string): string {
   const start = formatSlotLabel(startUtc, t, locale);
   const startClock = romeWallClock(startUtc);

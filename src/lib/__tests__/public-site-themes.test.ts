@@ -21,7 +21,6 @@ describe('public-site-themes', () => {
     ['terra', 'terra'],
     [' Mare ', 'mare'],
     ['CITTA', 'citta'],
-    // Ids from before DB-01, read as the theme that replaces them (the backend rewrites the stored ones).
     ['montagna', 'terra'],
     [' Urban ', 'citta'],
     [null, 'terra'],

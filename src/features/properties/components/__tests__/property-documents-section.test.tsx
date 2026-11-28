@@ -26,7 +26,6 @@ const documents: PropertyDocumentDto[] = [
   },
 ];
 
-/** An APE uploaded before its code and class were read automatically. */
 const APE_TO_IDENTIFY: PropertyDocumentDto = {
   id: 'doc-ape',
   fileName: 'ape.pdf',
@@ -87,8 +86,6 @@ describe('PropertyDocumentsSection (FD-07, A2-03/A2-31)', () => {
     const mutate = mockDownload();
     render(<PropertyDocumentsSection propertyId={PROPERTY_ID} documents={documents} />);
 
-    // No anchor to the file: on Vercel a relative href is rewritten to index.html and the
-    // document is private anyway.
     expect(screen.queryAllByRole('link')).toHaveLength(0);
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Scarica' })[0]);
@@ -119,7 +116,6 @@ describe('PropertyDocumentsSection (FD-07, A2-03/A2-31)', () => {
   });
 
   it('apeWithoutIdentification_editAndSave_sendsCodeAndClass', async () => {
-    // LT-10: the contract states the APE code and energy class; they are entered on the APE document.
     mockDownload();
     const mutateAsync = vi.fn().mockResolvedValue(undefined);
     vi.mocked(propertyQueries.useUpdateApeIdentification).mockReturnValue({
@@ -156,7 +152,6 @@ describe('PropertyDocumentsSection (FD-07, A2-03/A2-31)', () => {
   });
 
   it('apeWithoutIdentification_readFromTheApe_asksTheServerToReadTheFile', () => {
-    // The code and the class come from the file (and, for a code it does not show, from the register of the region): no typing.
     mockDownload();
     const mutate = mockRead();
     render(<PropertyDocumentsSection propertyId={PROPERTY_ID} documents={[APE_TO_IDENTIFY]} />);
@@ -177,7 +172,6 @@ describe('PropertyDocumentsSection (FD-07, A2-03/A2-31)', () => {
   });
 
   it('latestApeWithoutIdentification_isReadByItself_anOlderOneOnlyOnRequest', () => {
-    // The latest APE is the one the contract states: nobody has to ask for its code and class.
     mockDownload();
     const older: PropertyDocumentDto = { ...APE_TO_IDENTIFY, id: 'doc-ape-old', uploadedAt: '2026-09-01T10:00:00Z' };
     render(<PropertyDocumentsSection propertyId={PROPERTY_ID} documents={[older, APE_TO_IDENTIFY]} />);

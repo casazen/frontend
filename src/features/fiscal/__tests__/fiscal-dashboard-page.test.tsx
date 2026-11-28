@@ -135,7 +135,6 @@ describe('FiscalDashboardPage (CO-18, CO-19)', () => {
     const select = await screen.findByTestId('fiscal-regime-select-p-irpef');
     expect(select).toBeEnabled();
     expect(screen.getByTestId('fiscal-assigned-p-irpef')).toHaveTextContent(i18n.t('fiscal.notAssigned'));
-    // One apartment only: the 21% designation is still available (not only with exactly two properties).
     expect(screen.queryByTestId('fiscal-primary-p-irpef')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('fiscal-confirm-p-irpef'));
 

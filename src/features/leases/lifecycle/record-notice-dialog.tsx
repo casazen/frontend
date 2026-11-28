@@ -28,14 +28,11 @@ function NoticeForm({ lease, subject, onClose }: Omit<RecordNoticeDialogProps, '
   const [from, setFrom] = useState<LeaseNoticeParty | null>(null);
   const [on, setOn] = useState('');
 
-  // From the first day of the lease up to today: the server refuses any other day.
   const dateValid = isStayDate(on) && on <= today && (start === '' || on >= start);
 
-  /** Said once the notice is recorded: where the lease ends now, that it may have come late (without a figure) and, if it can be, «Annulla». */
   function announce(detail: LeaseDetail) {
     const message = t('leaseLifecycle.notice.recorded', { date: longDay(leaseTermEnd(detail), i18n.language) });
     const description = detail.noticeWarning ? t('leaseLifecycle.notice.possiblyLate') : undefined;
-    // The server takes a notice back only while the period has not ended: after that «Annulla» would promise what cannot be done.
     if (parseStayDate(leaseTermEnd(detail)) < todayInRome()) {
       toast.success(message, { description });
       return;
@@ -51,14 +48,13 @@ function NoticeForm({ lease, subject, onClose }: Omit<RecordNoticeDialogProps, '
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    // The window is drawn outside the page but sits inside it for React: the submit must not go on to a form around the page.
     event.stopPropagation();
     if (from === null || !dateValid || record.isPending) return;
     let detail: LeaseDetail;
     try {
       detail = await record.mutateAsync({ leaseId: lease.id, input: { from, on } });
     } catch {
-      return; // The hook told why and read the lease again: the window stays, with what was typed.
+      return;
     }
     onClose();
     announce(detail);

@@ -14,7 +14,6 @@ import { isRliRegistrationInProgress } from '@/lib/rli-registration-state';
 
 export const LEASES_KEY = 'leases';
 
-/** What a draft that waits to be deleted is held under (`holdForUndo`, LR-10): the same key keeps it out of every list meanwhile. */
 export const leaseDraftDeleteKey = (leaseId: string) => `lease-draft-delete:${leaseId}`;
 
 /**
@@ -42,10 +41,6 @@ export function useLeases(
   });
 }
 
-/**
- * Lease detail (with its registration). While a provider works on the RLI registration the detail is polled, so the
- * outcome (registered or failed) shows up without a reload.
- */
 export function useLease(id: string) {
   return useQuery({
     queryKey: [LEASES_KEY, id],
@@ -77,11 +72,6 @@ export function useLeaseNextStep(id: string) {
   });
 }
 
-/**
- * Where the lease stands on its path (`stage`, LR-01b), read from the same row of the list as its next step: the same request and the
- * same cache as `useLeaseNextStep`, so the guide knows the stage when the sheet appears and costs no call of its own. The server decides
- * the stage; `undefined` when the list has no row for the lease or does not answer (the guide then falls back to the status).
- */
 export function useLeaseListStage(id: string) {
   return useQuery({
     queryKey: [LEASES_KEY, undefined],
@@ -115,7 +105,6 @@ export function useCreateCfDraft() {
   });
 }
 
-/** LT-02: the signature panel (persisted signers, provider availability, final contract availability). */
 export function useLeaseSigning(id: string) {
   return useQuery({
     queryKey: [LEASES_KEY, id, 'signing'],
@@ -124,7 +113,6 @@ export function useLeaseSigning(id: string) {
   });
 }
 
-/** Provider path only: the API sends the contract to the e-signature provider and returns the signing links. */
 export function useInitiateSigning() {
   const queryClient = useQueryClient();
 
@@ -133,7 +121,6 @@ export function useInitiateSigning() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
-      // Links created, nothing signed yet: the toast says so.
       toast.success(i18n.t('toast.signingLinksCreated'));
     },
     onError: (error) => {
@@ -142,7 +129,6 @@ export function useInitiateSigning() {
   });
 }
 
-/** LT-02 offline signature: upload of the contract signed by every party with the stipula date. */
 export function useDeclareOfflineSignature() {
   const queryClient = useQueryClient();
 
@@ -160,7 +146,6 @@ export function useDeclareOfflineSignature() {
   });
 }
 
-/** LT-02: stipula date of a lease signed before CasaZen recorded it. */
 export function useDeclareStipula() {
   const queryClient = useQueryClient();
 
@@ -194,11 +179,9 @@ export function useTriggerRegistration() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
-      // Sent to the provider is not registered: the toast says so (A7-01).
       toast.success(i18n.t('toast.registrationSubmitted'));
     },
     onError: (error, { id }) => {
-      // A provider failure is recorded by the server (registration failed, lease signed): show the new state.
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.registrationSubmitFailed'));
@@ -206,7 +189,6 @@ export function useTriggerRegistration() {
   });
 }
 
-/** LT-01: manual registration (number or protocol, date and receipt PDF declared by the landlord). */
 export function useDeclareManualRegistration() {
   const queryClient = useQueryClient();
 
@@ -224,10 +206,6 @@ export function useDeclareManualRegistration() {
   });
 }
 
-/**
- * Tax advisory of the lease (LT-08), recomputed with the data the landlord enters; the previous result stays shown meanwhile.
- * `enabled: false` for a lease the comparison means nothing for yet (a draft with no rent).
- */
 export function useRliAdvisory(id: string, input?: CedolareAdvisoryInput, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [LEASES_KEY, id, 'rli', 'advisory', input ?? null],
@@ -265,7 +243,6 @@ export function useDeclareQuesturaDeliveryDate() {
     mutationFn: ({ id, deliveryDate }: { id: string; deliveryDate: string | null }) =>
       leasesApi.declareQuesturaDeliveryDate(id, deliveryDate),
     onSuccess: () => {
-      // The whole family, not only this lease: its row in the list is where the next step is read (`useLeaseNextStep`).
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       toast.success(i18n.t('toast.questuraDeliveryDateSaved'));
     },

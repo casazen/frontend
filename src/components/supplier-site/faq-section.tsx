@@ -5,10 +5,6 @@ import { buildInquiryPath } from '@/lib/supplier-site/booking-params';
 import type { SiteModel } from '@/lib/supplier-site/site-model';
 import { Reveal } from './reveal';
 
-/**
- * The questions the supplier answered, as native `<details>` (they work without script and with the keyboard). Beside them, while
- * the bookings are open, the way to ask a question of one's own: the request on measure. There is no phone and no e-mail to offer.
- */
 export function FaqSection({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
 

@@ -18,9 +18,7 @@ export interface CinComplianceSummary {
   valid: number;
   missing: number;
   invalid: number;
-  /** Days from today (Europe/Rome) to the deadline: 0 on the day, negative after it, null without a deadline. */
   daysUntilDeadline: number | null;
-  /** Configured deadline (`YYYY-MM-DD`), null when none is set. */
   deadline: string | null;
   deadlineStatus: CinDeadlineStatus;
   hasNonCompliant: boolean;

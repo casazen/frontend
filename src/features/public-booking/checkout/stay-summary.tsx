@@ -21,12 +21,10 @@ import '@/features/public-booking/checkout/checkout.css';
 interface StaySummaryProps {
   extras?: CheckoutExtraSelection[];
   mode: CheckoutMode;
-  /** Takes the guest back to the first step; absent once the booking is made, when the stay is fixed. */
   onEdit?: () => void;
   variant?: 'aside' | 'sheet';
 }
 
-/** What the cancellation gives back for these dates, only if the system keeps the promise (the guest can cancel by themselves). */
 function cancellationLine(model: ReturnType<typeof useBooking>, language: string, t: TFunction): string | null {
   const { quote, property } = model;
   if (quote.status !== 'ready') return null;
@@ -128,10 +126,6 @@ export function StaySummary({ mode, extras, onEdit, variant = 'aside' }: StaySum
   );
 }
 
-/**
- * On a phone and a tablet the summary is behind a bar at the foot of the page: «Totale · Dettagli». The bar leaves room for itself
- * (`pb-24` of the page) so it covers no button.
- */
 export function SummaryBar({ mode, extras, onEdit }: Pick<StaySummaryProps, 'mode' | 'extras' | 'onEdit'>) {
   const { t, i18n } = useTranslation();
   const isDesktop = useMediaQuery(FROM_DESKTOP_QUERY);
