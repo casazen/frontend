@@ -334,7 +334,9 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
     await expectStage(page, 'presence');
     expect(identity.calls('document').map((call) => call.fields.side)).toEqual(['front', 'back']);
     await expect(page.getByTestId('checkin-identity-problem')).toHaveCount(0);
-    await expectTheCameraReleased(page);
+    // The test ends on the recording, which has opened its own camera: it is the only one live, the two of the document were let go.
+    await expectReadyToRecord(page);
+    expect(await liveCameraTracks(page)).toBe(1);
   });
 
   test('(e) a double tap on «Invia di nuovo» sends the recording that was kept once, with the same key', async ({ page }) => {
