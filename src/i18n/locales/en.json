@@ -6036,37 +6036,46 @@
     }
   },
   "guide": {
+    "ask": "Ask CasaZen",
     "button": "Guide",
-    "description": "It walks you through step by step: what you have done, what to do now and what comes next.",
+    "description": "The CasaZen manual: search, or pick what you need.",
+    "forThisPage": "On this page",
+    "fullManual": "Open the full manual (in Italian)",
     "help": {
-      "fullManual": "Full manual (in Italian): step-by-step guides and FAQ",
-      "manual": "Open the CasaZen manual",
-      "support": "Write to support",
-      "text": "The manual explains every area in plain words. If you get stuck, write to us: we will answer.",
-      "textNoSupport": "The manual explains every area in plain words.",
-      "title": "Need a hand?"
+      "support": "Write to support"
     },
     "open": "Open the guide",
+    "openChapter": "Open the chapter “{{title}}”",
     "openWithCount_one": "Open the guide: {{count}} urgent thing to do",
     "openWithCount_other": "Open the guide: {{count}} urgent things to do",
+    "search": {
+      "empty": "No results in the manual.",
+      "failed": "The manual cannot be opened right now.",
+      "label": "Search the manual",
+      "pending": "Searching the manual…",
+      "placeholder": "E.g. add a property",
+      "retry": "Try again"
+    },
     "setup": {
-      "all": "See all the steps",
       "continue": "Continue",
       "label": "The steps to set up CasaZen",
-      "now": "Now",
-      "progress": "{{done}} of {{total}} steps done",
-      "titleChecklist": "Activate your booking site",
-      "titlePath": "Get started with CasaZen"
+      "now": "Now"
     },
-    "title": "Your guide",
-    "todo": {
-      "all": "See everything to do",
-      "count_one": "{{count}} thing to do, in the order to do it.",
-      "count_other": "{{count}} things to do, in the order to do them.",
-      "countUrgent_one": "{{count}} thing to do, {{urgent}} urgent: start from the top.",
-      "countUrgent_other": "{{count}} things to do, {{urgent}} urgent: start from the top.",
-      "nothing": "Nothing to do for now: all in order.",
-      "title": "To do now"
+    "title": "User guide",
+    "topics": {
+      "faq": "FAQ",
+      "glossary": "Glossary",
+      "howTo": "How to",
+      "start": "First steps",
+      "title": "Start here"
+    },
+    "type": {
+      "faq": "Frequently asked question",
+      "flusso": "Complete walkthrough",
+      "funzione": "Feature",
+      "howto": "How to",
+      "pagina": "Chapter",
+      "termine": "Glossary term"
     },
     "welcome": {
       "intro_one": "CasaZen walks you through one step at a time: there is {{count}} step to be up and running.",
@@ -6079,7 +6088,7 @@
       "pathTitle_one": "Your path: {{count}} step",
       "pathTitle_other": "Your path: {{count}} steps",
       "promise": {
-        "guide": "The Guide at the top right always tells you what to do next.",
+        "guide": "The Guide at the top right explains how to do everything.",
         "pause": "You can stop whenever you like: pick up where you left off, nothing is lost.",
         "steps": "We show you one thing at a time, in the right order."
       },
@@ -7545,6 +7554,7 @@
       "action": "Actions",
       "booking": "Bookings",
       "guest": "Guests",
+      "guide": "Guide",
       "page": "Pages",
       "property": "Properties",
       "recent": "Recent"
@@ -7607,6 +7617,7 @@
       "action": "Action",
       "booking": "Booking",
       "guest": "Guest",
+      "guide": "Guide",
       "page": "Page",
       "property": "Property"
     },
@@ -22388,10 +22399,10 @@
         "steps": [
           "If invited, open the invitation with the recipient account. If setting up your own business, choose your role, area and plan before confirming the legal documents and proceeding to billing.",
           "Use “Pause setup” while choosing your plan or reviewing your choices. Saved choices remain in this tab for 24 hours. Reloading restores the saved step and you confirm the documents again.",
-          "When Start with CasaZen is available, the administrator can open the plan from the Short stays home. For Italian properties, choose who submits guest data and review the summary before confirming. The plan shows the next task. You can leave and return from Home or the Guide.",
+          "When Start with CasaZen is available, the administrator can open the plan from the Short stays home. For Italian properties, choose who submits guest data and review the summary before confirming. The plan shows the next task. You can leave and return from Home.",
           "Choose Short-term rentals, Long-term rentals, Administration or Suppliers. Available areas and actions depend on your role and assigned properties.",
-          "Check the area and organization at the top. On a phone, open More to switch areas. On a computer, use the sidebar selector. Choose Search to find pages you can access.",
-          "Ask CasaZen finds accessible pages by name. In short-term rentals, ask which arrivals today have incomplete check-in. Check the scope shown and open a booking to verify it. The demo uses sample records. You can also open arrivals directly from the Dashboard.",
+          "Check the area and organization at the top. On a phone, open More to switch areas. On a computer, use the sidebar selector. Choose Search to find pages you can access and topics of the manual.",
+          "Ask CasaZen finds accessible pages by name and, when you ask how to do something, points to the manual topics. In short-term rentals, ask which arrivals today have incomplete check-in. Check the scope shown and open a booking to verify it. The demo uses sample records. You can also open arrivals directly from the Dashboard.",
           "To start operations: prepare properties, check availability and rates, enter bookings, complete guest details and review upcoming reporting tasks."
         ]
       },

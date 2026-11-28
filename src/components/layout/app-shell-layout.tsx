@@ -5,6 +5,7 @@ import { useCurrentUser } from '@/queries/use-users';
 import { useUiStore } from '@/store/ui-store';
 import { cn } from '@/lib/utils';
 import { CommandPaletteProvider } from '@/components/shared/command-palette/command-palette-provider';
+import { manualSource } from '@/components/shared/command-palette/sources/manual';
 import { CommandPaletteTrigger } from '@/components/shared/command-palette/command-palette-trigger';
 import { AlertPopup } from '@/components/shared/alert-popup';
 import { DemoBanner } from '@/components/shared/demo-banner';
@@ -72,8 +73,8 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
   return (
     <AppShellContext.Provider value={shell}>
       <AskProvider area={contextKey} userId={user?.id ?? null} orgId={org?.id ?? null} orgName={organizationName}>
-        {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once it is built. */}
-        <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null}>
+        {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The manual is its remote source: what is typed is also searched in the user guide. */}
+        <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null} remoteSource={manualSource}>
           <SkipLink targetId={MAIN_CONTENT_ID} />
           <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey} data-density={compact ? 'compact' : undefined}>
             <ContextSidebar contextKey={contextKey} organizationName={organizationName} />
@@ -89,7 +90,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
                   </div>
                 )}
                 notifications={<NotificationBell />}
-                help={<GuideButton contextKey={contextKey} />}
+                help={<GuideButton />}
               />
               <main
                 id={MAIN_CONTENT_ID}

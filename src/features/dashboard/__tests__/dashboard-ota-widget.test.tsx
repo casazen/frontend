@@ -21,7 +21,6 @@ vi.mock('@/api/dashboard.api', () => ({
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));
 vi.mock('@/queries/use-users', () => ({ useCurrentUser: () => ({ user: null }) }));
 vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: [], isSuccess: true }) }));
-vi.mock('../components/home-next-step', () => ({ HomeNextStep: () => null }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));

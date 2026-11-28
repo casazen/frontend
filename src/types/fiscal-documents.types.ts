@@ -12,10 +12,6 @@
  * page, the cache of the queries or a log.
  */
 
-/** The life of a document: a draft has no number, an issued one is immutable, a discarded draft consumed no number. */
-export const FISCAL_DOCUMENT_STATUSES = ['Draft', 'Issued', 'Discarded'] as const;
-export type FiscalDocumentStatus = (typeof FISCAL_DOCUMENT_STATUSES)[number];
-
 /** The states of a document on the SDI (the Italian exchange system of electronic invoices), as the server writes them. */
 export const FISCAL_DOCUMENT_SDI_STATUSES = ['not_applicable', 'to_send', 'submitted', 'delivered', 'rejected', 'manual_declared', 'unknown'] as const;
 

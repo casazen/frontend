@@ -7,11 +7,29 @@ import type { CommandContext } from '@/components/shared/command-palette/types';
 import { getManifestEntry, hasEntryPermission, isEntryFeatureEnabled } from '@/config/route-manifest';
 import { todoActionRoute } from '@/features/todo/activity-card';
 import { isTruncatedList, typeTitle } from '@/features/todo/lib/todo-model';
+import { searchManual, type ManualHit } from '@/lib/manual/manual-search';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 
 export interface AskLink { to: string; title: string; detail?: string; state?: object }
-interface Answer { links: AskLink[]; message?: string; direct?: boolean }
+export interface AskAnswer { links: AskLink[]; guide?: ManualHit[]; message?: string; direct?: boolean }
+type Answer = AskAnswer;
 type Intent = { kind: string; term?: string };
+
+const MANUAL_WAIT_MS = 3000;
+
+async function manualAnswers(question: string): Promise<ManualHit[]> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const noAnswerInTime = new Promise<ManualHit[]>((resolve) => {
+    timer = setTimeout(() => resolve([]), MANUAL_WAIT_MS);
+  });
+  try {
+    return await Promise.race([searchManual(question, 4), noAnswerInTime]);
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 const ACTION_START = /^(?:per favore\s+)?(?:apri(?:mi)?|vai (?:a|al|alla)|porta(?:mi)? (?:a|al|alla)|mostrami|fammi vedere|voglio vedere|cerca|trova|dimmi se ci sono|dove trovo|dove si trova|come apro|open|go to|take me to|show me|find|where (?:can i |do i )?find)\s+(?:(?:il|lo|la|le|i|gli|the)\s+)?/i;
 const MONTHS = [
@@ -172,7 +190,9 @@ export async function resolveAsk(text: string, context: CommandContext, orgName:
       const hits = suggested.length ? suggested : matches(named);
       if (ACTION_START.test(text) && hits.length === 1 && normalizeText(hits[0].title) === normalizeText(intent?.term ?? named))
         return direct(hits[0].to, hits[0].title);
-      return { links: hits.slice(0, 6), message: hits.length ? t('ask.choosePage') : t('ask.noPages') };
+      const links = hits.slice(0, 6);
+      const guide = await manualAnswers(text);
+      return { links, guide, message: links.length ? t('ask.choosePage') : guide.length ? undefined : t('ask.noPages') };
     }
   }
 }

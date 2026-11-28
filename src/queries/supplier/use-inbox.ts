@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { acceptSupplierRequests, fetchSupplierChecklist, fetchSupplierDashboard, fetchSupplierInbox, fetchSupplierInboxCounts, fetchSupplierInboxItem, fetchSupplierKpis, fetchSupplierOverview, fetchSupplierToday } from '@/services/supplier-api';
-import type { SupplierInboxParams, SupplierKpiPeriod, SupplierOverviewPeriod } from '@/types/supplier';
+import { acceptSupplierRequests, fetchSupplierChecklist, fetchSupplierDashboard, fetchSupplierInbox, fetchSupplierInboxCounts, fetchSupplierInboxItem, fetchSupplierOverview, fetchSupplierToday } from '@/services/supplier-api';
+import type { SupplierInboxParams, SupplierOverviewPeriod } from '@/types/supplier';
 
 /**
  * A page of the supplier inbox (SU-08): the requests of a tab or of a status, filtered and paginated by the server. The rows of the
@@ -100,18 +100,5 @@ export function useSupplierDashboard() {
   return useQuery({
     queryKey: ['supplier', 'dashboard'],
     queryFn: fetchSupplierDashboard,
-  });
-}
-
-
-/**
- * Service-request KPIs of the supplier for `period` (SU-11). The counter of "Richieste" in the menu (UI-04a) reads the
- * current month through the same cache entry as the dashboard, and only when `enabled`.
- */
-export function useSupplierKpis(period: SupplierKpiPeriod, options?: { enabled?: boolean }) {
-  return useQuery({
-    queryKey: ['supplier', 'dashboard', 'kpis', period],
-    queryFn: () => fetchSupplierKpis(period),
-    enabled: options?.enabled ?? true,
   });
 }

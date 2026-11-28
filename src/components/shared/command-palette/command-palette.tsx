@@ -31,6 +31,7 @@ const GROUP_LABELS: Record<CommandGroup['id'], { labelKey: string }> = {
   property: { labelKey: 'commandPalette.groups.property' },
   booking: { labelKey: 'commandPalette.groups.booking' },
   guest: { labelKey: 'commandPalette.groups.guest' },
+  guide: { labelKey: 'commandPalette.groups.guide' },
 };
 
 /** What an item is, for a screen reader, in the group of the recents (where pages, properties and guests are mixed). */
@@ -40,6 +41,7 @@ const KIND_LABELS: Record<CommandKind, { labelKey: string }> = {
   property: { labelKey: 'commandPalette.kinds.property' },
   booking: { labelKey: 'commandPalette.kinds.booking' },
   guest: { labelKey: 'commandPalette.kinds.guest' },
+  guide: { labelKey: 'commandPalette.kinds.guide' },
 };
 
 /** What the screen reader is told of the results is said after the person stopped typing, not at every key. */

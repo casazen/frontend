@@ -475,8 +475,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // «Da fare» (NF-07, ADR-026): everything the system asks of the host, the most urgent first, each with its «Fallo ora»; the counter
-    // is the number of the urgent ones, on its tab and on the «Guida» of the header. The first tab of the Cruscotto after the home itself,
-    // which carries the next items as a path (`TodoPath`). The server shows each user only the items its scope reaches (HostScope), so the
+    // is the number of the urgent ones, on its tab and on the «Guida» of the header. The first tab of the Cruscotto after the home itself. The server shows each user only the items its scope reaches (HostScope), so the
     // page asks what reading the properties asks, held by every role of the area; each «Fallo ora» opens a page that asks its own permission
     // (`ACTION_ROUTE_MAP`). Not the staff page `/app/admin/activities`.
     path: '/app/short-rent/activities',

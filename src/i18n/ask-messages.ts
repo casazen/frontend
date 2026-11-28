@@ -13,6 +13,7 @@ export const askMessages = {
     taskCount_other: "Ci sono {{count}} attività aperte.",
     taskCount_zero: "Tutto in regola. Nessuna attività aperta.",
     choosePage: "Scegli la pagina che cercavi.",
+    inManual: "Nel manuale",
     title: 'Chiedi a CasaZen',
     arrivalsShortcut: 'Trova i check-in incompleti',
     draftShortcut: 'Prepara le istruzioni di arrivo',
@@ -38,7 +39,7 @@ export const askMessages = {
     nonePartial: 'Tra i dati disponibili non risultano check-in da completare.',
     manual: 'Apri gli arrivi di oggi',
     navigation: 'Pagine in questa area',
-    searchHint: 'Scrivi il nome di una pagina in questa area.',
+    searchHint: 'Scrivi il nome di una pagina o una domanda: cerco anche nel manuale.',
     clarify: 'Scegli la domanda suggerita per verificare oggi, oppure cerca una pagina per nome.',
     noPages: 'Nessuna pagina corrisponde alla ricerca.',
     states: {
@@ -77,6 +78,7 @@ export const askMessages = {
     taskCount_other: "There are {{count}} open tasks.",
     taskCount_zero: "You’re all caught up.",
     choosePage: "Choose the page you were looking for.",
+    inManual: "In the manual",
     title: 'Ask CasaZen',
     arrivalsShortcut: 'Find incomplete check-ins',
     draftShortcut: 'Prepare arrival instructions',
@@ -102,7 +104,7 @@ export const askMessages = {
     nonePartial: 'The available records show no outstanding check-ins.',
     manual: 'Open today’s arrivals',
     navigation: 'Pages in this area',
-    searchHint: 'Enter the name of a page in this area.',
+    searchHint: 'Enter the name of a page or a question: I also search the manual.',
     clarify: 'Choose the suggested question to check today, or find a page by name.',
     noPages: 'No pages match your search.',
     states: {
