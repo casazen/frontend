@@ -2,7 +2,6 @@ import { UserRound } from 'lucide-react';
 import { CALM_TONES, TONE_STYLES } from '@/components/shared/calm/calm-tone';
 import { cn } from '@/lib/utils';
 
-// Red reads as an alert: a guest is never tinted with it.
 const AVATAR_TONES = CALM_TONES.filter((tone) => tone !== 'danger');
 
 function hashOf(text: string): number {

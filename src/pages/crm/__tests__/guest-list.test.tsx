@@ -109,7 +109,6 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     const table = within(await findTable());
     expect(table.getByRole('rowheader', { name: /Mario Rossi/ })).toBeInTheDocument();
     expect(table.getByText('3 soggiorni')).toBeInTheDocument();
-    // Italian groups the thousands from five digits on, English from four: either way the amount is there, in euro.
     expect(table.getByText(/1\.?240,00/)).toBeInTheDocument();
     expect(table.getByText('14 set 2026')).toBeInTheDocument();
     expect(table.getByText('Sito diretto')).toBeInTheDocument();
@@ -339,7 +338,6 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     const empty = within(screen.getByTestId('crm-empty'));
     expect(empty.getByRole('link', { name: i18n.t('crm.list.empty.import') })).toHaveAttribute('href', '/app/short-rent/crm/segments?import=1');
     expect(empty.getByRole('link', { name: i18n.t('crm.list.empty.help') })).toHaveAttribute('href', '/app/short-rent/help#guide-guests');
-    // Nothing to search in yet: no filters, no numbers, no next step.
     expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
     expect(screen.queryByTestId('crm-overview')).not.toBeInTheDocument();
     expect(screen.queryByTestId('crm-next-step')).not.toBeInTheDocument();

@@ -49,7 +49,6 @@ function combineOverview(results: ReadonlyArray<{ data: number | undefined }>): 
   return { guests, reachableByEmail, returned, loyal };
 }
 
-// Same key as the list: whatever refreshes the list (a merge, a tag) refreshes these counts too.
 export function useCrmOverview(): CrmOverview | undefined {
   return useQueries({
     queries: OVERVIEW_FILTERS.map((filters) => ({
@@ -62,11 +61,6 @@ export function useCrmOverview(): CrmOverview | undefined {
   });
 }
 
-/**
- * One profile by its id (`GET api/crm/guests/{id}`): a reload of the page, or a link from another screen, works without the list. A
- * profile of another org or out of the caller's reach is a 404 `crm_profile_not_found`. It is read again on every visit: it changes
- * on other screens (a merge) and without any (the guest answers the confirmation e-mail).
- */
 export function useGuestCrmProfile(id: string | undefined) {
   return useQuery({
     queryKey: crmGuestKey(id ?? ''),

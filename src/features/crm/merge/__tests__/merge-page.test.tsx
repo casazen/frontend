@@ -126,7 +126,6 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
 
     const card = within(await screen.findByTestId('crm-merge-card'));
     expect(card.getAllByTestId('crm-avatar')).toHaveLength(2);
-    // The words come first for a screen reader (the heading of the card), and the two guests follow under it.
     expect(card.getAllByRole('heading')[0]).toBe(card.getByTestId('crm-merge-likelihood'));
     expect(card.getByTestId('crm-merge-open')).toHaveTextContent(i18n.t('crm.merge.card.merge'));
     expect(card.getByTestId('crm-merge-dismiss-open')).toHaveTextContent(i18n.t('crm.merge.card.notSame'));
@@ -138,7 +137,6 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
     renderPage();
 
     const text = (await screen.findByTestId('crm-merge-card')).textContent ?? '';
-    // The reason says that the birth date is the same, and that is all it says: the only date of a card is the last stay.
     expect(text).toContain('stessa data di nascita');
     expect(text).not.toMatch(/nascita[^.]*\d/i);
     expect(text).not.toMatch(/document|passaport|codice fiscale|identity|birth date of/i);

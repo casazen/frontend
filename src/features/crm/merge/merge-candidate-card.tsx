@@ -118,7 +118,6 @@ export function MergeCandidateCard({ candidate }: MergeCandidateCardProps) {
       data-candidate-id={candidate.id}
       data-likelihood={likelihood}
     >
-      {/* The words come first in the page for a screen reader and sit between the two guests for the eyes. */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center md:gap-4">
         <div className="order-2 flex items-center gap-3 md:order-none md:col-start-2 md:row-start-1 md:flex-col md:justify-center">
           <span aria-hidden="true" className="h-px flex-1 bg-border md:hidden" />

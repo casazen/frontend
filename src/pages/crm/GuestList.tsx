@@ -38,7 +38,6 @@ const NEXT_STEPS: Record<NextStepKind, { titleKey: string; detailKey: string; ct
   campaign: { titleKey: 'crm.nextStep.campaign.title', detailKey: 'crm.nextStep.campaign.detail', ctaKey: 'crm.nextStep.campaign.cta', href: NEW_CAMPAIGN_PATH },
 };
 
-/** The e-mail state of a profile, from what the list knows of its best address. */
 function emailStateOfProfile(profile: CrmProfileListItem) {
   return contactStateOf({
     hasAddress: profile.emailMasked !== '',
@@ -76,7 +75,6 @@ function MergeMark() {
   );
 }
 
-/** The tags of a profile, the first ones, and how many more there are (the rest are in the profile). */
 function TagChips({ tags }: { tags: string[] }) {
   const { t } = useTranslation();
   if (tags.length === 0) return null;
@@ -134,7 +132,6 @@ function Origin({ profile }: { profile: CrmProfileListItem }) {
   );
 }
 
-/** The first cell of a row: the face, the name, where the guest comes from, the tags and the mark of a proposal. */
 function GuestCell({ profile }: { profile: CrmProfileListItem }) {
   return (
     <div className="flex min-w-0 items-center gap-3">

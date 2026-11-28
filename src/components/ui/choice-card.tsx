@@ -9,9 +9,7 @@ export interface ChoiceCardProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   title: React.ReactNode;
   description?: React.ReactNode;
   icon?: LucideIcon;
-  /** A picture or any other content shown in place of the icon (a photo of the house). Decorative: the title says what is chosen. */
   media?: React.ReactNode;
-  /** For the card (the label), not for the input. */
   className?: string;
 }
 

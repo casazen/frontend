@@ -5,7 +5,6 @@ const DAYS_IN_WEEK = 7;
 const DAYS_IN_MONTH = 30;
 const DAYS_IN_YEAR = 365;
 
-/** The locale the money and the numbers of the CRM screens are written in, from the language of the app. */
 function localeOf(language: string): string {
   return language.startsWith('en') ? 'en-GB' : 'it-IT';
 }
@@ -36,7 +35,6 @@ export function formatRelativeDay(value: string | null | undefined, language: st
   return format.format(Math.trunc(days / DAYS_IN_YEAR), 'year');
 }
 
-/** The day of an instant (the moment a consent was recorded, a review was published), on the Europe/Rome calendar. `null` when it is not a date. */
 export function formatInstantDay(value: string | null | undefined, language: string): string | null {
   if (!value) return null;
   const text = formatRomeDateTime(value, language, { day: 'numeric', month: 'short', year: 'numeric' });
