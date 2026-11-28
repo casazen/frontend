@@ -58,13 +58,6 @@ export function describeHealthLine(line: ConnectionHealthLine | null | undefined
   };
 }
 
-/** The key of the sentence that says what the line is: for each state, in words that fit who sends (a sender this version does not know gets the plain ones). */
-export function healthDetailKey(view: Pick<HealthLineView, 'state' | 'sender'>): string {
-  if (view.state === 'Manual') return 'connectionHealth.detail.Manual';
-  const who = view.sender === 'ChannelManager' || view.sender === 'CasaZen' ? view.sender : 'other';
-  return `connectionHealth.detail.${view.state}.${who}`;
-}
-
 /** The key of what the host does when the send is off or cannot be told, or `null` when nothing is asked of the host (nobody sends, or the sender is not known). */
 export function healthInstructionsKey(view: Pick<HealthLineView, 'state' | 'sender' | 'needsAction'>): string | null {
   if (!view.needsAction) return null;

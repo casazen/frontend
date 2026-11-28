@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Wrench } from 'lucide-react';
-import { PlainSection, StatStrip, StatTile } from '@/components/shared/calm';
+import { BedDouble, CalendarCheck, CalendarClock, CalendarDays, ClipboardList, LogIn, Plus, Wrench } from 'lucide-react';
+import { Figure, Figures, InfoCard } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { stayDateOf } from '@/features/bookings/lib/booking-price';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
@@ -22,10 +22,6 @@ interface PropertyActivityTabProps {
   canWrite: boolean;
 }
 
-/**
- * The tab Prenotazioni e interventi (SR-07d): what is linked to the property, the bookings in four numbers and the requests
- * to the suppliers, each with its stay. Both were on the first tab of the old page; here they have their own.
- */
 export function PropertyActivityTab({ property, canReadBookings, canCreateBooking, canWrite }: PropertyActivityTabProps) {
   const { t, i18n } = useTranslation();
   // The property's short-rent requests, each linked to its stay (D2): read only when this tab is open.
@@ -34,63 +30,63 @@ export function PropertyActivityTab({ property, canReadBookings, canCreateBookin
   // Who cleans at the check-out (E24/F01/US02/T01): only with the flag of the routines on (the cleaning is made by a routine) and for who may write the property (its API asks for it, as it holds a price).
   const routinesOn = useFeatureFlags().flags.routines;
 
-  const bookings = (
-    <>
-      <StatStrip label={t('property.bookings.title')}>
-        <StatTile label={t('property.bookings.total')} value={summary.totalBookings} />
-        <StatTile label={t('property.bookings.upcoming')} value={summary.upcomingBookings} />
-        <StatTile label={t('property.bookings.active')} value={summary.activeBookings} />
-        <StatTile
-          label={t('property.bookings.nextCheckIn')}
-          value={summary.nextCheckIn ? formatStayDate(stayDateOf(summary.nextCheckIn), i18n.language) : '—'}
-        />
-      </StatStrip>
-      {canCreateBooking ? (
-        <Button asChild variant="outline" size="sm" className="mt-3">
-          <Link to={propertyNewBookingPath(property.id)} data-testid="property-new-booking">
-            <Plus aria-hidden="true" className="size-4" />
-            {t('property.detail.newBooking')}
-          </Link>
-        </Button>
-      ) : null}
-    </>
-  );
-
   return (
-    <div className="space-y-8">
-      {canReadBookings ? (
-        <PlainSection
-          title={t('property.bookings.title')}
-          actionLabel={t('property.detail.allBookings')}
-          href={propertyBookingsPath(property.id)}
-          actionTestId="property-bookings-link"
-        >
-          {bookings}
-        </PlainSection>
-      ) : (
-        <PlainSection title={t('property.bookings.title')}>{bookings}</PlainSection>
-      )}
-
-      {routinesOn && canWrite ? <PropertyCleaningCard propertyId={property.id} /> : null}
-
-      <ServiceRequestsCard
-        plain
-        query={serviceRequests}
-        emptyText={t('serviceRequest.emptyForProperty')}
-        showStay
-        canManage={canWrite}
-        testId="property-service-requests"
+    <div className="@container space-y-4">
+      <InfoCard
+        icon={CalendarDays}
+        title={t('property.bookings.title')}
         action={
-          canReadBookings ? (
+          canReadBookings ? { label: t('property.detail.allBookings'), href: propertyBookingsPath(property.id), testId: 'property-bookings-link' } : undefined
+        }
+      >
+        <Figures className="grid-cols-2 @2xl:grid-cols-4">
+          <Figure icon={CalendarCheck} label={t('property.bookings.total')} size="lg">
+            {summary.totalBookings}
+          </Figure>
+          <Figure icon={LogIn} label={t('property.bookings.upcoming')} size="lg">
+            {summary.upcomingBookings}
+          </Figure>
+          <Figure icon={BedDouble} label={t('property.bookings.active')} size="lg">
+            {summary.activeBookings}
+          </Figure>
+          <Figure icon={CalendarClock} label={t('property.bookings.nextCheckIn')} size="lg">
+            {summary.nextCheckIn ? formatStayDate(stayDateOf(summary.nextCheckIn), i18n.language, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+          </Figure>
+        </Figures>
+        {canCreateBooking ? (
+          <div>
             <Button asChild variant="outline" size="sm">
-              <Link to={propertyServiceRequestPath(property.id)} data-testid="property-request-service-btn">
-                <Wrench aria-hidden="true" className="size-4" />
-                {t('property.list.actions.requestService')}
+              <Link to={propertyNewBookingPath(property.id)} data-testid="property-new-booking">
+                <Plus aria-hidden="true" className="size-4" />
+                {t('property.detail.newBooking')}
               </Link>
             </Button>
-          ) : undefined
-        }
-      />
+          </div>
+        ) : null}
+      </InfoCard>
+
+      <div className="grid min-w-0 gap-4 @4xl:grid-cols-2 @4xl:items-start">
+        {routinesOn && canWrite ? <PropertyCleaningCard propertyId={property.id} /> : null}
+
+        <ServiceRequestsCard
+          icon={ClipboardList}
+          query={serviceRequests}
+          emptyText={t('serviceRequest.emptyForProperty')}
+          showStay
+          canManage={canWrite}
+          testId="property-service-requests"
+          action={
+            canReadBookings ? (
+              <Button asChild variant="outline" size="sm">
+                <Link to={propertyServiceRequestPath(property.id)} data-testid="property-request-service-btn">
+                  <Wrench aria-hidden="true" className="size-4" />
+                  {t('property.list.actions.requestService')}
+                </Link>
+              </Button>
+            ) : undefined
+          }
+        />
+      </div>
     </div>
   );
 }

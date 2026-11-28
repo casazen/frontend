@@ -2,8 +2,9 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Copy, Loader2, Printer, QrCode, RotateCw } from 'lucide-react';
 import { toast } from 'sonner';
-import { PlainSection } from '@/components/shared/calm';
+import { InfoCard } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
+import { ManualHint } from '@/components/shared/manual-hint';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,7 +105,10 @@ export function WelcomeQrCard({ propertyId, propertyName }: WelcomeQrCardProps) 
   } else if (!active) {
     body = (
       <div className="space-y-3" data-testid="welcome-qr-none">
-        <p className="text-sm">{t('property.detail.welcomeQr.none')}</p>
+        <p className="flex items-center gap-2 text-sm text-foreground/70">
+          <QrCode aria-hidden="true" className="size-4 shrink-0" />
+          {t('property.detail.welcomeQr.none')}
+        </p>
         {create.isError ? (
           <p className="text-sm text-destructive" role="alert" data-testid="welcome-qr-create-error">
             {getProblemMessage(create.error, t) ?? t('property.detail.welcomeQr.createFailed')}
@@ -125,32 +129,34 @@ export function WelcomeQrCard({ propertyId, propertyName }: WelcomeQrCardProps) 
     );
   } else {
     body = (
-      <div className="grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start" data-testid="welcome-qr-active">
+      <div className="flex flex-wrap items-start gap-4" data-testid="welcome-qr-active">
         {image ? (
           <img
             src={image}
             alt={t('property.detail.welcomeQr.qrAlt', { name: propertyName })}
-            className="size-40 rounded-md border bg-white p-2"
+            className="size-32 shrink-0 rounded-md border bg-white p-2"
             data-testid="welcome-qr-image"
           />
         ) : (
-          <div className="size-40 rounded-md border bg-muted motion-safe:animate-pulse" aria-hidden="true" />
+          <div className="size-32 shrink-0 rounded-md border bg-muted motion-safe:animate-pulse" aria-hidden="true" />
         )}
-        <div className="min-w-0 space-y-3">
+        <div className="min-w-48 flex-1 space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="welcome-qr-link">{t('property.detail.welcomeQr.linkLabel')}</Label>
+            <Label htmlFor="welcome-qr-link" className="sr-only">
+              {t('property.detail.welcomeQr.linkLabel')}
+            </Label>
             <div className="flex gap-2">
               <Input
                 id="welcome-qr-link"
                 readOnly
                 value={url}
                 onFocus={(event) => event.currentTarget.select()}
-                className="font-mono text-xs"
+                className="min-w-0 font-mono text-xs"
                 data-testid="welcome-qr-link"
               />
-              <Button type="button" variant="outline" onClick={() => void copy()} data-testid="welcome-qr-copy">
+              <Button type="button" variant="outline" size="icon" className="min-h-11 min-w-11 shrink-0" onClick={() => void copy()} data-testid="welcome-qr-copy">
                 {copied ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
-                {copied ? t('property.detail.welcomeQr.copied') : t('property.detail.welcomeQr.copy')}
+                <span className="sr-only">{copied ? t('property.detail.welcomeQr.copied') : t('property.detail.welcomeQr.copy')}</span>
               </Button>
             </div>
           </div>
@@ -170,8 +176,16 @@ export function WelcomeQrCard({ propertyId, propertyName }: WelcomeQrCardProps) 
   }
 
   return (
-    <PlainSection title={t('property.detail.welcomeQr.title')} data-testid="welcome-qr-card">
-      <p className="text-sm text-muted-foreground">{t('property.detail.welcomeQr.description')}</p>
+    <InfoCard
+      icon={QrCode}
+      title={t('property.detail.welcomeQr.title')}
+      hint={
+        <ManualHint page="immobili" anchor="stampare-il-qr-di-benvenuto" title={t('property.detail.welcomeQr.title')}>
+          {t('property.detail.welcomeQr.description')}
+        </ManualHint>
+      }
+      data-testid="welcome-qr-card"
+    >
       {body}
       <ConfirmationDialog
         open={confirmRenew}
@@ -190,6 +204,6 @@ export function WelcomeQrCard({ propertyId, propertyName }: WelcomeQrCardProps) 
           </p>
         ) : null}
       </ConfirmationDialog>
-    </PlainSection>
+    </InfoCard>
   );
 }

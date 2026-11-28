@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CalendarSync, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { CalendarOff, CalendarSync, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { InfoCard } from '@/components/shared/calm';
+import { ManualHint } from '@/components/shared/manual-hint';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -42,11 +42,6 @@ const STATUS_BADGE: Record<PropertyIcalImportStatus, BadgeProps['variant']> = {
   Syncing: 'secondary',
 };
 
-/**
- * iCal calendars of a property (PC-11, PC-13): the import feeds (Airbnb, Booking.com, others), each with its translated
- * state, last sync and error, "sync now" and "disconnect"; the form to link another one; the export link for the OTAs.
- * Every failed action shows a toast and the same message inline, next to where it happened.
- */
 export function IcalSettings({ propertyId }: IcalSettingsProps) {
   const { t } = useTranslation();
   const feeds = usePropertyIcalFeeds(propertyId);
@@ -70,51 +65,57 @@ export function IcalSettings({ propertyId }: IcalSettingsProps) {
   };
 
   return (
-    <Card data-testid="property-ical-settings">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CalendarSync className="h-5 w-5" />
-          {t('ical.title')}
-        </CardTitle>
-        <CardDescription>{t('ical.description')}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <section className="space-y-3" aria-labelledby="ical-feeds-title">
-          <h3 id="ical-feeds-title" className="text-sm font-medium">
-            {t('ical.feedsTitle')}
-          </h3>
-          {feeds.isLoading ? (
-            <div className="flex justify-center py-4" data-testid="ical-feeds-loading">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            </div>
-          ) : feeds.isError ? (
-            <div className="space-y-2 rounded-md border border-destructive/40 p-3" role="alert">
-              <p className="text-sm text-destructive">{t('ical.feedsLoadError')}</p>
-              <Button type="button" variant="outline" size="sm" onClick={() => void feeds.refetch()}>
-                {t('ical.retry')}
-              </Button>
-            </div>
-          ) : !feeds.data?.length ? (
-            <p className="text-sm text-muted-foreground">{t('ical.noFeeds')}</p>
-          ) : (
-            <ul className="space-y-3">
-              {feeds.data.map((feed) => (
-                <FeedRow
-                  key={feed.id}
-                  propertyId={propertyId}
-                  feed={feed}
-                  onRemove={() => openRemove(feed)}
-                  removing={removeFeed.isPending && removeFeed.variables === feed.id}
-                />
-              ))}
-            </ul>
-          )}
-        </section>
+    <div className="@container min-w-0" data-testid="property-ical-settings">
+      <div className="grid min-w-0 gap-4 @3xl:grid-cols-2 @3xl:items-start">
+        <InfoCard
+          icon={CalendarSync}
+          title={t('ical.title')}
+          hint={
+            <ManualHint page="canali-octorate" anchor="collegare-un-calendario-ical" title={t('ical.title')}>
+              {t('ical.description')}
+            </ManualHint>
+          }
+        >
+          <section className="space-y-3" aria-labelledby="ical-feeds-title">
+            <h3 id="ical-feeds-title" className="sr-only">
+              {t('ical.feedsTitle')}
+            </h3>
+            {feeds.isLoading ? (
+              <div className="flex justify-center py-4" data-testid="ical-feeds-loading">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : feeds.isError ? (
+              <div className="space-y-2 rounded-md border border-destructive/40 p-3" role="alert">
+                <p className="text-sm text-destructive">{t('ical.feedsLoadError')}</p>
+                <Button type="button" variant="outline" size="sm" onClick={() => void feeds.refetch()}>
+                  {t('ical.retry')}
+                </Button>
+              </div>
+            ) : !feeds.data?.length ? (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CalendarOff aria-hidden="true" className="size-4 shrink-0" />
+                {t('ical.noFeeds')}
+              </p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {feeds.data.map((feed) => (
+                  <FeedRow
+                    key={feed.id}
+                    propertyId={propertyId}
+                    feed={feed}
+                    onRemove={() => openRemove(feed)}
+                    removing={removeFeed.isPending && removeFeed.variables === feed.id}
+                  />
+                ))}
+              </ul>
+            )}
+          </section>
 
-        <AddFeedForm propertyId={propertyId} />
+          <AddFeedForm propertyId={propertyId} />
+        </InfoCard>
 
         <IcalExportSection propertyId={propertyId} />
-      </CardContent>
+      </div>
 
       <Dialog open={feedToRemove !== null} onOpenChange={(open) => !open && closeRemove()}>
         <DialogContent>
@@ -140,7 +141,7 @@ export function IcalSettings({ propertyId }: IcalSettingsProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 }
 
@@ -167,7 +168,7 @@ function FeedRow({ propertyId, feed, onRemove, removing }: FeedRowProps) {
       : undefined;
 
   return (
-    <li className="space-y-2 rounded-md border p-3" data-testid="ical-feed-row">
+    <li className="space-y-2 py-3 first:pt-0 last:pb-0" data-testid="ical-feed-row">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0 space-y-1">
           <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
@@ -241,7 +242,7 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
   };
 
   return (
-    <form className="space-y-3 rounded-md border p-4" onSubmit={handleSubmit} aria-labelledby="ical-add-title">
+    <form className="space-y-3 border-t border-border pt-4" onSubmit={handleSubmit} aria-labelledby="ical-add-title">
       <h3 id="ical-add-title" className="text-sm font-medium">
         {t('ical.addTitle')}
       </h3>
@@ -273,7 +274,12 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="property-ical-import">{t('ical.importUrlLabel')}</Label>
+        <div className="flex items-center gap-1">
+          <Label htmlFor="property-ical-import">{t('ical.importUrlLabel')}</Label>
+          <ManualHint page="canali-octorate" anchor="collegare-un-calendario-ical" title={t('ical.importUrlLabel')}>
+            {t('ical.importHint')}
+          </ManualHint>
+        </div>
         <Input
           id="property-ical-import"
           type="url"
@@ -290,12 +296,6 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
             {getProblemMessage(addFeed.error, t) ?? t('ical.feedAddFailed')}
           </p>
         )}
-        <p className="text-xs text-muted-foreground">
-          {t('ical.importHint')}{' '}
-          <Link to="/help/ical" className="text-primary hover:underline">
-            {t('ical.helpLink')}
-          </Link>
-        </p>
       </div>
       <Button type="submit" disabled={addFeed.isPending || !importUrl.trim()}>
         {addFeed.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

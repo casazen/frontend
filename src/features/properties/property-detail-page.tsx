@@ -231,7 +231,7 @@ export function PropertyDetailPage() {
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
         <Tabs layout="sidebar" label={t('property.detail.tabsLabel')} items={tabs} defaultValue="info" value={panel} selectTestId="property-tabs-select">
           {panel === 'info' && (
-            <div className="space-y-8">
+            <div className="space-y-6">
               <PropertyNextStep
                 property={property}
                 status={status}
@@ -240,11 +240,10 @@ export function PropertyDetailPage() {
                 onReactivate={() => activateProperty.mutate(property.id)}
                 reactivating={activateProperty.isPending}
               />
-              <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} />
-              {/* «Invio a Polizia e ISTAT» (CHK-12 point 7): who sends, whether it works. It asks `property.read` itself and shows nothing without it. */}
-              <ConnectionHealthPanel propertyId={property.id} timeZone={property.timezone} />
-              {/* The QR of the welcome page (CRM-03): only where the CRM module is on, and only for who may write the property (what its API asks). */}
-              {crmEnabled && canWrite ? <WelcomeQrCard propertyId={property.id} propertyName={property.name} /> : null}
+              <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath}>
+                <ConnectionHealthPanel propertyId={property.id} timeZone={property.timezone} />
+                {crmEnabled && canWrite ? <WelcomeQrCard propertyId={property.id} propertyName={property.name} /> : null}
+              </PropertyOverviewTab>
             </div>
           )}
           {panel === 'photos' && <PropertyPhotoManager propertyId={property.id} propertyName={property.name} canEdit={canWrite} />}

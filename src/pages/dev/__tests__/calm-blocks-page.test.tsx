@@ -24,7 +24,7 @@ describe('CalmBlocksPage (UI-16, the page of the calm blocks for developers)', (
 
     expect(screen.getByRole('heading', { level: 1, name: 'Blocchi calmi' })).toBeInTheDocument();
     for (const tone of ['neutral', 'info', 'success', 'warning', 'danger', 'long']) expect(screen.getByTestId(`focus-${tone}`)).toBeInTheDocument();
-    for (const id of ['strip-2', 'strip-3', 'strip-4', 'plain-link', 'plain-action', 'plain-bare', 'plain-long', 'day-list', 'today-list', 'week-strip', 'activity-list', 'activity-oldest', 'next-step', 'next-step-bare', 'checklist', 'checklist-long', 'home-example']) {
+    for (const id of ['strip-2', 'strip-3', 'strip-4', 'plain-link', 'plain-action', 'plain-bare', 'plain-long', 'info-card-figures', 'info-card-facts', 'info-card-long', 'day-list', 'today-list', 'week-strip', 'activity-list', 'activity-oldest', 'next-step', 'next-step-bare', 'checklist', 'checklist-long', 'home-example']) {
       expect(screen.getByTestId(id), id).toBeInTheDocument();
     }
   });

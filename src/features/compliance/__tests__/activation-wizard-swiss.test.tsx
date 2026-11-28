@@ -183,7 +183,7 @@ describe('PropertyActivationWizard, the step «Notifica degli ospiti» of a prop
     expect(stepButton('guest-registration')).toHaveAttribute('aria-current', 'step');
     expect(stepButton('guest-registration')).toHaveTextContent(t('compliance.activation.steps.guest-registration'));
     expect(panel('guest-registration')).toBeVisible();
-    expect(await within(panel('guest-registration')).findByTestId('guest-registration-summary')).toBeInTheDocument();
+    expect(await within(panel('guest-registration')).findByTestId('guest-registration-facts')).toBeInTheDocument();
     expect(within(panel('guest-registration')).getByTestId('guest-registration-card')).toHaveAttribute('data-variant', 'wizard');
     // What is missing is in the panel, once: the header of the step does not repeat it.
     expect(within(panel('guest-registration')).getByTestId('guest-registration-missing')).toHaveTextContent(t('guestRegistration.missing.ticino_structure_id_missing'));

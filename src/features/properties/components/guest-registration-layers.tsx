@@ -1,7 +1,9 @@
 import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ClipboardList, FileUp } from 'lucide-react';
 import { useDetailDrawer } from '@/components/shared/detail-drawer/use-detail-drawer';
+import { Button } from '@/components/ui/button';
 import { SWISS_LAYER_KIND, swissLayerPath } from '@/features/compliance/swiss/swiss-layer-address';
 import { WorkspaceContext } from '@/contexts/workspace-context';
 import type { GuestRegistrationDuty, GuestRegistrationRegime } from '@/types/guest-registration.types';
@@ -13,8 +15,6 @@ interface GuestRegistrationLayersProps {
   /** What CasaZen treats as the duty of the property: a host who answered that they need not notify is not offered the notification (the register is theirs to keep all the same). */
   effectiveDuty: GuestRegistrationDuty;
 }
-
-const LINK = 'inline-flex min-h-11 items-center text-sm font-medium text-primary hover:underline';
 
 /**
  * What CasaZen opens for the host from the card of the regime (E31/F02/US02/T01 and T02, casazen/backend#979): the guest register of a property in Switzerland, whatever its canton, and, where
@@ -32,28 +32,32 @@ export function GuestRegistrationLayers({ propertyId, regime, effectiveDuty }: G
   const assisted = regime.casaZenSupport === 'AssistedNotification' && effectiveDuty !== 'NotRequired';
 
   return (
-    <div className="flex flex-wrap items-center gap-x-5" data-testid="guest-registration-layers">
-      <Link
-        to={guestRegisterLayerPath(propertyId)}
-        onClick={(event) => {
-          if (drawer.open(GUEST_REGISTER_LAYER_KIND, propertyId, { opener: event.currentTarget })) event.preventDefault();
-        }}
-        className={LINK}
-        data-testid="guest-register-link"
-      >
-        {t('guestRegister.card.open')}
-      </Link>
-      {assisted ? (
+    <div className="flex flex-wrap items-center gap-2" data-testid="guest-registration-layers">
+      <Button asChild variant="outline" size="sm" className="min-h-11">
         <Link
-          to={swissLayerPath(propertyId)}
+          to={guestRegisterLayerPath(propertyId)}
           onClick={(event) => {
-            if (drawer.open(SWISS_LAYER_KIND, propertyId, { opener: event.currentTarget })) event.preventDefault();
+            if (drawer.open(GUEST_REGISTER_LAYER_KIND, propertyId, { opener: event.currentTarget })) event.preventDefault();
           }}
-          className={LINK}
-          data-testid="swiss-notification-link"
+          data-testid="guest-register-link"
         >
-          {t('swissNotification.card.open')}
+          <ClipboardList aria-hidden="true" className="size-4" />
+          {t('guestRegister.card.open')}
         </Link>
+      </Button>
+      {assisted ? (
+        <Button asChild variant="outline" size="sm" className="min-h-11">
+          <Link
+            to={swissLayerPath(propertyId)}
+            onClick={(event) => {
+              if (drawer.open(SWISS_LAYER_KIND, propertyId, { opener: event.currentTarget })) event.preventDefault();
+            }}
+            data-testid="swiss-notification-link"
+          >
+            <FileUp aria-hidden="true" className="size-4" />
+            {t('swissNotification.card.open')}
+          </Link>
+        </Button>
       ) : null}
     </div>
   );

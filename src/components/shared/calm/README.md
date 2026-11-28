@@ -22,12 +22,31 @@ block in every variant, and a composed home at the bottom.
 | `GuidePath` | Operations as one road: what is behind, the step to do now (marker, weight, button), what comes after, joined by a line. The guide of the Home («I tuoi prossimi passi»), of the «Guida» panel and of the welcome | A table, a list to sort; tinting a step to say it is late (a late deadline is said by the note) |
 | `StatStrip` / `StatTile` | Three or four numbers in a row, each with its name and, if useful, how it moves | Charts, more than four numbers (that is a report), a table |
 | `PlainSection` | A part of a page: title, one action for the whole part, content | A box around content: it has no border, background or shadow on purpose |
+| `InfoCard` | One topic of a page that sums up a thing (a property): an icon, a name, the figures or rows that matter and at most one action, as a card of a grid. The page of a property is a grid of them | A card inside another card, a second highlight, a home (that is `PlainSection`s) |
+| `IconFacts` / `IconFact` | The facts of a card, each one an icon and its value: the address, the time zone, the cleaner. The icon says what it is, so no sentence has to | A list of sentences; a fact whose icon is not obvious and that has no `label` |
+| `Figures` / `Figure` | A few numbers side by side inside a card, each with a small name and its icon above it (the prices, the four numbers of the bookings, the four facts of a rule) | The row of numbers of a home (that is `StatStrip`), a table |
 | `DayList` | Rows with a date, a title, a line under it and a direct action: the deadlines, the to-do list | A table of many columns or a list to sort and filter (that is `ListView`) |
 | `TodayList` | A `DayList` in three groups, today, tomorrow, later | |
 | `WeekStrip` | The seven days of a week, to see which have something and to choose one | A calendar with weeks and months |
 | `ActivityList` | What happened, in order, with who did it: recent activity, the history of a contract | A chat, a log to search |
 | `NextStepCard` | The one next step of a path ("Passo 3 di 7"), with its button | A checklist (that is `ChecklistCompact`, or the full list) |
 | `ChecklistCompact` | The setup checklist of a home in one line, while it is incomplete | The full list of steps |
+
+## A page of cards, and where the words went
+
+The page of a property (and the pages that sum up one thing: a lease, a supplier) is not a home: it is a grid of `InfoCard`s under the
+one `FocusBlock`. The user asked for it («troppo testo, usa icone e schede»), so on those pages the cards are right and the «plain
+sections, no cards» rule above does not apply; it still applies to the home screens. What keeps such a page calm:
+
+- A card is an icon, a name of one or two words, the figures (`Figures`, `IconFacts`) and at most one action. Never a card in a card.
+- **No explanatory paragraph on the page.** What a title used to explain is the «?» of the card (`ManualHint`, `@/components/shared/manual-hint`):
+  one sentence and the link to the section of the user manual that tells the whole story (`/guida/<page>.html#<section>`, in a new tab: the
+  manual is static files, not a route of the app). The words that stay on a card are data, a state, an action, or an error or empty state
+  that carries a decision. A page full of «?» says that the page is hard: at most three on a screen.
+- A state is an icon and a word (`StatusPill`, `StatusBadge`), never a color alone; a state is said in the header of the card, beside the title.
+- The grid is made of container queries, not of the width of the window (the sidebar of the tabs takes room): the page puts `@container` on a
+  wrapper and the grid inside it (`@2xl:grid-cols-2 @5xl:grid-cols-3`). An element cannot query itself, so the class of the container and the
+  one of the grid are never on the same element.
 
 ## The rules the blocks keep for you, and the ones they cannot
 
@@ -115,6 +134,13 @@ When there is nothing to do, the `FocusBlock` still says so ("Niente di urgente"
 renders tiles is not seen). **`StatTile`**: `label`, `value`, `tone?`, `delta?` (the text is yours: "+6% su settembre"), `href?`
 (the whole tile is the link; a chevron says so), `state?`. A tile that is not a link takes no click. One column on a phone,
 two from `sm`, three or four from `lg`.
+
+**`InfoCard`**: `icon`, `title`, `titleAs?` (`h2` default, `h3` inside a part with its own `h2`), `tone?` (the colour of the icon square),
+`status?` (a `StatusPill` or `StatusBadge`), `hint?` (a `ManualHint`), `aside?` (a button that opens a dialog), `action?` (a `CalmAction`: the
+one action of the card, in the corner) and the content as children. Extra props (`id`, `className`, `data-testid`) go to the `section`, which
+is a `region` named by its title. **`IconFacts`**: `layout?` (`stack`, default, or `inline`); **`IconFact`**: `icon`, `label?` (read by a screen
+reader and shown as the tooltip, not written on the page) and the value. **`Figures`** takes the columns from the caller (`grid-cols-2`);
+**`Figure`**: `icon`, `label`, `size?` (`sm`, `md` default, `lg`) and the number.
 
 **`PlainSection`**: `title`, `count?`, and either `actionLabel` + `href` or `actionLabel` + `onAction`; `actionAriaLabel?` and
 `actionTestId?` tell apart two actions that say the same ("Vedi tutto"). Extra props (`id`, `data-testid`) go to the `section`.

@@ -25,7 +25,7 @@ interface IstatAssistProps {
  * can never be read on the panel, so it is the support's word) with «Non funziona». The organization administrator's, and behind the flag, like the button itself: for anyone else
  * nothing is drawn and nothing is asked.
  */
-function IstatAssist({ propertyId }: IstatAssistProps) {
+function IstatAssist({ propertyId, embedded }: IstatAssistProps & { embedded: boolean }) {
   const { t } = useTranslation();
   const { contexts } = useWorkspace();
   const { flags } = useFeatureFlags();
@@ -37,7 +37,7 @@ function IstatAssist({ propertyId }: IstatAssistProps) {
 
   return (
     <div className="min-w-0 space-y-2 border-t pt-3" data-testid="istat-credentials-assist">
-      <p className="text-sm text-foreground/70">{t('istatCredentials.assist.description')}</p>
+      {embedded ? null : <p className="text-sm text-foreground/70">{t('istatCredentials.assist.description')}</p>}
       <AssistRequestButton part="compliance" context="panelIstat" propertyId={propertyId} stepDone={isPanelStepDone(step)} />
     </div>
   );
@@ -47,6 +47,7 @@ interface IstatCredentialsCardProps {
   propertyId: string;
   /** The caller may set, replace or remove them (`property.write`; the API checks again). */
   canEdit: boolean;
+  embedded?: boolean;
 }
 
 /**
@@ -55,7 +56,7 @@ interface IstatCredentialsCardProps {
  * «Do it for me» request of the host, with a reason, and each opening is in the activity log. Behind the flag `octorateOnboarding` (the caller draws it only while it is on: the endpoint
  * answers 404 while it is off). Under the credentials, the host can ask support to link the ISTAT for it and follows the request.
  */
-export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCardProps) {
+export function IstatCredentialsCard({ propertyId, canEdit, embedded = false }: IstatCredentialsCardProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const status = useIstatCredentialsStatus(propertyId);
@@ -90,14 +91,16 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
   };
 
   return (
-    <section aria-labelledby={titleId} className="min-w-0 space-y-3" data-testid="istat-credentials-card">
-      <div className="space-y-1">
-        <h2 id={titleId} className="flex min-w-0 items-center gap-2 break-words text-lg font-semibold">
-          <KeyRound aria-hidden="true" className="size-5 shrink-0" />
-          {t('istatCredentials.title')}
-        </h2>
-        <p className="text-sm text-foreground/70">{t('istatCredentials.description')}</p>
-      </div>
+    <section aria-labelledby={embedded ? undefined : titleId} className="min-w-0 space-y-3" data-testid="istat-credentials-card">
+      {embedded ? null : (
+        <div className="space-y-1">
+          <h2 id={titleId} className="flex min-w-0 items-center gap-2 break-words text-lg font-semibold">
+            <KeyRound aria-hidden="true" className="size-5 shrink-0" />
+            {t('istatCredentials.title')}
+          </h2>
+          <p className="text-sm text-foreground/70">{t('istatCredentials.description')}</p>
+        </div>
+      )}
       <div className="space-y-4">
         {status.isLoading ? (
           <p className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="istat-credentials-loading">
@@ -124,7 +127,7 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
           </div>
         )}
 
-        <p className="text-xs text-muted-foreground">{t('istatCredentials.writeOnlyHint')}</p>
+        {embedded ? null : <p className="text-xs text-muted-foreground">{t('istatCredentials.writeOnlyHint')}</p>}
 
         {canEdit && read && (
           <form className="@container min-w-0 space-y-3" onSubmit={handleSubmit} noValidate data-testid="istat-credentials-form">
@@ -132,6 +135,7 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
               values={values}
               errors={errors}
               disabled={busy}
+              hideHints={embedded}
               onChange={(field, value) => {
                 setValues((current) => ({ ...current, [field]: value }));
                 setErrors((current) => ({ ...current, [field]: undefined }));
@@ -162,7 +166,7 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
           </form>
         )}
 
-        <IstatAssist propertyId={propertyId} />
+        <IstatAssist propertyId={propertyId} embedded={embedded} />
       </div>
     </section>
   );
