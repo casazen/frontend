@@ -1,6 +1,7 @@
-import { useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BadgeCheck, Camera } from 'lucide-react';
+import { BadgeCheck, Camera, RotateCcw, RotateCw } from 'lucide-react';
+import { rotateDocumentPhoto } from '@/lib/image-capture';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
@@ -16,6 +17,13 @@ import {
   type PrefillValues,
 } from '../lib/document-prefill';
 import { ALLOGGIATI_GENDERS } from '../schemas/checkin.schema';
+
+interface ChosenPhoto {
+  file: File;
+  url: string;
+  /** Quarter turns the guest asked for, clockwise. */
+  turns: number;
+}
 
 interface DocumentReadStepProps {
   reading: boolean;
@@ -51,10 +59,38 @@ export function DocumentReadStep({
   const inputId = useId();
   const hintId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [chosen, setChosen] = useState<ChosenPhoto | null>(null);
+  const previewUrl = useRef<string | null>(null);
+
+  useEffect(() => () => {
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+  }, []);
+
+  const choose = (file: File) => {
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+    previewUrl.current = URL.createObjectURL(file);
+    setChosen({ file, url: previewUrl.current, turns: 0 });
+  };
+
+  const send = async () => {
+    if (!chosen) return;
+    const photo = chosen;
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+    previewUrl.current = null;
+    setChosen(null);
+    let ready = photo.file;
+    try {
+      ready = await rotateDocumentPhoto(photo.file, photo.turns);
+    } catch {
+      // A browser that cannot turn the picture sends it as it is: the reading tells whether it is upright.
+    }
+    onFile(ready);
+  };
 
   return (
     <div className="space-y-4" data-testid="checkin-document-step">
       <p className="text-sm text-muted-foreground">{t('checkin.scanIntro')}</p>
+      <p className="text-sm" data-testid="checkin-document-orientation">{t('checkin.scanOrientationIntro')}</p>
       <div className="rounded-md border border-dashed p-6 text-center space-y-3">
         <Camera className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden />
         <input
@@ -70,20 +106,51 @@ export function DocumentReadStep({
           onChange={(event) => {
             const file = event.target.files?.[0];
             event.target.value = '';
-            if (file) onFile(file);
+            if (file) choose(file);
           }}
         />
-        <Button
-          type="button"
-          variant={readCount > 0 ? 'outline' : 'default'}
-          disabled={reading}
-          onClick={() => inputRef.current?.click()}
-          aria-describedby={hintId}
-          data-testid="checkin-document-pick"
-        >
-          {reading ? t('checkin.scanReading') : readCount > 0 ? t('checkin.scanAnother') : t('checkin.scanButton')}
-        </Button>
-        <p id={hintId} className="text-xs text-foreground/70" data-testid="checkin-document-hint">{t('checkin.scanHint')}</p>
+        {chosen ? (
+          <div className="space-y-3" data-testid="checkin-document-preview">
+            <img
+              src={chosen.url}
+              alt={t('checkin.scanPreviewAlt')}
+              className="mx-auto max-h-64 max-w-full rounded-md object-contain transition-transform"
+              style={{ transform: `rotate(${chosen.turns * 90}deg)` }}
+            />
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button type="button" variant="outline" onClick={() => setChosen({ ...chosen, turns: chosen.turns - 1 })} data-testid="checkin-document-rotate-left">
+                <RotateCcw className="size-4" aria-hidden="true" />
+                {t('checkin.scanRotateLeft')}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setChosen({ ...chosen, turns: chosen.turns + 1 })} data-testid="checkin-document-rotate-right">
+                <RotateCw className="size-4" aria-hidden="true" />
+                {t('checkin.scanRotateRight')}
+              </Button>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button type="button" disabled={reading} onClick={() => void send()} data-testid="checkin-document-confirm">
+                {t('checkin.scanUsePhoto')}
+              </Button>
+              <Button type="button" variant="ghost" disabled={reading} onClick={() => inputRef.current?.click()} data-testid="checkin-document-choose-other">
+                {t('checkin.scanChooseOther')}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <Button
+              type="button"
+              variant={readCount > 0 ? 'outline' : 'default'}
+              disabled={reading}
+              onClick={() => inputRef.current?.click()}
+              aria-describedby={hintId}
+              data-testid="checkin-document-pick"
+            >
+              {reading ? t('checkin.scanReading') : readCount > 0 ? t('checkin.scanAnother') : t('checkin.scanButton')}
+            </Button>
+            <p id={hintId} className="text-xs text-foreground/70" data-testid="checkin-document-hint">{t('checkin.scanHint')}</p>
+          </>
+        )}
         {notArchived && (
           <p className="text-xs font-medium" data-testid="checkin-document-not-archived">
             {t('checkin.identity.documentNotArchived')}
