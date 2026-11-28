@@ -242,12 +242,15 @@ test('confirms a misread name, reuses the front after consent and submits the ve
   await page.goto('/checkin/scan-flow');
   const upload = (side: string) => ({ name: side + '.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('fixture-' + side) });
   await page.getByTestId('checkin-document-file').setInputFiles(upload('unrelated'));
+  await page.getByTestId('checkin-document-confirm').click();
   await expect(page.getByTestId('checkin-document-message')).toContainText('non è stata riconosciuta');
   await expect(page.getByTestId('checkin-scan-continue')).toHaveCount(0);
   await page.getByTestId('checkin-document-file').setInputFiles(upload('front'));
+  await page.getByTestId('checkin-document-confirm').click();
   await page.getByRole('button', { name: 'Confermo il nominativo della prenotazione' }).click();
   await expect(page.getByTestId('checkin-scan-continue')).toBeEnabled();
   await page.getByTestId('checkin-document-file').setInputFiles(upload('back'));
+  await page.getByTestId('checkin-document-confirm').click();
   await page.getByTestId('checkin-scan-continue').click();
   await expect(page.locator('#guest-0-firstName')).toHaveValue('Luca');
   await expect(page.getByTestId('checkin-add-guest')).toHaveCount(0);

@@ -413,11 +413,17 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
     );
   }
 
-  const chooseDocument = () => fireEvent.change(screen.getByTestId('checkin-document-file'), { target: { files: [photo()] } });
+  const chooseDocument = async () => {
+    fireEvent.change(screen.getByTestId('checkin-document-file'), { target: { files: [photo()] } });
+    fireEvent.click(screen.getByTestId('checkin-document-confirm'));
+    await waitFor(() => expect(publicCheckinApi.readDocument).toHaveBeenCalled());
+  };
   const guestCard = () => within(screen.getByTestId('stay-guest-0'));
 
   beforeEach(() => {
     vi.clearAllMocks();
+    URL.createObjectURL = vi.fn(() => 'blob:document-preview');
+    URL.revokeObjectURL = vi.fn();
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue(openContext);
     vi.mocked(publicCheckinApi.searchCodes).mockResolvedValue([]);
     vi.mocked(publicCheckinApi.readDocument).mockResolvedValue(zonedAnswer());
@@ -437,7 +443,7 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
     renderPage();
     await screen.findByTestId('checkin-page');
 
-    chooseDocument();
+    await chooseDocument();
     const panel = await screen.findByTestId('checkin-prefill');
     fireEvent.change(within(panel).getByTestId('checkin-prefill-value-documentNumber'), { target: { value: 'CA99999ZZ' } });
     fireEvent.click(within(panel).getByTestId('checkin-prefill-confirm'));
@@ -461,7 +467,7 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
     renderPage();
     await screen.findByTestId('checkin-page');
 
-    chooseDocument();
+    await chooseDocument();
     const panel = await screen.findByTestId('checkin-prefill');
 
     expect(publicCheckinApi.readDocument).toHaveBeenCalledTimes(1);
@@ -488,7 +494,7 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
   it('CheckInPage_TheGuestDropsTheReading_NothingGoesIntoTheFormAndThePanelIsGone', { timeout: 30_000 }, async () => {
     renderPage();
     await screen.findByTestId('checkin-page');
-    chooseDocument();
+    await chooseDocument();
     await screen.findByTestId('checkin-prefill');
 
     fireEvent.click(screen.getByTestId('checkin-prefill-discard'));
@@ -501,7 +507,7 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
   it('CheckInPage_TheGuestTypesTheDataByHandInstead_TheReadingIsLeftBehindWithItsValues', { timeout: 30_000 }, async () => {
     renderPage();
     await screen.findByTestId('checkin-page');
-    chooseDocument();
+    await chooseDocument();
     await screen.findByTestId('checkin-prefill');
 
     fireEvent.click(screen.getByTestId('checkin-enter-manually'));
@@ -514,7 +520,7 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
   it('CheckInPage_ASecondPhotoOfTheCard_AsksOnlyWhatIsStillMissingAfterTheFirst', { timeout: 30_000 }, async () => {
     renderPage();
     await screen.findByTestId('checkin-page');
-    chooseDocument();
+    await chooseDocument();
     const first = await screen.findByTestId('checkin-prefill');
     fireEvent.click(within(first).getByTestId('checkin-prefill-confirm'));
     await screen.findByTestId('checkin-document-message');
@@ -522,7 +528,7 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
     vi.mocked(publicCheckinApi.readDocument).mockResolvedValue(
       zonedAnswer({ side: 'back', guest: { issuePlace: 'Roma' }, fields: [], missing: ['dateOfBirth', 'gender', 'issuePlace'] }),
     );
-    chooseDocument();
+    await chooseDocument();
     const second = await screen.findByTestId('checkin-prefill');
 
     expect(within(second).queryAllByTestId('checkin-prefill-missing-item')).toHaveLength(0);
@@ -535,7 +541,7 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
     renderPage();
     await screen.findByTestId('checkin-page');
 
-    chooseDocument();
+    await chooseDocument();
 
     expect(await screen.findByTestId('checkin-document-message')).toHaveTextContent('Dati letti per Mario Rossi');
     expect(screen.queryByTestId('checkin-prefill')).not.toBeInTheDocument();
@@ -550,7 +556,7 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
     renderPage();
     await screen.findByTestId('checkin-page');
 
-    chooseDocument();
+    await chooseDocument();
     await screen.findByRole('button', { name: 'Confermo il nominativo della prenotazione' });
     expect(screen.queryByTestId('checkin-prefill')).not.toBeInTheDocument();
 

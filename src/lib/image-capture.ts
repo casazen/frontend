@@ -59,6 +59,37 @@ export async function frameToDocumentPhoto(frame: HTMLCanvasElement): Promise<Fi
   return new File([jpeg], 'document.jpg', { type: 'image/jpeg' });
 }
 
+// The browser applies the camera orientation while drawing: the pixels sent are upright, which the reading needs.
+export async function rotateDocumentPhoto(file: File, quarterTurns: number): Promise<File> {
+  const turns = ((quarterTurns % 4) + 4) % 4;
+
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  try {
+    const size = fitWidth(bitmap.width, bitmap.height, DOCUMENT_MAX_WIDTH);
+    const swapped = turns % 2 === 1;
+    const canvas = document.createElement('canvas');
+    canvas.width = swapped ? size.height : size.width;
+    canvas.height = swapped ? size.width : size.height;
+    try {
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('no canvas');
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.translate(canvas.width / 2, canvas.height / 2);
+      context.rotate((turns * Math.PI) / 2);
+      context.drawImage(bitmap, -size.width / 2, -size.height / 2, size.width, size.height);
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', DOCUMENT_JPEG_QUALITY));
+      if (!blob) throw new Error('not encoded');
+      return new File([blob], 'document.jpg', { type: 'image/jpeg' });
+    } finally {
+      canvas.width = 0;
+      canvas.height = 0;
+    }
+  } finally {
+    bitmap.close();
+  }
+}
+
 export type PreparedPhoto = { ok: true; blob: Blob } | { ok: false; problem: 'unsupported' | 'too_large' };
 
 async function redrawAsJpeg(file: File, maxWidth: number, quality: number): Promise<Blob | null> {
