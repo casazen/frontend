@@ -299,15 +299,6 @@ export type PropertyDocumentType =
   | 'Ape'
   | 'Other';
 
-export interface PropertyDocument {
-  id: string;
-  fileName: string;
-  storageUrl: string;
-  documentType: PropertyDocumentType;
-  uploadedBy: string;
-  uploadedAt: string;
-}
-
 export type CinStatus = 'Valid' | 'Missing' | 'Invalid';
 
 /** Public list read-model (US-001 #212) — no ownerId or internal fields. */

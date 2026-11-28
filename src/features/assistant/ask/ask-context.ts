@@ -5,7 +5,7 @@ export type AskIntent = 'search' | 'arrivals.incompleteToday' | 'booking.prepare
 export interface AskContextValue {
   canReadArrivals: boolean;
   canPrepareDraft: boolean;
-  open: (intent: AskIntent, from: HTMLElement) => void;
+  open: (intent: AskIntent, from: HTMLElement, question?: string) => void;
 }
 
 export const AskContext = createContext<AskContextValue | null>(null);

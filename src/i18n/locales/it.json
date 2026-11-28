@@ -6036,37 +6036,46 @@
     }
   },
   "guide": {
+    "ask": "Chiedi a CasaZen",
     "button": "Guida",
-    "description": "Ti accompagna passo per passo: cosa hai già fatto, cosa fare adesso e cosa viene dopo.",
+    "description": "Il manuale di CasaZen: cerca, o scegli cosa ti serve.",
+    "forThisPage": "In questa pagina",
+    "fullManual": "Apri il manuale completo",
     "help": {
-      "fullManual": "Manuale completo: guide passo passo e domande frequenti",
-      "manual": "Apri il manuale di CasaZen",
-      "support": "Scrivi all'assistenza",
-      "text": "Il manuale spiega ogni area con parole semplici. Se ti blocchi, scrivici: ti rispondiamo noi.",
-      "textNoSupport": "Il manuale spiega ogni area con parole semplici.",
-      "title": "Ti serve una mano?"
+      "support": "Scrivi all'assistenza"
     },
     "open": "Apri la guida",
+    "openChapter": "Apri il capitolo «{{title}}»",
     "openWithCount_one": "Apri la guida: {{count}} cosa urgente da fare",
     "openWithCount_other": "Apri la guida: {{count}} cose urgenti da fare",
+    "search": {
+      "empty": "Nessun risultato nel manuale.",
+      "failed": "Il manuale non si apre in questo momento.",
+      "label": "Cerca nel manuale",
+      "pending": "Cerco nel manuale…",
+      "placeholder": "Es. aggiungere un immobile",
+      "retry": "Riprova"
+    },
     "setup": {
-      "all": "Vedi tutti i passi",
       "continue": "Continua",
       "label": "I passi per configurare CasaZen",
-      "now": "Adesso",
-      "progress": "{{done}} di {{total}} passi fatti",
-      "titleChecklist": "Attiva il tuo sito di prenotazione",
-      "titlePath": "Inizia con CasaZen"
+      "now": "Adesso"
     },
-    "title": "La tua guida",
-    "todo": {
-      "all": "Vedi tutte le cose da fare",
-      "count_one": "{{count}} cosa da fare, nell'ordine in cui farla.",
-      "count_other": "{{count}} cose da fare, nell'ordine in cui farle.",
-      "countUrgent_one": "{{count}} cosa da fare, {{urgent}} urgente: parti dall'alto.",
-      "countUrgent_other": "{{count}} cose da fare, {{urgent}} urgenti: parti dall'alto.",
-      "nothing": "Niente da fare per ora: tutto in ordine.",
-      "title": "Da fare adesso"
+    "title": "Guida utente",
+    "topics": {
+      "faq": "Domande frequenti",
+      "glossary": "Glossario",
+      "howTo": "Come fare",
+      "start": "Primi passi",
+      "title": "Parti da qui"
+    },
+    "type": {
+      "faq": "Domanda frequente",
+      "flusso": "Percorso completo",
+      "funzione": "Funzione",
+      "howto": "Come fare",
+      "pagina": "Capitolo",
+      "termine": "Termine del glossario"
     },
     "welcome": {
       "intro_one": "CasaZen ti accompagna un passo alla volta: c'è {{count}} passo per essere operativo.",
@@ -6079,7 +6088,7 @@
       "pathTitle_one": "Il tuo percorso: {{count}} passo",
       "pathTitle_other": "Il tuo percorso: {{count}} passi",
       "promise": {
-        "guide": "La Guida in alto a destra ti dice sempre cosa fare dopo.",
+        "guide": "La Guida in alto a destra ti spiega come fare ogni cosa.",
         "pause": "Puoi fermarti quando vuoi: riprendi da dove eri, non perdi nulla.",
         "steps": "Ti mostriamo una cosa alla volta, nell'ordine giusto."
       },
@@ -7545,6 +7554,7 @@
       "action": "Azioni",
       "booking": "Prenotazioni",
       "guest": "Ospiti",
+      "guide": "Guida",
       "page": "Pagine",
       "property": "Immobili",
       "recent": "Recenti"
@@ -7607,6 +7617,7 @@
       "action": "Azione",
       "booking": "Prenotazione",
       "guest": "Ospite",
+      "guide": "Guida",
       "page": "Pagina",
       "property": "Immobile"
     },
@@ -22451,10 +22462,10 @@
         "steps": [
           "Se hai ricevuto un invito, apri il link con l’account destinatario. Se stai creando la tua attività, scegli il ruolo, l’area e il piano prima di confermare i documenti e passare alla fatturazione.",
           "Nella scelta del piano o nel riepilogo puoi usare «Metti in pausa». Le scelte salvate restano in questa scheda per 24 ore. Dopo una ricarica riprendi dal passaggio salvato e confermi di nuovo i documenti.",
-          "Se è attivo «Inizia con CasaZen», l’amministratore può aprire il piano dalla Home Affitti brevi. Per gli immobili italiani, scegli chi invia i dati degli ospiti e controlla il riepilogo prima di confermare. Il piano mostra il prossimo compito. Puoi uscire e ritrovarlo dalla Home o dalla Guida.",
+          "Se è attivo «Inizia con CasaZen», l’amministratore può aprire il piano dalla Home Affitti brevi. Per gli immobili italiani, scegli chi invia i dati degli ospiti e controlla il riepilogo prima di confermare. Il piano mostra il prossimo compito. Puoi uscire e ritrovarlo dalla Home.",
           "Scegli l’area di lavoro: Affitti brevi, Affitti lunghi, Amministrazione o Fornitori. Le aree e le azioni disponibili dipendono dal tuo ruolo e dagli immobili assegnati.",
-          "Verifica area e organizzazione in alto. Su telefono apri Altro per cambiare area. Su computer usa il selettore della barra laterale. Scegli Cerca per trovare le pagine a cui hai accesso.",
-          "Chiedi a CasaZen cerca le pagine accessibili per nome. In Affitti brevi puoi chiedere quali arrivi di oggi hanno il check-in incompleto. Controlla l’ambito indicato e scegli una prenotazione per verificarla. In demo i dati sono di esempio. Puoi sempre aprire gli arrivi direttamente dal Cruscotto.",
+          "Verifica area e organizzazione in alto. Su telefono apri Altro per cambiare area. Su computer usa il selettore della barra laterale. Scegli Cerca per trovare le pagine a cui hai accesso e gli argomenti del manuale.",
+          "Chiedi a CasaZen cerca le pagine accessibili per nome e, se chiedi come fare una cosa, indica gli argomenti del manuale. In Affitti brevi puoi chiedere quali arrivi di oggi hanno il check-in incompleto. Controlla l’ambito indicato e scegli una prenotazione per verificarla. In demo i dati sono di esempio. Puoi sempre aprire gli arrivi direttamente dal Cruscotto.",
           "Per avviare il lavoro operativo: prepara gli immobili, verifica disponibilità e tariffe, inserisci le prenotazioni, completa i dati degli ospiti e controlla gli adempimenti in scadenza."
         ]
       },

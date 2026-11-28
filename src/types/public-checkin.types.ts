@@ -266,21 +266,6 @@ export interface CheckInZonedField {
 }
 
 /**
- * The fields of the check-in the photo of a document can fill, in the words of the answer's `missing` (E71/F01/US03/T01): what the guest types when the photo did not give it. A name the page does not know is
- * not an error: it is asked under a general label.
- */
-export type CheckInPrefillFieldName =
-  | 'lastName'
-  | 'firstName'
-  | 'gender'
-  | 'dateOfBirth'
-  | 'birthPlace'
-  | 'citizenship'
-  | 'documentKind'
-  | 'documentNumber'
-  | 'issuePlace';
-
-/**
  * Answer of `POST /public/checkin/{token}/read-document`. The photo is not returned. With the self-hosted flow on (E71/F01/US03/T01, NF-190) it also carries `fields` (what the zones of the card gave),
  * `missing` (the fields the guest has still to type) and `source: "local"` (nothing left the server); with it off none of the three is in the answer, which is then exactly the one of before.
  */

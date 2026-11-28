@@ -3,11 +3,22 @@ import { bookingsApi } from '@/api/bookings.api';
 import { internalActivitiesApi } from '@/api/internal-activities.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import type { CommandContext } from '@/components/shared/command-palette/types';
+import { searchManual, type ManualHit } from '@/lib/manual/manual-search';
 import type { BookingListItem } from '@/types';
 import { fiscalPeriod, resolveAsk } from '../navigation';
 
 vi.mock('@/api/bookings.api', () => ({ bookingsApi: { search: vi.fn() } }));
 vi.mock('@/api/internal-activities.api', () => ({ internalActivitiesApi: { getPending: vi.fn() } }));
+vi.mock('@/api/client', () => ({ ApiClient: { post: vi.fn().mockRejectedValue(new Error('offline')) } }));
+vi.mock('@/lib/manual/manual-search', () => ({ searchManual: vi.fn().mockResolvedValue([]) }));
+
+const HOWTO: ManualHit = {
+  id: 'immobili.html#pausa',
+  type: 'howto',
+  title: 'Mettere in pausa e riattivare un immobile',
+  chapter: 'Immobili',
+  href: '/guida/immobili.html#pausa',
+};
 
 const context = {
   t: ((name: string) => name) as CommandContext['t'],
@@ -62,6 +73,30 @@ describe('Ask CasaZen navigation', () => {
     expect(fiscalPeriod('fammi vedere le fatture di ottobre', '2026-11-18')).toBe('?from=2026-10-01&to=2026-10-31');
     expect((await ask('Fammi vedere le fatture di ottobre 2026')).links[0].to)
       .toBe('/app/short-rent/fiscal/documents?from=2026-10-01&to=2026-10-31&kind=Invoice');
+  });
+
+  it('answers a how-to question from the manual, and says no page fits only when the manual has nothing either', async () => {
+    vi.mocked(searchManual).mockResolvedValueOnce([HOWTO]);
+    const question = 'Come faccio a mettere in pausa una casa?';
+
+    expect(await ask(question)).toEqual({ links: [], guide: [HOWTO], message: undefined });
+    expect(searchManual).toHaveBeenCalledWith(question, 4);
+    expect(await ask(question)).toEqual({ links: [], guide: [], message: 'ask.noPages' });
+  });
+
+  it('keeps answering when the manual cannot be read or does not answer in time', async () => {
+    vi.mocked(searchManual).mockRejectedValueOnce(new Error('offline'));
+    expect(await ask('Come faccio a mettere in pausa una casa?')).toMatchObject({ guide: [], message: 'ask.noPages' });
+
+    vi.useFakeTimers();
+    try {
+      vi.mocked(searchManual).mockReturnValueOnce(new Promise(() => {}));
+      const pending = ask('Come faccio a mettere in pausa una casa?');
+      await vi.advanceTimersByTimeAsync(3000);
+      expect(await pending).toMatchObject({ guide: [], message: 'ask.noPages' });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('reads the current to-do list with routine reminders excluded', async () => {
